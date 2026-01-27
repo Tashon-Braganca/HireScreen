@@ -1,250 +1,342 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { 
-  FileText, 
-  Search, 
-  Zap, 
-  CheckCircle, 
-  ArrowRight,
-  Upload,
-  MessageSquare,
-  Download
-} from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <FileText className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl">HireScreen</span>
+    <div className="flex flex-col min-h-screen overflow-x-hidden">
+      {/* Minimal Header - Direct UX */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+              <span className="text-primary-foreground font-bold text-lg">H</span>
+            </div>
+            <span className="font-semibold text-lg tracking-tight">HireScreen</span>
           </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground">
-              Features
-            </Link>
-            <Link href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground">
-              How it Works
-            </Link>
-            <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
-              Pricing
-            </Link>
-          </nav>
           <div className="flex items-center gap-3">
             <Link href="/login">
-              <Button variant="ghost">Log in</Button>
+              <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+                Sign in
+              </Button>
             </Link>
             <Link href="/signup">
-              <Button>Get Started Free</Button>
+              <Button className="rounded-full px-6">
+                Get Started
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="py-20 md:py-32 bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto px-4 text-center">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <Zap className="h-4 w-4" />
-            Screen resumes 10x faster with AI
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 max-w-4xl mx-auto">
-            Stop manually reading resumes.
-            <span className="text-primary"> Ask questions instead.</span>
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Upload a stack of resumes and ask &quot;Who has 3+ years Python experience in NYC?&quot; 
-            Get ranked answers with citations in seconds, not hours.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/signup">
-              <Button size="lg" className="text-lg px-8">
-                Start Screening Free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="#how-it-works">
-              <Button size="lg" variant="outline" className="text-lg px-8">
-                See How It Works
-              </Button>
-            </Link>
-          </div>
-          <p className="text-sm text-muted-foreground mt-4">
-            Free tier available. No credit card required.
-          </p>
+      {/* Hero Section - Bold Statement */}
+      <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
+        {/* Decorative Elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Large organic shapes */}
+          <div className="absolute top-20 right-[10%] w-72 h-72 bg-[hsl(145,20%,75%,0.3)] organic-blob animate-float-slow blur-sm" />
+          <div className="absolute bottom-32 left-[5%] w-56 h-56 bg-[hsl(18,50%,60%,0.15)] organic-blob-2 animate-float-delayed blur-sm" />
+          <div className="absolute top-1/3 left-[15%] w-32 h-32 bg-[hsl(235,35%,45%,0.1)] rounded-full animate-float" />
+          
+          {/* Subtle grid pattern */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
         </div>
-      </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-4">How It Works</h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Three simple steps to transform your resume screening process
-          </p>
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Upload className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg mb-2">1. Upload Resumes</h3>
-              <p className="text-muted-foreground">
-                Drag and drop up to 50 PDF resumes at once. We extract and index all the content automatically.
-              </p>
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            {/* Eyebrow */}
+            <div className="animate-fade-up inline-flex items-center gap-2 mb-8">
+              <span className="h-px w-8 bg-primary/40" />
+              <span className="text-sm font-medium text-muted-foreground tracking-widest uppercase">
+                AI-Powered Recruiting
+              </span>
+              <span className="h-px w-8 bg-primary/40" />
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <MessageSquare className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg mb-2">2. Ask Questions</h3>
-              <p className="text-muted-foreground">
-                Ask anything in plain English. &quot;Who knows React?&quot; &quot;Find candidates with MBA degrees.&quot;
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Download className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg mb-2">3. Export Shortlist</h3>
-              <p className="text-muted-foreground">
-                Get instant answers with citations. Export your shortlist to CSV for your ATS.
-              </p>
+
+            {/* Main Headline */}
+            <h1 className="animate-fade-up-delay-1 text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-8">
+              Screen resumes
+              <br />
+              <span className="gradient-text">by asking.</span>
+            </h1>
+
+            {/* Subheadline */}
+            <p className="animate-fade-up-delay-2 text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed">
+              Upload your stack. Ask &ldquo;Who has 5+ years React in SF?&rdquo;
+              <br className="hidden md:block" />
+              Get ranked answers with citations in seconds.
+            </p>
+
+            {/* CTA */}
+            <div className="animate-fade-up-delay-3 flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link href="/signup">
+                <Button size="lg" className="rounded-full px-10 py-6 text-lg hover-lift">
+                  Start Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <span className="text-sm text-muted-foreground">
+                No credit card required
+              </span>
             </div>
           </div>
         </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-gentle-pulse">
+          <span className="text-xs text-muted-foreground tracking-widest uppercase">Scroll</span>
+          <div className="w-px h-12 bg-gradient-to-b from-muted-foreground/50 to-transparent" />
+        </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="py-20">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-4">Why Recruiters Love HireScreen</h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Purpose-built for high-volume resume screening
-          </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      {/* Value Proposition - Asymmetric Layout */}
+      <section className="py-32 relative">
+        <div className="container mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            {/* Left - Visual */}
+            <div className="relative order-2 lg:order-1">
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-gradient-to-br from-secondary to-accent/50 hover-lift">
+                {/* Mock UI */}
+                <div className="absolute inset-6 bg-background rounded-2xl shadow-2xl overflow-hidden">
+                  {/* Mock header */}
+                  <div className="h-12 bg-muted/50 border-b flex items-center px-4 gap-2">
+                    <div className="w-3 h-3 rounded-full bg-destructive/60" />
+                    <div className="w-3 h-3 rounded-full bg-[hsl(45,80%,55%)]" />
+                    <div className="w-3 h-3 rounded-full bg-[hsl(145,50%,50%)]" />
+                  </div>
+                  {/* Mock content */}
+                  <div className="p-6 space-y-4">
+                    <div className="flex gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary text-sm font-medium">AI</span>
+                      </div>
+                      <div className="flex-1 p-4 bg-muted/30 rounded-2xl rounded-tl-none">
+                        <p className="text-sm text-foreground">Found 12 candidates with Python experience in NYC...</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2 pl-14">
+                      {["Sarah M. - 5 years, fintech", "James K. - 4 years, startups", "Lisa R. - 6 years, enterprise"].map((name, i) => (
+                        <div key={i} className="flex items-center gap-3 p-3 bg-muted/20 rounded-xl">
+                          <div className="w-8 h-8 rounded-full bg-[hsl(145,20%,75%,0.5)]" />
+                          <span className="text-sm">{name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Floating accent */}
+              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-[hsl(18,50%,60%,0.2)] organic-blob animate-float" />
+            </div>
+
+            {/* Right - Content */}
+            <div className="order-1 lg:order-2 space-y-8">
+              <span className="text-sm font-medium text-primary tracking-widest uppercase">
+                How it works
+              </span>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight">
+                Natural language.
+                <br />
+                <span className="text-muted-foreground">Instant answers.</span>
+              </h2>
+              <div className="space-y-6">
+                {[
+                  { num: "01", title: "Upload", desc: "Drop up to 50 resumes. We index everything automatically." },
+                  { num: "02", title: "Ask", desc: "Query in plain English. No complex filters or boolean." },
+                  { num: "03", title: "Shortlist", desc: "Get ranked results with exact citations. Export to CSV." },
+                ].map((step) => (
+                  <div key={step.num} className="flex gap-6 items-start group">
+                    <span className="text-4xl font-light text-muted-foreground/30 group-hover:text-primary/50 transition-colors">
+                      {step.num}
+                    </span>
+                    <div>
+                      <h3 className="font-semibold text-lg mb-1">{step.title}</h3>
+                      <p className="text-muted-foreground">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features - Bento Grid */}
+      <section className="py-32 bg-muted/30 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(235,35%,45%,0.05)] rounded-full blur-3xl" />
+        
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="text-center mb-20">
+            <span className="text-sm font-medium text-primary tracking-widest uppercase mb-4 block">
+              Capabilities
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+              Built for recruiters who
+              <br />
+              <span className="text-muted-foreground">value their time</span>
+            </h2>
+          </div>
+
+          {/* Bento Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {/* Large feature card */}
+            <div className="md:col-span-2 lg:col-span-2 p-8 md:p-10 rounded-3xl bg-background border border-border/50 hover-lift">
+              <div className="flex flex-col md:flex-row gap-8 items-start">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-2xl">🎯</span>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-semibold mb-3">Semantic Understanding</h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed">
+                    Not keyword matching. Our AI understands context. Ask for &ldquo;frontend developers&rdquo; 
+                    and find React, Vue, Angular experts—even if they don&apos;t say &ldquo;frontend.&rdquo;
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Smaller cards */}
             {[
-              {
-                icon: Search,
-                title: "Semantic Search",
-                description: "Find candidates by skills, experience, and qualifications - not just keywords."
-              },
-              {
-                icon: FileText,
-                title: "Cited Answers",
-                description: "Every answer includes the exact resume and page number for verification."
-              },
-              {
-                icon: Zap,
-                title: "Instant Results",
-                description: "Get answers in seconds, not hours. Screen 50 resumes in under a minute."
-              },
-              {
-                icon: CheckCircle,
-                title: "Bulk Upload",
-                description: "Upload up to 50 resumes at once. Organize by job or role."
-              },
-              {
-                icon: Download,
-                title: "CSV Export",
-                description: "Export your shortlist with notes to import into your ATS."
-              },
-              {
-                icon: MessageSquare,
-                title: "Natural Language",
-                description: "No complex queries. Just ask questions like you would to a colleague."
-              }
+              { icon: "📍", title: "Cited Answers", desc: "Every result links to the exact resume and page." },
+              { icon: "⚡", title: "Instant Results", desc: "50 resumes analyzed in under 60 seconds." },
+              { icon: "📊", title: "Smart Export", desc: "One-click CSV for your ATS integration." },
+              { icon: "🔒", title: "Private & Secure", desc: "Your data never trains our models." },
             ].map((feature, i) => (
-              <div key={i} className="p-6 rounded-xl border bg-card hover:shadow-md transition-shadow">
-                <feature.icon className="h-10 w-10 text-primary mb-4" />
+              <div key={i} className="p-8 rounded-3xl bg-background border border-border/50 hover-lift group">
+                <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                  <span className="text-xl">{feature.icon}</span>
+                </div>
                 <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+                <p className="text-muted-foreground">{feature.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-4">Simple Pricing</h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Start free, upgrade when you need more
-          </p>
-          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {/* Free Tier */}
-            <div className="p-8 rounded-2xl border bg-card">
-              <h3 className="font-semibold text-lg mb-2">Free</h3>
-              <p className="text-muted-foreground mb-4">Perfect for trying it out</p>
-              <div className="text-4xl font-bold mb-6">$0<span className="text-lg font-normal text-muted-foreground">/month</span></div>
-              <ul className="space-y-3 mb-8">
-                {["2 job folders", "10 resumes per job", "20 queries per month", "7-day data retention"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
+      {/* Pricing - Clean & Direct */}
+      <section className="py-32 relative">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-20">
+            <span className="text-sm font-medium text-primary tracking-widest uppercase mb-4 block">
+              Pricing
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+              Simple, transparent
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Start free. Upgrade when you&apos;re ready.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <div className="p-10 rounded-3xl border border-border/50 bg-background hover-lift">
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-2">Free</h3>
+                <p className="text-muted-foreground">Perfect to explore</p>
+              </div>
+              <div className="mb-8">
+                <span className="text-5xl font-bold">$0</span>
+                <span className="text-muted-foreground">/month</span>
+              </div>
+              <ul className="space-y-4 mb-10">
+                {["2 job folders", "10 resumes per job", "20 queries/month", "7-day retention"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-[hsl(145,50%,45%)]" />
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
-              <Link href="/signup">
-                <Button variant="outline" className="w-full">Get Started</Button>
+              <Link href="/signup" className="block">
+                <Button variant="outline" className="w-full rounded-full py-6">
+                  Get Started
+                </Button>
               </Link>
             </div>
-            {/* Pro Tier */}
-            <div className="p-8 rounded-2xl border-2 border-primary bg-card relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                Most Popular
+
+            {/* Pro Plan */}
+            <div className="p-10 rounded-3xl bg-primary text-primary-foreground relative overflow-hidden hover-lift">
+              {/* Decorative */}
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+              
+              <div className="relative z-10">
+                <div className="mb-8">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-sm mb-4">
+                    Most Popular
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Pro</h3>
+                  <p className="text-primary-foreground/70">For serious recruiters</p>
+                </div>
+                <div className="mb-8">
+                  <span className="text-5xl font-bold">$29</span>
+                  <span className="text-primary-foreground/70">/month</span>
+                </div>
+                <ul className="space-y-4 mb-10">
+                  {["Unlimited folders", "100 resumes per job", "1000 queries/month", "CSV export", "Forever retention", "Priority support"].map((item, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <Check className="h-5 w-5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/signup" className="block">
+                  <Button variant="secondary" className="w-full rounded-full py-6 text-primary font-semibold">
+                    Start Free Trial
+                  </Button>
+                </Link>
               </div>
-              <h3 className="font-semibold text-lg mb-2">Pro</h3>
-              <p className="text-muted-foreground mb-4">For serious recruiters</p>
-              <div className="text-4xl font-bold mb-6">$29<span className="text-lg font-normal text-muted-foreground">/month</span></div>
-              <ul className="space-y-3 mb-8">
-                {["Unlimited job folders", "100 resumes per job", "1000 queries per month", "CSV export", "Unlimited data retention", "Email support"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link href="/signup">
-                <Button className="w-full">Start Free Trial</Button>
-              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to screen smarter?</h2>
-          <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
-            Join recruiters who save hours every day with AI-powered resume screening.
-          </p>
-          <Link href="/signup">
-            <Button size="lg" className="text-lg px-8">
-              Get Started Free
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
+      {/* Final CTA - Bold Statement */}
+      <section className="py-32 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-background" />
+        
+        {/* Decorative shapes */}
+        <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-64 h-64 bg-[hsl(145,20%,75%,0.2)] organic-blob animate-float blur-sm" />
+        <div className="absolute right-1/4 top-1/3 w-48 h-48 bg-[hsl(18,50%,60%,0.15)] organic-blob-2 animate-float-delayed blur-sm" />
+        
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+              Stop reading resumes.
+              <br />
+              <span className="text-muted-foreground">Start asking questions.</span>
+            </h2>
+            <p className="text-xl text-muted-foreground mb-12 max-w-xl mx-auto">
+              Join recruiters who screen 10x faster without sacrificing quality.
+            </p>
+            <Link href="/signup">
+              <Button size="lg" className="rounded-full px-12 py-7 text-lg hover-lift">
+                Get Started Free
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t py-12 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <FileText className="h-6 w-6 text-primary" />
-              <span className="font-bold">HireScreen</span>
+      {/* Footer - Minimal */}
+      <footer className="py-12 border-t">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold">H</span>
+              </div>
+              <span className="font-semibold">HireScreen</span>
             </div>
             <p className="text-sm text-muted-foreground">
               Built for recruiters who value their time.
             </p>
             <div className="flex gap-6 text-sm text-muted-foreground">
-              <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
-              <Link href="/terms" className="hover:text-foreground">Terms</Link>
+              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
             </div>
           </div>
         </div>
