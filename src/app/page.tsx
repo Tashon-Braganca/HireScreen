@@ -1,27 +1,30 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen overflow-x-hidden">
       {/* Minimal Header - Direct UX */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center transition-transform duration-300 group-hover:scale-105 shadow-lg shadow-primary/20">
               <span className="text-primary-foreground font-bold text-lg">H</span>
             </div>
             <span className="font-semibold text-lg tracking-tight">HireScreen</span>
           </Link>
           <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <ThemeToggle />
             <Link href="/login">
               <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
                 Sign in
               </Button>
             </Link>
             <Link href="/signup">
-              <Button className="rounded-full px-6">
+              <Button className="rounded-full px-6 shadow-lg shadow-primary/20">
                 Get Started
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -34,13 +37,13 @@ export default function Home() {
       <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
         {/* Decorative Elements */}
         <div className="absolute inset-0 pointer-events-none">
-          {/* Large organic shapes */}
-          <div className="absolute top-20 right-[10%] w-72 h-72 bg-[hsl(145,20%,75%,0.3)] organic-blob animate-float-slow blur-sm" />
-          <div className="absolute bottom-32 left-[5%] w-56 h-56 bg-[hsl(18,50%,60%,0.15)] organic-blob-2 animate-float-delayed blur-sm" />
-          <div className="absolute top-1/3 left-[15%] w-32 h-32 bg-[hsl(235,35%,45%,0.1)] rounded-full animate-float" />
+          {/* Large organic shapes - theme-aware */}
+          <div className="absolute top-20 right-[10%] w-72 h-72 bg-primary/10 organic-blob animate-float-slow blur-xl" />
+          <div className="absolute bottom-32 left-[5%] w-56 h-56 bg-chart-3/10 organic-blob-2 animate-float-delayed blur-xl" />
+          <div className="absolute top-1/3 left-[15%] w-32 h-32 bg-chart-2/10 rounded-full animate-float blur-lg" />
           
-          {/* Subtle grid pattern */}
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
+          {/* Subtle grid pattern - theme-aware */}
+          <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.3)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.3)_1px,transparent_1px)] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
         </div>
 
         <div className="container mx-auto px-6 relative z-10">
@@ -71,7 +74,7 @@ export default function Home() {
             {/* CTA */}
             <div className="animate-fade-up-delay-3 flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/signup">
-                <Button size="lg" className="rounded-full px-10 py-6 text-lg hover-lift">
+                <Button size="lg" className="rounded-full px-10 py-6 text-lg hover-lift shadow-xl shadow-primary/25">
                   Start Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -84,7 +87,7 @@ export default function Home() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-gentle-pulse">
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-glow-pulse">
           <span className="text-xs text-muted-foreground tracking-widest uppercase">Scroll</span>
           <div className="w-px h-12 bg-gradient-to-b from-muted-foreground/50 to-transparent" />
         </div>
@@ -96,14 +99,14 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             {/* Left - Visual */}
             <div className="relative order-2 lg:order-1">
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-gradient-to-br from-secondary to-accent/50 hover-lift">
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-gradient-to-br from-secondary to-accent/50 hover-lift border border-border/30">
                 {/* Mock UI */}
-                <div className="absolute inset-6 bg-background rounded-2xl shadow-2xl overflow-hidden">
+                <div className="absolute inset-6 bg-card rounded-2xl shadow-2xl overflow-hidden border border-border/50">
                   {/* Mock header */}
-                  <div className="h-12 bg-muted/50 border-b flex items-center px-4 gap-2">
+                  <div className="h-12 bg-muted/50 border-b border-border/50 flex items-center px-4 gap-2">
                     <div className="w-3 h-3 rounded-full bg-destructive/60" />
-                    <div className="w-3 h-3 rounded-full bg-[hsl(45,80%,55%)]" />
-                    <div className="w-3 h-3 rounded-full bg-[hsl(145,50%,50%)]" />
+                    <div className="w-3 h-3 rounded-full bg-chart-5" />
+                    <div className="w-3 h-3 rounded-full bg-chart-2" />
                   </div>
                   {/* Mock content */}
                   <div className="p-6 space-y-4">
@@ -117,8 +120,8 @@ export default function Home() {
                     </div>
                     <div className="space-y-2 pl-14">
                       {["Sarah M. - 5 years, fintech", "James K. - 4 years, startups", "Lisa R. - 6 years, enterprise"].map((name, i) => (
-                        <div key={i} className="flex items-center gap-3 p-3 bg-muted/20 rounded-xl">
-                          <div className="w-8 h-8 rounded-full bg-[hsl(145,20%,75%,0.5)]" />
+                        <div key={i} className="flex items-center gap-3 p-3 bg-muted/20 rounded-xl border border-border/30">
+                          <div className="w-8 h-8 rounded-full bg-chart-2/30" />
                           <span className="text-sm">{name}</span>
                         </div>
                       ))}
@@ -127,7 +130,7 @@ export default function Home() {
                 </div>
               </div>
               {/* Floating accent */}
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-[hsl(18,50%,60%,0.2)] organic-blob animate-float" />
+              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-chart-3/20 organic-blob animate-float" />
             </div>
 
             {/* Right - Content */}
@@ -163,9 +166,9 @@ export default function Home() {
       </section>
 
       {/* Features - Bento Grid */}
-      <section className="py-32 bg-muted/30 relative overflow-hidden">
+      <section className="py-32 bg-secondary/30 relative overflow-hidden">
         {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(235,35%,45%,0.05)] rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         
         <div className="container mx-auto px-6 relative z-10">
           <div className="text-center mb-20">
@@ -182,7 +185,7 @@ export default function Home() {
           {/* Bento Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {/* Large feature card */}
-            <div className="md:col-span-2 lg:col-span-2 p-8 md:p-10 rounded-3xl bg-background border border-border/50 hover-lift">
+            <div className="md:col-span-2 lg:col-span-2 p-8 md:p-10 rounded-3xl bg-card border border-border/50 hover-lift">
               <div className="flex flex-col md:flex-row gap-8 items-start">
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
                   <span className="text-2xl">🎯</span>
@@ -204,7 +207,7 @@ export default function Home() {
               { icon: "📊", title: "Smart Export", desc: "One-click CSV for your ATS integration." },
               { icon: "🔒", title: "Private & Secure", desc: "Your data never trains our models." },
             ].map((feature, i) => (
-              <div key={i} className="p-8 rounded-3xl bg-background border border-border/50 hover-lift group">
+              <div key={i} className="p-8 rounded-3xl bg-card border border-border/50 hover-lift group">
                 <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                   <span className="text-xl">{feature.icon}</span>
                 </div>
@@ -233,7 +236,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Plan */}
-            <div className="p-10 rounded-3xl border border-border/50 bg-background hover-lift">
+            <div className="p-10 rounded-3xl border border-border/50 bg-card hover-lift">
               <div className="mb-8">
                 <h3 className="text-xl font-semibold mb-2">Free</h3>
                 <p className="text-muted-foreground">Perfect to explore</p>
@@ -245,7 +248,7 @@ export default function Home() {
               <ul className="space-y-4 mb-10">
                 {["2 job folders", "10 resumes per job", "20 queries/month", "7-day retention"].map((item, i) => (
                   <li key={i} className="flex items-center gap-3">
-                    <Check className="h-5 w-5 text-[hsl(145,50%,45%)]" />
+                    <Check className="h-5 w-5 text-chart-2" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -258,13 +261,13 @@ export default function Home() {
             </div>
 
             {/* Pro Plan */}
-            <div className="p-10 rounded-3xl bg-primary text-primary-foreground relative overflow-hidden hover-lift">
+            <div className="p-10 rounded-3xl bg-primary text-primary-foreground relative overflow-hidden hover-lift shadow-2xl shadow-primary/30">
               {/* Decorative */}
-              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+              <div className="absolute top-0 right-0 w-40 h-40 bg-primary-foreground/10 rounded-full blur-2xl" />
               
               <div className="relative z-10">
                 <div className="mb-8">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-sm mb-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-foreground/20 text-sm mb-4">
                     Most Popular
                   </div>
                   <h3 className="text-xl font-semibold mb-2">Pro</h3>
@@ -295,11 +298,11 @@ export default function Home() {
 
       {/* Final CTA - Bold Statement */}
       <section className="py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/30 to-background" />
         
         {/* Decorative shapes */}
-        <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-64 h-64 bg-[hsl(145,20%,75%,0.2)] organic-blob animate-float blur-sm" />
-        <div className="absolute right-1/4 top-1/3 w-48 h-48 bg-[hsl(18,50%,60%,0.15)] organic-blob-2 animate-float-delayed blur-sm" />
+        <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-64 h-64 bg-chart-2/15 organic-blob animate-float blur-xl" />
+        <div className="absolute right-1/4 top-1/3 w-48 h-48 bg-chart-3/10 organic-blob-2 animate-float-delayed blur-xl" />
         
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
@@ -312,7 +315,7 @@ export default function Home() {
               Join recruiters who screen 10x faster without sacrificing quality.
             </p>
             <Link href="/signup">
-              <Button size="lg" className="rounded-full px-12 py-7 text-lg hover-lift">
+              <Button size="lg" className="rounded-full px-12 py-7 text-lg hover-lift shadow-xl shadow-primary/25">
                 Get Started Free
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -322,7 +325,7 @@ export default function Home() {
       </section>
 
       {/* Footer - Minimal */}
-      <footer className="py-12 border-t">
+      <footer className="py-12 border-t border-border/50">
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3">
