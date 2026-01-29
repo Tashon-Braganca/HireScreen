@@ -44,10 +44,18 @@ export default function LoginPage() {
     setGoogleLoading(true);
     const supabase = createClient();
     
+    // Use environment variable for production, fallback to window.location.origin for local dev
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    const redirectUrl = `${baseUrl.replace(/\/$/, '')}/callback`;
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/callback`,
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     });
 

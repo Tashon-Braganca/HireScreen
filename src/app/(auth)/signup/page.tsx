@@ -24,6 +24,10 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
 
+    // Use environment variable for production, fallback to window.location.origin for local dev
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    const redirectUrl = `${baseUrl.replace(/\/$/, '')}/callback`;
+
     const supabase = createClient();
     const { error } = await supabase.auth.signUp({
       email,
@@ -32,7 +36,7 @@ export default function SignupPage() {
         data: {
           full_name: fullName,
         },
-        emailRedirectTo: `${window.location.origin}/callback`,
+        emailRedirectTo: redirectUrl,
       },
     });
 
@@ -50,10 +54,18 @@ export default function SignupPage() {
     setGoogleLoading(true);
     const supabase = createClient();
     
+    // Use environment variable for production, fallback to window.location.origin for local dev
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    const redirectUrl = `${baseUrl.replace(/\/$/, '')}/callback`;
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/callback`,
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     });
 
@@ -156,10 +168,7 @@ export default function SignupPage() {
         </form>
 
         <p className="text-xs text-center text-muted-foreground">
-          By signing up, you agree to our{" "}
-          <Link href="/terms" className="underline">Terms of Service</Link>
-          {" "}and{" "}
-          <Link href="/privacy" className="underline">Privacy Policy</Link>
+          By signing up, you agree to our Terms of Service and Privacy Policy.
         </p>
       </CardContent>
       <CardFooter className="flex justify-center">

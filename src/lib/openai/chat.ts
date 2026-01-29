@@ -59,7 +59,7 @@ ${question}
 Provide a helpful, accurate answer with citations.`;
 
   const response = await getOpenAI().chat.completions.create({
-    model: 'gpt-4.1-nano',
+    model: 'gpt-4o-mini',
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: userMessage },

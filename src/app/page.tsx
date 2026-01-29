@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { RolodexText } from "@/components/landing/rolodex-text";
+import { TypewriterText } from "@/components/landing/typewriter-text";
 
 export default function Home() {
   return (
@@ -35,15 +37,12 @@ export default function Home() {
 
       {/* Hero Section - Bold Statement */}
       <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
-        {/* Decorative Elements */}
+        {/* Simplified Decorative Elements */}
         <div className="absolute inset-0 pointer-events-none">
-          {/* Large organic shapes - theme-aware */}
-          <div className="absolute top-20 right-[10%] w-72 h-72 bg-primary/10 organic-blob animate-float-slow blur-xl" />
-          <div className="absolute bottom-32 left-[5%] w-56 h-56 bg-chart-3/10 organic-blob-2 animate-float-delayed blur-xl" />
-          <div className="absolute top-1/3 left-[15%] w-32 h-32 bg-chart-2/10 rounded-full animate-float blur-lg" />
-          
-          {/* Subtle grid pattern - theme-aware */}
-          <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.3)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.3)_1px,transparent_1px)] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
+          {/* Subtle grid pattern only */}
+          <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.2)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.2)_1px,transparent_1px)] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
+          {/* Single subtle gradient blob */}
+          <div className="absolute top-1/4 right-[10%] w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         </div>
 
         <div className="container mx-auto px-6 relative z-10">
@@ -57,19 +56,26 @@ export default function Home() {
               <span className="h-px w-8 bg-primary/40" />
             </div>
 
-            {/* Main Headline */}
+            {/* Main Headline with Rolodex Animation */}
             <h1 className="animate-fade-up-delay-1 text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-8">
               Screen resumes
               <br />
-              <span className="gradient-text">by asking.</span>
+              <span className="gradient-text">
+                <RolodexText 
+                  words={["by asking.", "by thinking.", "by searching."]} 
+                  interval={3000}
+                />
+              </span>
             </h1>
 
-            {/* Subheadline */}
-            <p className="animate-fade-up-delay-2 text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed">
-              Upload your stack. Ask &ldquo;Who has 5+ years React in SF?&rdquo;
-              <br className="hidden md:block" />
-              Get ranked answers with citations in seconds.
-            </p>
+            {/* Subheadline with Typewriter Effect */}
+            <div className="animate-fade-up-delay-2 text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed h-[4rem] md:h-[3rem]">
+              <TypewriterText 
+                text='Upload your stack. Ask "Who has 5+ years React in SF?" Get ranked answers in seconds.'
+                speed={50}
+                delay={1500}
+              />
+            </div>
 
             {/* CTA */}
             <div className="animate-fade-up-delay-3 flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -87,7 +93,7 @@ export default function Home() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-glow-pulse">
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
           <span className="text-xs text-muted-foreground tracking-widest uppercase">Scroll</span>
           <div className="w-px h-12 bg-gradient-to-b from-muted-foreground/50 to-transparent" />
         </div>
@@ -99,7 +105,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             {/* Left - Visual */}
             <div className="relative order-2 lg:order-1">
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-gradient-to-br from-secondary to-accent/50 hover-lift border border-border/30">
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-gradient-to-br from-secondary to-accent/50 border border-border/30">
                 {/* Mock UI */}
                 <div className="absolute inset-6 bg-card rounded-2xl shadow-2xl overflow-hidden border border-border/50">
                   {/* Mock header */}
@@ -129,8 +135,6 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              {/* Floating accent */}
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-chart-3/20 organic-blob animate-float" />
             </div>
 
             {/* Right - Content */}
@@ -185,7 +189,7 @@ export default function Home() {
           {/* Bento Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {/* Large feature card */}
-            <div className="md:col-span-2 lg:col-span-2 p-8 md:p-10 rounded-3xl bg-card border border-border/50 hover-lift">
+            <div className="md:col-span-2 lg:col-span-2 p-8 md:p-10 rounded-3xl bg-card border border-border/50 transition-shadow hover:shadow-lg">
               <div className="flex flex-col md:flex-row gap-8 items-start">
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
                   <span className="text-2xl">🎯</span>
@@ -207,7 +211,7 @@ export default function Home() {
               { icon: "📊", title: "Smart Export", desc: "One-click CSV for your ATS integration." },
               { icon: "🔒", title: "Private & Secure", desc: "Your data never trains our models." },
             ].map((feature, i) => (
-              <div key={i} className="p-8 rounded-3xl bg-card border border-border/50 hover-lift group">
+              <div key={i} className="p-8 rounded-3xl bg-card border border-border/50 transition-shadow hover:shadow-lg group">
                 <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                   <span className="text-xl">{feature.icon}</span>
                 </div>
@@ -236,7 +240,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Plan */}
-            <div className="p-10 rounded-3xl border border-border/50 bg-card hover-lift">
+            <div className="p-10 rounded-3xl border border-border/50 bg-card transition-shadow hover:shadow-lg">
               <div className="mb-8">
                 <h3 className="text-xl font-semibold mb-2">Free</h3>
                 <p className="text-muted-foreground">Perfect to explore</p>
@@ -261,7 +265,7 @@ export default function Home() {
             </div>
 
             {/* Pro Plan */}
-            <div className="p-10 rounded-3xl bg-primary text-primary-foreground relative overflow-hidden hover-lift shadow-2xl shadow-primary/30">
+            <div className="p-10 rounded-3xl bg-primary text-primary-foreground relative overflow-hidden shadow-2xl shadow-primary/30">
               {/* Decorative */}
               <div className="absolute top-0 right-0 w-40 h-40 bg-primary-foreground/10 rounded-full blur-2xl" />
               
@@ -300,10 +304,6 @@ export default function Home() {
       <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/30 to-background" />
         
-        {/* Decorative shapes */}
-        <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-64 h-64 bg-chart-2/15 organic-blob animate-float blur-xl" />
-        <div className="absolute right-1/4 top-1/3 w-48 h-48 bg-chart-3/10 organic-blob-2 animate-float-delayed blur-xl" />
-        
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
@@ -315,7 +315,7 @@ export default function Home() {
               Join recruiters who screen 10x faster without sacrificing quality.
             </p>
             <Link href="/signup">
-              <Button size="lg" className="rounded-full px-12 py-7 text-lg hover-lift shadow-xl shadow-primary/25">
+              <Button size="lg" className="rounded-full px-12 py-7 text-lg shadow-xl shadow-primary/25">
                 Get Started Free
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -337,10 +337,6 @@ export default function Home() {
             <p className="text-sm text-muted-foreground">
               Built for recruiters who value their time.
             </p>
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-              <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-            </div>
           </div>
         </div>
       </footer>
