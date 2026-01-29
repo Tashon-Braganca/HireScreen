@@ -44,8 +44,8 @@ export default function LoginPage() {
     setGoogleLoading(true);
     const supabase = createClient();
     
-    // Use environment variable for production, fallback to window.location.origin for local dev
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    // Use environment variable for production, with hardcoded fallback to ensure no localhost
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://hire-screen.vercel.app";
     const redirectUrl = `${baseUrl.replace(/\/$/, '')}/callback`;
     
     const { error } = await supabase.auth.signInWithOAuth({

@@ -8,6 +8,14 @@ export async function GET(request: Request) {
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
 
+  console.log("Auth callback triggered", { 
+    url: request.url, 
+    error, 
+    code: code ? "present" : "missing",
+    origin,
+    appUrl: process.env.NEXT_PUBLIC_APP_URL 
+  });
+
   // Handle OAuth errors from provider
   if (error) {
     console.error("OAuth error:", error, errorDescription);

@@ -68,20 +68,22 @@ export default function Home() {
             </h1>
 
             {/* Subheadline with Typewriter Effect */}
-            <div className="animate-fade-up-delay-2 text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed h-[4rem] md:h-[3rem] flex items-center justify-center">
-              <span>Upload your stack. Ask &ldquo;</span>
-              <TypewriterText 
-                texts={[
-                  "Who has 5+ years React in SF?",
-                  "Find me a Senior backend engineer.",
-                  "Who worked at a YC startup?",
-                  "Show me resumes with Stanford degrees."
-                ]}
-                speed={50}
-                pause={2000}
-                className="text-primary inline-block min-w-[20px]"
-              />
-              <span>&rdquo; Get ranked answers in seconds.</span>
+            <div className="animate-fade-up-delay-2 text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-12 leading-relaxed flex flex-col md:flex-row items-center justify-center gap-2 md:gap-1">
+              <span className="whitespace-nowrap">Upload your stack. Ask &ldquo;</span>
+              <div className="min-w-[300px] text-center md:text-left flex justify-center md:justify-start">
+                <TypewriterText 
+                  texts={[
+                    "Who has 5+ years React in SF?",
+                    "Find me a Senior backend engineer.",
+                    "Who worked at a YC startup?",
+                    "Show me resumes with Stanford degrees."
+                  ]}
+                  speed={50}
+                  pause={2000}
+                  className="text-primary font-medium"
+                />
+              </div>
+              <span className="whitespace-nowrap">&rdquo; Get ranked answers in seconds.</span>
             </div>
 
             {/* CTA */}
