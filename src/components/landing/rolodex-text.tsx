@@ -20,27 +20,26 @@ export function RolodexText({ words, interval = 3000, className }: RolodexTextPr
       setTimeout(() => {
         setCurrentIndex((prev) => (prev + 1) % words.length);
         setIsFlipping(false);
-      }, 300);
+      }, 500); // Increased from 300 to match transition
     }, interval);
 
     return () => clearInterval(timer);
   }, [words.length, interval]);
 
   return (
-    <span className={cn("inline-block relative overflow-hidden", className)}>
+    <span className={cn("inline-grid grid-cols-1 relative overflow-hidden h-[1.1em] align-bottom", className)}>
       <span
         className={cn(
-          "inline-block transition-all duration-300 ease-in-out",
-          isFlipping && "transform -translate-y-full opacity-0"
+          "col-start-1 row-start-1 transition-all duration-500 ease-in-out block whitespace-nowrap gradient-text pb-1", // Applied gradient-text here
+          isFlipping ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"
         )}
       >
         {words[currentIndex]}
       </span>
       <span
         className={cn(
-          "absolute left-0 top-full inline-block transition-all duration-300 ease-in-out",
-          isFlipping && "transform -translate-y-full opacity-100",
-          !isFlipping && "opacity-0"
+          "col-start-1 row-start-1 transition-all duration-500 ease-in-out block whitespace-nowrap gradient-text pb-1 absolute top-full left-0", // Applied gradient-text here
+          isFlipping ? "-translate-y-full opacity-100" : "opacity-0"
         )}
       >
         {words[(currentIndex + 1) % words.length]}

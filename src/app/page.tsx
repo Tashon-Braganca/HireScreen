@@ -60,21 +60,28 @@ export default function Home() {
             <h1 className="animate-fade-up-delay-1 text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-8">
               Screen resumes
               <br />
-              <span className="gradient-text">
-                <RolodexText 
-                  words={["by asking.", "by thinking.", "by searching."]} 
-                  interval={3000}
-                />
-              </span>
+              {/* Removed wrapper span.gradient-text as it's now internal to RolodexText */}
+              <RolodexText 
+                words={["by asking.", "by thinking.", "by searching."]} 
+                interval={3000}
+              />
             </h1>
 
             {/* Subheadline with Typewriter Effect */}
-            <div className="animate-fade-up-delay-2 text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed h-[4rem] md:h-[3rem]">
+            <div className="animate-fade-up-delay-2 text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed h-[4rem] md:h-[3rem] flex items-center justify-center">
+              <span>Upload your stack. Ask &ldquo;</span>
               <TypewriterText 
-                text='Upload your stack. Ask "Who has 5+ years React in SF?" Get ranked answers in seconds.'
+                texts={[
+                  "Who has 5+ years React in SF?",
+                  "Find me a Senior backend engineer.",
+                  "Who worked at a YC startup?",
+                  "Show me resumes with Stanford degrees."
+                ]}
                 speed={50}
-                delay={1500}
+                pause={2000}
+                className="text-primary inline-block min-w-[20px]"
               />
+              <span>&rdquo; Get ranked answers in seconds.</span>
             </div>
 
             {/* CTA */}

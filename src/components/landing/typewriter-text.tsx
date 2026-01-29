@@ -4,53 +4,53 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface TypewriterTextProps {
-  text: string;
+  texts: string[];
   speed?: number;
-  delay?: number;
+  pause?: number;
   className?: string;
-  onComplete?: () => void;
 }
 
 export function TypewriterText({ 
-  text, 
+  texts, 
   speed = 50, 
-  delay = 0,
+  pause = 2000,
   className,
-  onComplete 
 }: TypewriterTextProps) {
   const [displayedText, setDisplayedText] = useState("");
-  const [started, setStarted] = useState(false);
-  const [completed, setCompleted] = useState(false);
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const startTimer = setTimeout(() => {
-      setStarted(true);
-    }, delay);
+    const currentFullText = texts[currentTextIndex];
+    
+    const timer = setTimeout(() => {
+      if (!isDeleting) {
+        // Typing
+        if (displayedText.length < currentFullText.length) {
+          setDisplayedText(currentFullText.slice(0, displayedText.length + 1));
+        } else {
+          // Finished typing, wait before deleting
+          setIsDeleting(true);
+        }
+      } else {
+        // Deleting
+        if (displayedText.length > 0) {
+          setDisplayedText(currentFullText.slice(0, displayedText.length - 1));
+        } else {
+          // Finished deleting, move to next text
+          setIsDeleting(false);
+          setCurrentTextIndex((prev) => (prev + 1) % texts.length);
+        }
+      }
+    }, isDeleting ? (displayedText.length === currentFullText.length ? pause : speed / 2) : speed);
 
-    return () => clearTimeout(startTimer);
-  }, [delay]);
-
-  useEffect(() => {
-    if (!started) return;
-
-    if (displayedText.length < text.length) {
-      const timer = setTimeout(() => {
-        setDisplayedText(text.slice(0, displayedText.length + 1));
-      }, speed);
-
-      return () => clearTimeout(timer);
-    } else if (!completed) {
-      setCompleted(true);
-      onComplete?.();
-    }
-  }, [displayedText, text, speed, started, completed, onComplete]);
+    return () => clearTimeout(timer);
+  }, [displayedText, isDeleting, currentTextIndex, texts, speed, pause]);
 
   return (
-    <span className={cn("", className)}>
+    <span className={cn("inline-block", className)}>
       {displayedText}
-      {started && !completed && (
-        <span className="inline-block w-[2px] h-[1em] bg-current ml-0.5 animate-pulse" />
-      )}
+      <span className="inline-block w-[2px] h-[1em] bg-primary ml-0.5 animate-pulse align-middle" />
     </span>
   );
 }
