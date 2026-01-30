@@ -43,13 +43,30 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // Check query limits
     const { data: profile } = await supabase
       .from("profiles")
-      .select("subscription_status, queries_used")
+      .select("subscription_status, queries_used, last_query_reset_date")
       .eq("id", user.id)
       .single();
 
+    // Check for monthly reset for free users
+    let queriesUsed = profile?.queries_used || 0;
+    const lastReset = profile?.last_query_reset_date ? new Date(profile.last_query_reset_date) : new Date(0);
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    if (lastReset < oneMonthAgo) {
+      // Reset the counter
+      await supabase
+        .from("profiles")
+        .update({ 
+          queries_used: 0, 
+          last_query_reset_date: new Date().toISOString() 
+        })
+        .eq("id", user.id);
+      queriesUsed = 0;
+    }
+
     const isPro = profile?.subscription_status === "pro";
     const queryLimit = isPro ? LIMITS.pro.queries : LIMITS.free.queries;
-    const queriesUsed = profile?.queries_used || 0;
 
     if (queriesUsed >= queryLimit) {
       return NextResponse.json(

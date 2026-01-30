@@ -67,10 +67,12 @@ export default function Home() {
               />
             </h1>
 
-            {/* Subheadline with Typewriter Effect */}
-            <div className="animate-fade-up-delay-2 text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-12 leading-relaxed flex flex-col md:flex-row items-center justify-center gap-2 md:gap-1">
-              <span className="whitespace-nowrap">Upload your stack. Ask &ldquo;</span>
-              <div className="min-w-[300px] text-center md:text-left flex justify-center md:justify-start">
+            {/* Subheadline with Typewriter Effect - 3 Lines */}
+            <div className="animate-fade-up-delay-2 text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-12 leading-relaxed space-y-2">
+              <p>Upload your stack.</p>
+              <p className="flex items-center justify-center gap-1 flex-wrap">
+                <span>Ask:</span>
+                <span>&ldquo;</span>
                 <TypewriterText 
                   texts={[
                     "Who has 5+ years React in SF?",
@@ -78,25 +80,24 @@ export default function Home() {
                     "Who worked at a YC startup?",
                     "Show me resumes with Stanford degrees."
                   ]}
-                  speed={50}
-                  pause={2000}
+                  speed={80}
+                  deleteSpeed={40}
+                  pause={3000}
                   className="text-primary font-medium"
                 />
-              </div>
-              <span className="whitespace-nowrap">&rdquo; Get ranked answers in seconds.</span>
+                <span>&rdquo;</span>
+              </p>
+              <p>Get ranked answers in seconds.</p>
             </div>
 
             {/* CTA */}
-            <div className="animate-fade-up-delay-3 flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="animate-fade-up-delay-3 flex justify-center">
               <Link href="/signup">
                 <Button size="lg" className="rounded-full px-10 py-6 text-lg hover-lift shadow-xl shadow-primary/25">
                   Start Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <span className="text-sm text-muted-foreground">
-                No credit card required
-              </span>
             </div>
           </div>
         </div>
@@ -274,35 +275,33 @@ export default function Home() {
             </div>
 
             {/* Pro Plan */}
-            <div className="p-10 rounded-3xl bg-primary text-primary-foreground relative overflow-hidden shadow-2xl shadow-primary/30">
+            <div className="p-10 rounded-3xl bg-primary/5 border border-primary/20 relative overflow-hidden">
               {/* Decorative */}
-              <div className="absolute top-0 right-0 w-40 h-40 bg-primary-foreground/10 rounded-full blur-2xl" />
+              <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full blur-2xl" />
               
-              <div className="relative z-10">
+              <div className="relative z-10 opacity-75">
                 <div className="mb-8">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-foreground/20 text-sm mb-4">
-                    Most Popular
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-sm mb-4">
+                    Coming Soon
                   </div>
                   <h3 className="text-xl font-semibold mb-2">Pro</h3>
-                  <p className="text-primary-foreground/70">For serious recruiters</p>
+                  <p className="text-muted-foreground">For serious recruiters</p>
                 </div>
                 <div className="mb-8">
                   <span className="text-5xl font-bold">$29</span>
-                  <span className="text-primary-foreground/70">/month</span>
+                  <span className="text-muted-foreground">/month</span>
                 </div>
                 <ul className="space-y-4 mb-10">
                   {["Unlimited folders", "100 resumes per job", "1000 queries/month", "CSV export", "Forever retention", "Priority support"].map((item, i) => (
-                    <li key={i} className="flex items-center gap-3">
+                    <li key={i} className="flex items-center gap-3 text-muted-foreground">
                       <Check className="h-5 w-5" />
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
-                <Link href="/signup" className="block">
-                  <Button variant="secondary" className="w-full rounded-full py-6 text-primary font-semibold">
-                    Start Free Trial
-                  </Button>
-                </Link>
+                <Button disabled className="w-full rounded-full py-6">
+                  Join Waitlist
+                </Button>
               </div>
             </div>
           </div>

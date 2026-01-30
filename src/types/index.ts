@@ -8,6 +8,7 @@ export interface Profile {
   subscription_status: SubscriptionStatus;
   subscription_id: string | null;
   queries_used: number;
+  last_query_reset_date?: string;
   jobs_created: number;
   created_at: string;
   updated_at: string;
