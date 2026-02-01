@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { JobHeader } from "@/components/jobs/job-header";
 import { ResumeUploader } from "@/components/upload/resume-uploader";
 import { CandidateList } from "@/components/jobs/candidate-list";
 import { ChatPane } from "@/components/query/chat-pane";
 import { Badge } from "@/components/ui/badge";
-import { Briefcase, GraduationCap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Briefcase, GraduationCap, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { DeleteJobButton } from "@/components/jobs/delete-job-button";
 
 interface JobPageProps {
   params: Promise<{ id: string }>;
@@ -56,30 +58,43 @@ export default async function JobPage({ params }: JobPageProps) {
   return (
     <div className="h-[calc(100vh-5rem)] flex flex-col">
       {/* Header */}
-      <div className="flex-shrink-0 pb-4 border-b">
+      <div className="flex-shrink-0 pb-4 border-b border-zinc-800">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <JobHeader job={job} />
-            <Badge variant="outline" className="flex items-center gap-1">
-              {jobType === "internship" ? (
-                <>
-                  <GraduationCap className="h-3 w-3" />
-                  Internship
-                </>
-              ) : (
-                <>
-                  <Briefcase className="h-3 w-3" />
-                  Job
-                </>
-              )}
-            </Badge>
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard">
+              <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-semibold text-zinc-100">{job.title}</h1>
+              <Badge variant="outline" className="flex items-center gap-1 border-zinc-700 text-zinc-400">
+                {jobType === "internship" ? (
+                  <>
+                    <GraduationCap className="h-3 w-3" />
+                    Internship
+                  </>
+                ) : (
+                  <>
+                    <Briefcase className="h-3 w-3" />
+                    Job
+                  </>
+                )}
+              </Badge>
+            </div>
           </div>
-          <div className="text-sm text-muted-foreground">
-            {readyResumes.length} / {resumeLimit} resumes
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-zinc-500">
+              {readyResumes.length} / {resumeLimit} resumes
+            </span>
+            <DeleteJobButton jobId={job.id} />
           </div>
         </div>
+        {job.description && (
+          <p className="text-sm text-zinc-500 mt-2 ml-12">{job.description}</p>
+        )}
         {jobType === "internship" && (
-          <p className="text-xs text-muted-foreground mt-2">
+          <p className="text-xs text-zinc-600 mt-2 ml-12">
             AI is optimized for early-career screening: focusing on potential, coursework, and projects
           </p>
         )}
@@ -88,9 +103,16 @@ export default async function JobPage({ params }: JobPageProps) {
       {/* Split Pane Layout */}
       <div className="flex-1 flex gap-4 pt-4 min-h-0">
         {/* Left Pane: Candidates */}
-        <div className="w-80 flex-shrink-0 flex flex-col border-r pr-4 overflow-hidden">
+        <div className="w-80 flex-shrink-0 flex flex-col border-r border-zinc-800 pr-4 overflow-hidden">
           <div className="flex-shrink-0 mb-4">
-            <h3 className="font-semibold mb-2">Candidates ({documents?.length || 0})</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium text-zinc-300">
+                Candidates
+                <span className="ml-2 text-zinc-500 text-sm font-normal">
+                  ({documents?.length || 0})
+                </span>
+              </h3>
+            </div>
             <ResumeUploader 
               jobId={id} 
               canUpload={canUpload}

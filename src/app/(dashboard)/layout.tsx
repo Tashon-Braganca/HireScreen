@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { DashboardNav } from "@/components/layout/dashboard-nav";
 import { DashboardHeader } from "@/components/layout/dashboard-header";
 
 export default async function DashboardLayout({
@@ -15,22 +14,33 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  // Get user profile
-  const { data: profile } = await supabase
+  // Get user profile - handle case where profile doesn't exist yet
+  let { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single();
 
+  // If no profile exists, create one on the fly
+  if (!profile) {
+    const { data: newProfile } = await supabase
+      .from("profiles")
+      .insert({
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || "User",
+      })
+      .select()
+      .single();
+    profile = newProfile;
+  }
+
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-zinc-950">
       <DashboardHeader user={user} profile={profile} />
-      <div className="flex">
-        <DashboardNav />
-        <main className="flex-1 p-6">
-          {children}
-        </main>
-      </div>
+      <main className="w-full">
+        {children}
+      </main>
     </div>
   );
 }

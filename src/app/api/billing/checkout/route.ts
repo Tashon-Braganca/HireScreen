@@ -36,8 +36,9 @@ export async function POST() {
     });
   } catch (error) {
     console.error("Error creating checkout:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to create checkout";
     return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Failed to create checkout" } },
+      { success: false, error: { code: "INTERNAL_ERROR", message: errorMessage } },
       { status: 500 }
     );
   }

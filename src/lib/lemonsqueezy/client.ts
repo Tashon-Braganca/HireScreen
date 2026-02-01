@@ -86,8 +86,14 @@ export async function createCheckout(
 
   if (!response.ok) {
     const error = await response.text();
-    console.error("Lemon Squeezy checkout error:", error);
-    throw new Error("Failed to create checkout session");
+    console.error("Lemon Squeezy checkout error:", {
+      status: response.status,
+      statusText: response.statusText,
+      body: error,
+      storeId,
+      variantId: options.variantId,
+    });
+    throw new Error(`Failed to create checkout session: ${response.status} ${response.statusText}`);
   }
 
   const data: LemonSqueezyCheckoutResponse = await response.json();

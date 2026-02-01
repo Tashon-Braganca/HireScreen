@@ -42,12 +42,35 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Check user limits
-    const { data: profile } = await supabase
+    // Check user limits - get or create profile
+    let { data: profile } = await supabase
       .from("profiles")
       .select("subscription_status")
       .eq("id", user.id)
       .single();
+
+    // If profile doesn't exist (trigger didn't fire), create it
+    if (!profile) {
+      const { data: newProfile, error: profileError } = await supabase
+        .from("profiles")
+        .insert({
+          id: user.id,
+          email: user.email || "",
+          full_name: user.user_metadata?.full_name || "User",
+          subscription_status: "free",
+        })
+        .select("subscription_status")
+        .single();
+
+      if (profileError) {
+        console.error("Failed to create profile:", profileError);
+        return NextResponse.json(
+          { success: false, error: { code: "PROFILE_ERROR", message: "Failed to create user profile" } },
+          { status: 500 }
+        );
+      }
+      profile = newProfile;
+    }
 
     const isPro = profile?.subscription_status === "pro";
     const resumeLimit = isPro ? LIMITS.pro.resumesPerJob : LIMITS.free.resumesPerJob;
@@ -110,8 +133,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       .single();
 
     if (docError || !document) {
+      console.error("Document insert error:", docError);
       return NextResponse.json(
-        { success: false, error: { code: "DB_ERROR", message: "Failed to create document record" } },
+        { success: false, error: { code: "DB_ERROR", message: docError?.message || "Failed to create document record" } },
         { status: 500 }
       );
     }

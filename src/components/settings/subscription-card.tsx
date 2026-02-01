@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { Check, Crown, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 interface SubscriptionCardProps {
@@ -14,20 +12,20 @@ interface SubscriptionCardProps {
 }
 
 const PRO_FEATURES = [
-  "Unlimited jobs",
-  "100 resumes per job",
+  "Unlimited positions",
+  "100 resumes per position",
   "1,000 queries per month",
   "CSV export",
   "Priority support",
 ];
 
 const FREE_FEATURES = [
-  "2 jobs",
-  "10 resumes per job",
+  "2 positions",
+  "10 resumes per position",
   "20 queries per month",
 ];
 
-export function SubscriptionCard({ isPro, showSuccess }: SubscriptionCardProps) {
+export function SubscriptionCard({ isPro }: SubscriptionCardProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleUpgrade = async () => {
@@ -41,12 +39,12 @@ export function SubscriptionCard({ isPro, showSuccess }: SubscriptionCardProps) 
       if (data.success && data.data.checkoutUrl) {
         window.location.href = data.data.checkoutUrl;
       } else {
-        console.error("Failed to create checkout:", data.error);
-        toast.error(data.error?.message || "Failed to start checkout. Please try again.");
+        console.error("Checkout failed:", data);
+        toast.error(data.error?.message || "Failed to start checkout");
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      toast.error("Something went wrong. Please try again.");
+      toast.error("Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -56,101 +54,104 @@ export function SubscriptionCard({ isPro, showSuccess }: SubscriptionCardProps) 
     window.open("https://app.lemonsqueezy.com/my-orders", "_blank");
   };
 
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
+  if (isPro) {
+    return (
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 rounded-lg bg-amber-500/10">
+            <Crown className="h-5 w-5 text-amber-500" />
+          </div>
           <div>
-            <CardTitle className="flex items-center gap-2">
-              Subscription
-              {isPro && <Crown className="h-5 w-5 text-yellow-500" />}
-            </CardTitle>
-            <CardDescription>
-              {isPro ? "You're on the Pro plan" : "Upgrade to unlock all features"}
-            </CardDescription>
+            <h2 className="text-lg font-medium text-zinc-100">Pro Plan</h2>
+            <p className="text-sm text-zinc-500">You have full access</p>
           </div>
-          <Badge variant={isPro ? "default" : "outline"} className="text-lg px-4 py-1">
-            {isPro ? "Pro" : "Free"}
-          </Badge>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {showSuccess && (
-          <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-4 text-green-800 dark:text-green-200">
-            <p className="font-medium">Welcome to Pro!</p>
-            <p className="text-sm">Your subscription is now active. Enjoy unlimited access!</p>
-          </div>
-        )}
+        
+        <div className="space-y-3 mb-6">
+          {PRO_FEATURES.map((feature) => (
+            <div key={feature} className="flex items-center gap-3">
+              <Check className="h-4 w-4 text-emerald-500" />
+              <span className="text-sm text-zinc-300">{feature}</span>
+            </div>
+          ))}
+        </div>
+        
+        <Button 
+          variant="outline" 
+          onClick={handleManage}
+          className="w-full border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-100"
+        >
+          <ExternalLink className="h-4 w-4 mr-2" />
+          Manage Subscription
+        </Button>
+      </div>
+    );
+  }
 
-        {isPro ? (
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-medium mb-2">Your Pro benefits:</h4>
-              <ul className="space-y-2">
-                {PRO_FEATURES.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2 text-sm">
-                    <Check className="h-4 w-4 text-green-500" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
+  return (
+    <div className="grid md:grid-cols-2 gap-4">
+      {/* Free Plan */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
+        <h3 className="text-lg font-medium text-zinc-100 mb-1">Free</h3>
+        <p className="text-2xl font-bold text-zinc-100 mb-4">
+          $0<span className="text-sm font-normal text-zinc-500">/month</span>
+        </p>
+        
+        <div className="space-y-3 mb-6">
+          {FREE_FEATURES.map((feature) => (
+            <div key={feature} className="flex items-center gap-3">
+              <Check className="h-4 w-4 text-zinc-500" />
+              <span className="text-sm text-zinc-400">{feature}</span>
             </div>
-            <Button variant="outline" onClick={handleManage}>
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Manage Subscription
-            </Button>
-          </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Free Plan */}
-            <div className="border rounded-lg p-4 bg-muted/30">
-              <h4 className="font-medium mb-3">Free Plan</h4>
-              <ul className="space-y-2">
-                {FREE_FEATURES.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Check className="h-4 w-4" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          ))}
+        </div>
+        
+        <div className="text-center text-sm text-zinc-500 py-2">
+          Current plan
+        </div>
+      </div>
 
-            {/* Pro Plan */}
-            <div className="border-2 border-primary rounded-lg p-4 relative">
-              <Badge className="absolute -top-2 right-4">Recommended</Badge>
-              <h4 className="font-medium mb-1">Pro Plan</h4>
-              <p className="text-2xl font-bold mb-3">
-                $29<span className="text-sm font-normal text-muted-foreground">/month</span>
-              </p>
-              <ul className="space-y-2 mb-4">
-                {PRO_FEATURES.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2 text-sm">
-                    <Check className="h-4 w-4 text-green-500" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Button 
-                className="w-full" 
-                onClick={handleUpgrade}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  <>
-                    <Crown className="h-4 w-4 mr-2" />
-                    Upgrade to Pro
-                  </>
-                )}
-              </Button>
+      {/* Pro Plan */}
+      <div className="rounded-xl border-2 border-amber-500/50 bg-zinc-900/50 p-6 relative">
+        <div className="absolute -top-3 left-4 px-2 py-0.5 bg-amber-500 text-zinc-900 text-xs font-bold rounded">
+          RECOMMENDED
+        </div>
+        
+        <div className="flex items-center gap-2 mb-1">
+          <h3 className="text-lg font-medium text-zinc-100">Pro</h3>
+          <Crown className="h-4 w-4 text-amber-500" />
+        </div>
+        <p className="text-2xl font-bold text-zinc-100 mb-4">
+          $29<span className="text-sm font-normal text-zinc-500">/month</span>
+        </p>
+        
+        <div className="space-y-3 mb-6">
+          {PRO_FEATURES.map((feature) => (
+            <div key={feature} className="flex items-center gap-3">
+              <Check className="h-4 w-4 text-emerald-500" />
+              <span className="text-sm text-zinc-300">{feature}</span>
             </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          ))}
+        </div>
+        
+        <Button 
+          onClick={handleUpgrade}
+          disabled={isLoading}
+          className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 font-medium"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Loading...
+            </>
+          ) : (
+            <>
+              <Crown className="h-4 w-4 mr-2" />
+              Upgrade to Pro
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
   );
 }
