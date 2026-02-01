@@ -30,34 +30,11 @@ export function ResumeUploader({ jobId, canUpload, currentCount, limit, compact 
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const remaining = limit - currentCount - files.length;
-    const newFiles = acceptedFiles.slice(0, remaining).map((file) => ({
-      file,
-      id: Math.random().toString(36).substring(7),
-      status: "pending" as const,
-      progress: 0,
-    }));
-    setFiles((prev) => [...prev, ...newFiles]);
-  }, [limit, currentCount, files.length]);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { "application/pdf": [".pdf"] },
-    disabled: !canUpload || isUploading,
-    maxSize: 10 * 1024 * 1024, // 10MB
-  });
-
-  const removeFile = (id: string) => {
-    setFiles((prev) => prev.filter((f) => f.id !== id));
-  };
-
-  const uploadFiles = async () => {
-    if (files.length === 0) return;
+  const uploadFiles = useCallback(async (filesToUpload: UploadFile[]) => {
+    if (filesToUpload.length === 0) return;
     setIsUploading(true);
 
-    for (let i = 0; i < files.length; i++) {
-      const uploadFile = files[i];
+    for (const uploadFile of filesToUpload) {
       if (uploadFile.status !== "pending") continue;
 
       // Update status to uploading
@@ -111,7 +88,22 @@ export function ResumeUploader({ jobId, canUpload, currentCount, limit, compact 
     setIsUploading(false);
     router.refresh();
     toast.success("Resumes uploaded and processed!");
-  };
+  }, [jobId, router]);
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const remaining = limit - currentCount - files.length;
+    const filesToAdd = acceptedFiles.slice(0, remaining).map((file) => ({
+      file,
+      id: Math.random().toString(36).substring(7),
+      status: "pending" as const,
+      progress: 0,
+    }));
+    
+    setFiles((prev) => [...prev, ...filesToAdd]);
+    
+    // Trigger upload immediately for new files
+    uploadFiles(filesToAdd);
+  }, [limit, currentCount, files.length, uploadFiles]);
 
   const pendingCount = files.filter((f) => f.status === "pending").length;
   const completedCount = files.filter((f) => f.status === "complete").length;
@@ -184,20 +176,11 @@ export function ResumeUploader({ jobId, canUpload, currentCount, limit, compact 
             </div>
           ))}
 
-          {pendingCount > 0 && (
-            <Button onClick={uploadFiles} disabled={isUploading} className="w-full">
-              {isUploading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload {pendingCount} file{pendingCount > 1 ? "s" : ""}
-                </>
-              )}
-            </Button>
+          {pendingCount > 0 && isUploading && (
+            <div className="flex items-center justify-center p-2 text-sm text-muted-foreground bg-secondary/50 rounded-md">
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Uploading {pendingCount} file{pendingCount > 1 ? "s" : ""}...
+            </div>
           )}
 
           {completedCount > 0 && pendingCount === 0 && !isUploading && (
