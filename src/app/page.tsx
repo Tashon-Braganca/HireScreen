@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, Shield, Zap, Search, Users } from "lucide-react";
+import { ArrowRight, Check, Shield, Zap, Search } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { TypewriterQuery } from "@/components/landing/typewriter-query";
 
@@ -12,6 +12,7 @@ export default function Home() {
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-amber-500/20">
+// eslint-disable-next-line @next/next/no-img-element
               <img src="/logo.svg" alt="HireScreen" className="w-full h-full object-cover" />
             </div>
             <span className="font-bold text-xl tracking-tight">HireScreen</span>
@@ -304,6 +305,7 @@ export default function Home() {
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2 font-bold">
             <div className="w-7 h-7 rounded-lg overflow-hidden">
+// eslint-disable-next-line @next/next/no-img-element
               <img src="/logo.svg" alt="Logo" className="w-full h-full object-cover" />
             </div>
             HireScreen

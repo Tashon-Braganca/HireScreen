@@ -14,7 +14,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { 
-  FileText, 
   LogOut, 
   Settings, 
   User as UserIcon, 
@@ -77,6 +76,7 @@ export function DashboardHeader({ user, profile }: DashboardHeaderProps) {
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2.5 group">
           <div className="relative w-8 h-8 rounded-lg overflow-hidden group-hover:scale-105 transition-transform">
+// eslint-disable-next-line @next/next/no-img-element
             <img src="/logo.svg" alt="HireScreen" className="w-full h-full object-cover" />
           </div>
           <span className="font-bold text-lg text-zinc-100">HireScreen</span>
