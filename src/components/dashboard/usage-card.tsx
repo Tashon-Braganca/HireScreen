@@ -1,7 +1,10 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface UsageCardProps {
   title: string;
@@ -12,6 +15,25 @@ interface UsageCardProps {
 }
 
 export function UsageCard({ title, current, limit, showUpgrade }: UsageCardProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleUpgrade = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/billing/checkout", { method: "POST" });
+      const data = await res.json();
+      if (data.success && data.data.checkoutUrl) {
+        window.location.href = data.data.checkoutUrl;
+      } else {
+        toast.error(data.error?.message || "Failed to start checkout");
+      }
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -34,12 +56,24 @@ export function UsageCard({ title, current, limit, showUpgrade }: UsageCardProps
           )}
         </div>
         {showUpgrade && (
-          <Link href="/settings?tab=billing">
-            <Button variant="link" className="p-0 h-auto text-sm">
-              Upgrade to Pro
-              <ArrowUpRight className="h-3 w-3 ml-1" />
-            </Button>
-          </Link>
+          <Button 
+            variant="link" 
+            className="p-0 h-auto text-sm text-primary"
+            onClick={handleUpgrade}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              <>
+                Upgrade to Pro
+                <ArrowUpRight className="h-3 w-3 ml-1" />
+              </>
+            )}
+          </Button>
         )}
       </CardContent>
     </Card>

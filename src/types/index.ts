@@ -14,11 +14,14 @@ export interface Profile {
   updated_at: string;
 }
 
+export type JobType = 'job' | 'internship';
+
 export interface Job {
   id: string;
   user_id: string;
   title: string;
   description: string | null;
+  type: JobType;
   status: 'active' | 'archived';
   resume_count: number;
   created_at: string;

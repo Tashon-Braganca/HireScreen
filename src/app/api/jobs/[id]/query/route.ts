@@ -28,7 +28,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // Verify job exists and belongs to user
     const { data: job } = await supabase
       .from("jobs")
-      .select("id, user_id")
+      .select("id, user_id, type")
       .eq("id", jobId)
       .eq("user_id", user.id)
       .single();
@@ -170,8 +170,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       page: chunk.page_number,
     }));
 
-    // Generate answer
-    const { answer, tokensUsed } = await generateAnswer(question.trim(), contexts);
+    // Generate answer with job type context
+    const jobType = (job.type as "job" | "internship") || "job";
+    const { answer, tokensUsed } = await generateAnswer(question.trim(), contexts, jobType);
 
     // Build sources array
     const sources = (similarChunks || []).slice(0, 5).map((chunk: {

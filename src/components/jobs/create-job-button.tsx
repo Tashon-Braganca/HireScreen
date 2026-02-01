@@ -16,18 +16,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, Loader2, Briefcase, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
+import type { JobType } from "@/types";
 
 interface CreateJobButtonProps {
   disabled?: boolean;
+  defaultType?: JobType;
 }
 
-export function CreateJobButton({ disabled }: CreateJobButtonProps) {
+export function CreateJobButton({ disabled, defaultType = "job" }: CreateJobButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [type, setType] = useState<JobType>(defaultType);
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -44,6 +54,7 @@ export function CreateJobButton({ disabled }: CreateJobButtonProps) {
         user_id: user?.id,
         title: title.trim(),
         description: description.trim() || null,
+        type: type,
       })
       .select()
       .single();
@@ -54,10 +65,7 @@ export function CreateJobButton({ disabled }: CreateJobButtonProps) {
       return;
     }
 
-    // Update jobs_created count
-    await supabase.rpc("increment_jobs_created", { user_id: user?.id });
-
-    toast.success("Job created!");
+    toast.success(`${type === "job" ? "Job" : "Internship"} created!`);
     setOpen(false);
     setTitle("");
     setDescription("");
@@ -70,7 +78,7 @@ export function CreateJobButton({ disabled }: CreateJobButtonProps) {
     return (
       <Button disabled>
         <Plus className="h-4 w-4 mr-2" />
-        New Job (Limit Reached)
+        New {defaultType === "job" ? "Job" : "Internship"} (Limit Reached)
       </Button>
     );
   }
@@ -80,23 +88,50 @@ export function CreateJobButton({ disabled }: CreateJobButtonProps) {
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
-          New Job
+          New {defaultType === "job" ? "Job" : "Internship"}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <form onSubmit={handleCreate}>
           <DialogHeader>
-            <DialogTitle>Create a new job</DialogTitle>
+            <DialogTitle>Create a new position</DialogTitle>
             <DialogDescription>
-              Organize your resume screening by job or role
+              Organize your resume screening by role
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Job Title *</Label>
+              <Label htmlFor="type">Type *</Label>
+              <Select value={type} onValueChange={(v) => setType(v as JobType)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="job">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="h-4 w-4" />
+                      Full-time Job
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="internship">
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="h-4 w-4" />
+                      Internship
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {type === "job" 
+                  ? "AI will focus on experience, skills, and job stability" 
+                  : "AI will focus on potential, coursework, and projects"}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
               <Input
                 id="title"
-                placeholder="e.g., Senior React Developer"
+                placeholder={type === "job" ? "e.g., Senior React Developer" : "e.g., Marketing Intern"}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -119,7 +154,7 @@ export function CreateJobButton({ disabled }: CreateJobButtonProps) {
             </Button>
             <Button type="submit" disabled={loading || !title.trim()}>
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Create Job
+              Create {type === "job" ? "Job" : "Internship"}
             </Button>
           </DialogFooter>
         </form>

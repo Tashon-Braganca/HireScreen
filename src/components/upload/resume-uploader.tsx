@@ -14,6 +14,7 @@ interface ResumeUploaderProps {
   canUpload: boolean;
   currentCount: number;
   limit: number;
+  compact?: boolean;
 }
 
 interface UploadFile {
@@ -24,7 +25,7 @@ interface UploadFile {
   error?: string;
 }
 
-export function ResumeUploader({ jobId, canUpload, currentCount, limit }: ResumeUploaderProps) {
+export function ResumeUploader({ jobId, canUpload, currentCount, limit, compact = false }: ResumeUploaderProps) {
   const router = useRouter();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -116,24 +117,26 @@ export function ResumeUploader({ jobId, canUpload, currentCount, limit }: Resume
   const completedCount = files.filter((f) => f.status === "complete").length;
 
   return (
-    <div className="space-y-4">
+    <div className={compact ? "space-y-2" : "space-y-4"}>
       <Card
         {...getRootProps()}
         className={`border-2 border-dashed cursor-pointer transition-colors ${
           isDragActive ? "border-primary bg-primary/5" : "hover:border-primary/50"
         } ${!canUpload ? "opacity-50 cursor-not-allowed" : ""}`}
       >
-        <CardContent className="py-12 text-center">
+        <CardContent className={compact ? "py-4 text-center" : "py-12 text-center"}>
           <input {...getInputProps()} />
-          <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <p className="font-medium mb-1">
-            {isDragActive ? "Drop PDFs here" : "Drag & drop PDF resumes"}
+          <Upload className={compact ? "h-6 w-6 mx-auto text-muted-foreground mb-2" : "h-12 w-12 mx-auto text-muted-foreground mb-4"} />
+          <p className={compact ? "text-sm font-medium" : "font-medium mb-1"}>
+            {isDragActive ? "Drop PDFs here" : compact ? "Drop PDFs" : "Drag & drop PDF resumes"}
           </p>
-          <p className="text-sm text-muted-foreground">
-            or click to browse (max 10MB each)
-          </p>
-          <p className="text-xs text-muted-foreground mt-2">
-            {currentCount} / {limit} resumes used
+          {!compact && (
+            <p className="text-sm text-muted-foreground">
+              or click to browse (max 10MB each)
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground mt-1">
+            {currentCount} / {limit} resumes
           </p>
         </CardContent>
       </Card>

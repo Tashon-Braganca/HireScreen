@@ -71,16 +71,27 @@ export function DashboardHeader({ user, profile }: DashboardHeaderProps) {
           <ThemeToggle />
 
           {profile?.subscription_status === "free" && (
-            <Link href="/settings?tab=billing">
-              <Button 
-                size="sm" 
-                variant="outline"
-                className="hidden sm:flex border-primary/30 hover:border-primary/60 hover:bg-primary/5 transition-all duration-200"
-              >
-                <CreditCard className="h-4 w-4 mr-2" />
-                Upgrade to Pro
-              </Button>
-            </Link>
+            <Button 
+              size="sm" 
+              variant="outline"
+              className="hidden sm:flex border-primary/30 hover:border-primary/60 hover:bg-primary/5 transition-all duration-200"
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/billing/checkout", { method: "POST" });
+                  const data = await res.json();
+                  if (data.success && data.data.checkoutUrl) {
+                    window.location.href = data.data.checkoutUrl;
+                  } else {
+                    toast.error(data.error?.message || "Failed to start checkout");
+                  }
+                } catch {
+                  toast.error("Something went wrong");
+                }
+              }}
+            >
+              <CreditCard className="h-4 w-4 mr-2" />
+              Upgrade to Pro
+            </Button>
           )}
           
           <DropdownMenu>
@@ -122,7 +133,7 @@ export function DashboardHeader({ user, profile }: DashboardHeaderProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/settings" className="cursor-pointer">
+                <Link href="/settings?tab=danger" className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </Link>

@@ -2,9 +2,10 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { JobHeader } from "@/components/jobs/job-header";
 import { ResumeUploader } from "@/components/upload/resume-uploader";
-import { ResumeList } from "@/components/jobs/resume-list";
-import { QueryInterface } from "@/components/query/query-interface";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CandidateList } from "@/components/jobs/candidate-list";
+import { ChatPane } from "@/components/query/chat-pane";
+import { Badge } from "@/components/ui/badge";
+import { Briefcase, GraduationCap } from "lucide-react";
 
 interface JobPageProps {
   params: Promise<{ id: string }>;
@@ -37,7 +38,7 @@ export default async function JobPage({ params }: JobPageProps) {
     .select("*")
     .eq("job_id", id)
     .order("created_at", { ascending: false })
-    .limit(20);
+    .limit(50);
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -48,61 +49,73 @@ export default async function JobPage({ params }: JobPageProps) {
   const isPro = profile?.subscription_status === "pro";
   const resumeLimit = isPro ? 100 : 10;
   const canUpload = (documents?.length || 0) < resumeLimit;
-  const hasResumes = (documents?.length || 0) > 0;
-  const readyResumes = documents?.filter(d => d.status === "ready").length || 0;
+  const readyResumes = documents?.filter(d => d.status === "ready") || [];
+  const hasReadyResumes = readyResumes.length > 0;
+  const jobType = (job.type as "job" | "internship") || "job";
 
   return (
-    <div className="space-y-6">
-      <JobHeader job={job} />
+    <div className="h-[calc(100vh-5rem)] flex flex-col">
+      {/* Header */}
+      <div className="flex-shrink-0 pb-4 border-b">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <JobHeader job={job} />
+            <Badge variant="outline" className="flex items-center gap-1">
+              {jobType === "internship" ? (
+                <>
+                  <GraduationCap className="h-3 w-3" />
+                  Internship
+                </>
+              ) : (
+                <>
+                  <Briefcase className="h-3 w-3" />
+                  Job
+                </>
+              )}
+            </Badge>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {readyResumes.length} / {resumeLimit} resumes
+          </div>
+        </div>
+        {jobType === "internship" && (
+          <p className="text-xs text-muted-foreground mt-2">
+            AI is optimized for early-career screening: focusing on potential, coursework, and projects
+          </p>
+        )}
+      </div>
 
-      <Tabs defaultValue={hasResumes ? "query" : "upload"} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="query" disabled={readyResumes === 0}>
-            Ask Questions {readyResumes > 0 && `(${readyResumes} resumes)`}
-          </TabsTrigger>
-          <TabsTrigger value="upload">
-            Upload Resumes
-          </TabsTrigger>
-          <TabsTrigger value="history">
-            History ({queries?.length || 0})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="query" className="space-y-4">
-          {readyResumes > 0 ? (
-            <QueryInterface 
+      {/* Split Pane Layout */}
+      <div className="flex-1 flex gap-4 pt-4 min-h-0">
+        {/* Left Pane: Candidates */}
+        <div className="w-80 flex-shrink-0 flex flex-col border-r pr-4 overflow-hidden">
+          <div className="flex-shrink-0 mb-4">
+            <h3 className="font-semibold mb-2">Candidates ({documents?.length || 0})</h3>
+            <ResumeUploader 
               jobId={id} 
-              queries={queries || []}
-              isPro={isPro}
-              queriesUsed={profile?.queries_used || 0}
+              canUpload={canUpload}
+              currentCount={documents?.length || 0}
+              limit={resumeLimit}
+              compact
             />
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              Upload and process some resumes first to start asking questions.
-            </div>
-          )}
-        </TabsContent>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <CandidateList documents={documents || []} jobId={id} />
+          </div>
+        </div>
 
-        <TabsContent value="upload" className="space-y-4">
-          <ResumeUploader 
-            jobId={id} 
-            canUpload={canUpload}
-            currentCount={documents?.length || 0}
-            limit={resumeLimit}
-          />
-          <ResumeList documents={documents || []} jobId={id} />
-        </TabsContent>
-
-        <TabsContent value="history" className="space-y-4">
-          <QueryInterface 
-            jobId={id} 
+        {/* Right Pane: Chat */}
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <ChatPane 
+            jobId={id}
+            hasResumes={hasReadyResumes}
             queries={queries || []}
             isPro={isPro}
             queriesUsed={profile?.queries_used || 0}
-            showHistoryOnly
+            jobType={jobType}
           />
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   );
 }

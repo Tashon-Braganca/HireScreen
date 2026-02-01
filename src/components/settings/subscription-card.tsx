@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { Check, Crown, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 interface SubscriptionCardProps {
   isPro: boolean;
   subscriptionId: string | null;
+  showSuccess?: boolean;
 }
 
 const PRO_FEATURES = [
@@ -26,10 +27,8 @@ const FREE_FEATURES = [
   "20 queries per month",
 ];
 
-export function SubscriptionCard({ isPro }: SubscriptionCardProps) {
+export function SubscriptionCard({ isPro, showSuccess }: SubscriptionCardProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const searchParams = useSearchParams();
-  const success = searchParams.get("success");
 
   const handleUpgrade = async () => {
     setIsLoading(true);
@@ -43,18 +42,17 @@ export function SubscriptionCard({ isPro }: SubscriptionCardProps) {
         window.location.href = data.data.checkoutUrl;
       } else {
         console.error("Failed to create checkout:", data.error);
-        alert("Failed to start checkout. Please try again.");
+        toast.error(data.error?.message || "Failed to start checkout. Please try again.");
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      alert("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleManage = () => {
-    // Lemon Squeezy customer portal
     window.open("https://app.lemonsqueezy.com/my-orders", "_blank");
   };
 
@@ -77,7 +75,7 @@ export function SubscriptionCard({ isPro }: SubscriptionCardProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {success === "true" && (
+        {showSuccess && (
           <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-4 text-green-800 dark:text-green-200">
             <p className="font-medium">Welcome to Pro!</p>
             <p className="text-sm">Your subscription is now active. Enjoy unlimited access!</p>
