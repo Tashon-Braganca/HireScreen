@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, Shield, Zap, Search, Users, FileText } from "lucide-react";
+import { ArrowRight, Check, Shield, Zap, Search, Users } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { TypewriterQuery } from "@/components/landing/typewriter-query";
 
@@ -216,14 +216,14 @@ export default function Home() {
                 <div className="text-emerald-500 font-bold text-lg">✓</div>
                 <div>
                   <h3 className="font-semibold text-emerald-400">Concept Matching</h3>
-                  <p className="text-sm text-zinc-500 mt-1">Finds "Leadership" skills from project descriptions.</p>
+                  <p className="text-sm text-zinc-500 mt-1">Finds &quot;Leadership&quot; skills from project descriptions.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-5 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
                 <div className="text-emerald-500 font-bold text-lg">✓</div>
                 <div>
                   <h3 className="font-semibold text-emerald-400">Instant Answers</h3>
-                  <p className="text-sm text-zinc-500 mt-1">"Who worked at a startup?" → Instant ranked list.</p>
+                  <p className="text-sm text-zinc-500 mt-1">&quot;Who worked at a startup?&quot; → Instant ranked list.</p>
                 </div>
               </div>
             </div>

@@ -8,7 +8,6 @@ import {
   Sparkles,
   Users,
   FileText,
-  ArrowRight,
   Zap
 } from "lucide-react";
 
@@ -100,6 +99,7 @@ export default async function DashboardPage() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function PositionCard({ job }: { job: any }) {
   const isInternship = job.type === "internship";
   const resumeCount = job.resume_count || 0;

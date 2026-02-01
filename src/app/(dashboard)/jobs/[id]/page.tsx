@@ -5,7 +5,7 @@ import { CandidateList } from "@/components/jobs/candidate-list";
 import { ChatPane } from "@/components/query/chat-pane";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Briefcase, GraduationCap, Trash2 } from "lucide-react";
+import { ArrowLeft, Briefcase, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { DeleteJobButton } from "@/components/jobs/delete-job-button";
 
