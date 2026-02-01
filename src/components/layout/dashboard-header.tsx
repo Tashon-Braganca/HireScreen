@@ -76,8 +76,8 @@ export function DashboardHeader({ user, profile }: DashboardHeaderProps) {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2.5 group">
-          <div className="p-1.5 rounded-lg bg-amber-500/10 group-hover:bg-amber-500/20 transition-colors">
-            <FileText className="h-5 w-5 text-amber-500" />
+          <div className="relative w-8 h-8 rounded-lg overflow-hidden group-hover:scale-105 transition-transform">
+            <img src="/logo.svg" alt="HireScreen" className="w-full h-full object-cover" />
           </div>
           <span className="font-bold text-lg text-zinc-100">HireScreen</span>
         </Link>

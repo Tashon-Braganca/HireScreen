@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   title: "HireScreen - AI-Powered Resume Screening",
   description: "Upload resumes, ask questions, get instant answers. Screen candidates 10x faster with AI.",
   keywords: ["resume screening", "AI recruiting", "hiring tool", "resume AI", "candidate screening"],
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
