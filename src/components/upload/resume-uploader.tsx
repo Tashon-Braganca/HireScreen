@@ -105,6 +105,17 @@ export function ResumeUploader({ jobId, canUpload, currentCount, limit, compact 
     uploadFiles(filesToAdd);
   }, [limit, currentCount, files.length, uploadFiles]);
 
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { "application/pdf": [".pdf"] },
+    disabled: !canUpload || isUploading,
+    maxSize: 10 * 1024 * 1024, // 10MB
+  });
+
+  const removeFile = (id: string) => {
+    setFiles((prev) => prev.filter((f) => f.id !== id));
+  };
+
   const pendingCount = files.filter((f) => f.status === "pending").length;
   const completedCount = files.filter((f) => f.status === "complete").length;
 
