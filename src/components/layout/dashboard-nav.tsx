@@ -3,16 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Briefcase, Settings, CreditCard, LayoutDashboard, PlusCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Settings, CreditCard, LayoutDashboard } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 const navItems = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-];
-
-const secondaryItems = [
-  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function DashboardNav() {

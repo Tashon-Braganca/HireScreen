@@ -48,7 +48,7 @@ export default function Home() {
           </h1>
           
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            Upload 100+ PDFs. Ask "Who has 5 years of React experience?" <br className="hidden md:block" />
+            Upload 100+ PDFs. Ask &quot;Who has 5 years of React experience?&quot; <br className="hidden md:block" />
             Get a ranked list of top candidates in seconds.
           </p>
           
@@ -224,7 +224,7 @@ export default function Home() {
                   <div className="mt-1 text-green-500 font-bold">✅</div>
                   <div>
                     <h3 className="font-semibold text-green-700 dark:text-green-400">Concept Matching</h3>
-                    <p className="text-sm text-muted-foreground">Finds "Leadership" skills from project descriptions.</p>
+                    <p className="text-sm text-muted-foreground">Finds &quot;Leadership&quot; skills from project descriptions.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4 p-4 rounded-xl bg-green-500/5 border border-green-500/20 shadow-sm">
