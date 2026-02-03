@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Loader2, CheckCircle, AlertCircle, Trash2, User } from "lucide-react";
+import { Loader2, CheckCircle, AlertCircle, Trash2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";

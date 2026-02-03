@@ -36,7 +36,6 @@ const INTERNSHIP_EXAMPLES = [
 export function ChatPane({
   jobId,
   hasResumes,
-  queries,
   isPro,
   queriesUsed,
   jobType,

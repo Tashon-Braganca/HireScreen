@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import { Progress } from "@/components/ui/progress";
-import { Upload, FileText, X, Loader2, CheckCircle, CloudUpload } from "lucide-react";
+import { FileText, X, Loader2, CheckCircle, CloudUpload } from "lucide-react";
 import { toast } from "sonner";
 
 interface ResumeUploaderProps {

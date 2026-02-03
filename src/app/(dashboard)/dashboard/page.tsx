@@ -145,12 +145,6 @@ function StatCard({
   trend: string;
   color: 'primary' | 'blue' | 'purple';
 }) {
-  const colorClasses = {
-    primary: 'bg-primary/10 text-primary border-primary/20',
-    blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-    purple: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-  };
-
   const iconBg = {
     primary: 'bg-primary/20',
     blue: 'bg-blue-500/20',
