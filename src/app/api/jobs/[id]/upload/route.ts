@@ -278,9 +278,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const chunkRecords = chunks.map((chunk, i) => ({
       document_id: documentId,
       job_id: jobId,
-      chunk_index: chunk.chunkIndex,
       content: chunk.content,
-      page_number: chunk.pageNumber,
+      page_number: chunk.pageNumber || 1,
       embedding: `[${embeddings[i].join(",")}]`, // pgvector format
     }));
 
