@@ -299,13 +299,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Update document status to ready
+    // Note: Only include columns that exist in the database table
     console.log(`[PDF] Updating document to ready status...`);
     const { error: updateError } = await adminClient
       .from("documents")
       .update({
         status: "ready",
-        text_content: cleanedText.slice(0, 10000),
-        page_count: pageCount,
       })
       .eq("id", documentId);
 
