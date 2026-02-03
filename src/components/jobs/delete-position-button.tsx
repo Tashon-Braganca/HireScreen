@@ -58,7 +58,7 @@ export function DeletePositionButton({ jobId, jobTitle }: DeletePositionButtonPr
       </AlertDialogTrigger>
       <AlertDialogContent className="bg-card border-border">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-foreground">Delete "{jobTitle}"?</AlertDialogTitle>
+          <AlertDialogTitle className="text-foreground">Delete &ldquo;{jobTitle}&rdquo;?</AlertDialogTitle>
           <AlertDialogDescription className="text-muted-foreground">
             This will permanently delete the position and all uploaded resumes. This action cannot be undone.
           </AlertDialogDescription>
