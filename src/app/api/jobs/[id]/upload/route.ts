@@ -182,24 +182,17 @@ async function processDocument(
     let pageCount = 1;
 
     try {
-      // Parse PDF using dynamic import with better error handling
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pdfParseModule = await import("pdf-parse") as any;
-      const pdfParse = pdfParseModule.default || pdfParseModule;
+      // Import pdf-parse (v1.1.1 for serverless compatibility)
+      const pdfParse = (await import("pdf-parse")).default;
       
-      // pdf-parse options for better compatibility
-      const options = {
-        max: 0, // no page limit
-      };
-      
-      const pdfData = await pdfParse(buffer, options);
+      const pdfData = await pdfParse(buffer);
       rawText = pdfData.text || "";
       pageCount = pdfData.numpages || 1;
+      
+      console.log(`PDF parsed successfully: ${pageCount} pages, ${rawText.length} chars`);
     } catch (pdfError) {
       console.error("PDF parsing error:", pdfError);
-      // If pdf-parse fails, try to extract basic info
-      // Still mark as failed if we can't get text
-      throw new Error("Failed to parse PDF. Please ensure the file is a valid PDF.");
+      throw new Error(`Failed to parse PDF: ${pdfError instanceof Error ? pdfError.message : "Unknown error"}`);
     }
 
     if (!rawText || rawText.trim().length === 0) {
