@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { createEmbeddings } from "@/lib/openai/embeddings";
 import { chunkText, cleanText } from "@/lib/pdf/chunking";
+import { parsePDF } from "@/lib/pdf/parser";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -178,22 +179,13 @@ async function processDocument(
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    let rawText = "";
-    let pageCount = 1;
-
-    try {
-      // Import pdf-parse (v1.1.1 for serverless compatibility)
-      const pdfParse = (await import("pdf-parse")).default;
-      
-      const pdfData = await pdfParse(buffer);
-      rawText = pdfData.text || "";
-      pageCount = pdfData.numpages || 1;
-      
-      console.log(`PDF parsed successfully: ${pageCount} pages, ${rawText.length} chars`);
-    } catch (pdfError) {
-      console.error("PDF parsing error:", pdfError);
-      throw new Error(`Failed to parse PDF: ${pdfError instanceof Error ? pdfError.message : "Unknown error"}`);
-    }
+    // Parse PDF using pdfjs-dist (serverless compatible)
+    console.log(`Parsing PDF: ${file.name}, size: ${file.size} bytes`);
+    const pdfResult = await parsePDF(buffer);
+    const rawText = pdfResult.text;
+    const pageCount = pdfResult.numPages;
+    
+    console.log(`PDF parsed successfully: ${pageCount} pages, ${rawText.length} chars`);
 
     if (!rawText || rawText.trim().length === 0) {
       throw new Error("Could not extract text from PDF. The PDF might be image-based.");
