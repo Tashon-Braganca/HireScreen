@@ -275,11 +275,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Prepare chunk records - Format embedding as array string for pgvector
+    // Note: Only include columns that exist in the database table
     const chunkRecords = chunks.map((chunk, i) => ({
       document_id: documentId,
       job_id: jobId,
       content: chunk.content,
-      page_number: chunk.pageNumber || 1,
       embedding: `[${embeddings[i].join(",")}]`, // pgvector format
     }));
 
