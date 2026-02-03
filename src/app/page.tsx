@@ -41,15 +41,15 @@ export default function Home() {
         
         <div className="container mx-auto px-6 text-center">
           {/* Hero Text - 3 Lines */}
-          <div className="max-w-4xl mx-auto space-y-4 mb-12">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-zinc-100">
+          <div className="max-w-4xl mx-auto mb-12">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-zinc-100 mb-4">
               Upload 100+ resumes.
             </h1>
-            <div className="text-4xl md:text-6xl font-bold tracking-tight">
+            <div className="text-4xl md:text-6xl font-bold tracking-tight h-[1.2em] overflow-hidden">
               <span className="text-zinc-400">Ask </span>
               <TypewriterQuery />
             </div>
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-zinc-100">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-zinc-100 mt-4">
               Get ranked candidates in seconds.
             </h2>
           </div>

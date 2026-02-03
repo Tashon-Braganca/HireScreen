@@ -87,19 +87,19 @@ export default async function JobPage({ params }: JobPageProps) {
                   )}
                 </div>
                 <div>
-                  <h1 className="text-lg font-semibold text-foreground">{job.title}</h1>
+                  <h1 className="text-lg font-semibold text-foreground leading-tight">{job.title}</h1>
                   <p className="text-xs text-muted-foreground">
-                    {isInternship ? 'Internship' : 'Job'} • {readyResumes.length} candidates ready
+                    {isInternship ? 'Internship' : 'Job'} &bull; {readyResumes.length} candidates ready
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="px-3 py-1.5 rounded-lg bg-muted/50 text-sm">
-                <span className="text-muted-foreground">{documents?.length || 0}</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50 text-sm">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium text-foreground">{documents?.length || 0}</span>
                 <span className="text-muted-foreground/60">/{resumeLimit}</span>
-                <span className="text-muted-foreground ml-1">resumes</span>
               </div>
               <DeleteJobButton jobId={job.id} />
             </div>

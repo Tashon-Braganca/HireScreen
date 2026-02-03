@@ -1,7 +1,4 @@
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
-
-// Disable worker for serverless environment
-GlobalWorkerOptions.workerSrc = "";
+import { extractText } from "unpdf";
 
 interface PDFParseResult {
   text: string;
@@ -10,48 +7,22 @@ interface PDFParseResult {
 
 /**
  * Parse PDF buffer and extract text content
- * Works in serverless environments (Vercel, AWS Lambda, etc.)
+ * Uses unpdf - specifically built for serverless/edge environments
  */
 export async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
   try {
-    // Convert Buffer to Uint8Array for pdfjs-dist
+    // Convert Buffer to Uint8Array
     const data = new Uint8Array(buffer);
     
-    // Load the PDF document
-    const loadingTask = getDocument({
-      data,
-      useSystemFonts: true,
-      disableFontFace: true,
-    });
+    // Extract text using unpdf
+    const result = await extractText(data, { mergePages: true });
     
-    const pdf = await loadingTask.promise;
-    const numPages = pdf.numPages;
-    
-    // Extract text from all pages
-    const textParts: string[] = [];
-    
-    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      
-      // Extract text items and join them
-      const pageText = textContent.items
-        .map((item) => {
-          if ("str" in item) {
-            return item.str;
-          }
-          return "";
-        })
-        .join(" ");
-      
-      textParts.push(pageText);
-    }
-    
-    const fullText = textParts.join("\n\n");
+    // Get full text - when mergePages is true, result.text is a string
+    const text = result.text as string;
     
     return {
-      text: fullText,
-      numPages,
+      text,
+      numPages: result.totalPages,
     };
   } catch (error) {
     console.error("PDF parsing error:", error);

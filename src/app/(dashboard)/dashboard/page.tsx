@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { CreateJobButton } from "@/components/jobs/create-job-button";
+import { DeletePositionButton } from "@/components/jobs/delete-position-button";
 import Link from "next/link";
 import { 
   Briefcase, 
@@ -180,65 +181,67 @@ function PositionCard({ job, index }: { job: any; index: number }) {
   });
   
   return (
-    <Link href={`/jobs/${job.id}`}>
-      <div 
-        className="group relative flex items-center gap-5 p-5 rounded-2xl border border-border bg-card/80 backdrop-blur-sm hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 cursor-pointer overflow-hidden"
-        style={{ animationDelay: `${index * 50}ms` }}
-      >
-        {/* Gradient accent line */}
-        <div className={`absolute left-0 top-0 bottom-0 w-1 ${isInternship ? 'bg-gradient-to-b from-blue-400 to-blue-600' : 'bg-gradient-to-b from-primary to-orange-500'}`} />
-        
-        {/* Hover gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {/* Type Icon */}
-        <div className={`relative flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
-          isInternship 
-            ? 'bg-gradient-to-br from-blue-500/20 to-blue-600/10 text-blue-500' 
-            : 'bg-gradient-to-br from-primary/20 to-orange-500/10 text-primary'
-        }`}>
-          {isInternship ? (
-            <GraduationCap className="h-6 w-6" />
-          ) : (
-            <Briefcase className="h-6 w-6" />
-          )}
-        </div>
-
-        {/* Content */}
-        <div className="relative flex-1 min-w-0">
-          <div className="flex items-center gap-3">
-            <h3 className="text-lg font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-              {job.title}
-            </h3>
-            <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${
-              isInternship 
-                ? 'bg-blue-500/20 text-blue-400' 
-                : 'bg-primary/20 text-primary'
-            }`}>
-              {isInternship ? 'Internship' : 'Job'}
-            </span>
-          </div>
-          {job.description && (
-            <p className="text-sm text-muted-foreground truncate mt-1 max-w-md">
-              {job.description}
-            </p>
-          )}
-        </div>
-
-        {/* Meta */}
-        <div className="relative flex items-center gap-6 text-sm">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
-            <FileText className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium text-foreground tabular-nums">{resumeCount}</span>
-            <span className="text-muted-foreground text-xs">resumes</span>
-          </div>
-          <div className="hidden sm:block text-xs text-muted-foreground">
-            Updated {updatedAt}
-          </div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-        </div>
+    <div 
+      className="group relative flex items-center gap-5 p-5 rounded-2xl border border-border bg-card/80 backdrop-blur-sm hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 overflow-hidden"
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
+      {/* Gradient accent line */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${isInternship ? 'bg-gradient-to-b from-blue-400 to-blue-600' : 'bg-gradient-to-b from-primary to-orange-500'}`} />
+      
+      {/* Hover gradient */}
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      {/* Clickable Link Area */}
+      <Link href={`/jobs/${job.id}`} className="absolute inset-0 z-0" />
+      
+      {/* Type Icon */}
+      <div className={`relative flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
+        isInternship 
+          ? 'bg-gradient-to-br from-blue-500/20 to-blue-600/10 text-blue-500' 
+          : 'bg-gradient-to-br from-primary/20 to-orange-500/10 text-primary'
+      }`}>
+        {isInternship ? (
+          <GraduationCap className="h-6 w-6" />
+        ) : (
+          <Briefcase className="h-6 w-6" />
+        )}
       </div>
-    </Link>
+
+      {/* Content */}
+      <div className="relative flex-1 min-w-0">
+        <div className="flex items-center gap-3">
+          <h3 className="text-lg font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+            {job.title}
+          </h3>
+          <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${
+            isInternship 
+              ? 'bg-blue-500/20 text-blue-400' 
+              : 'bg-primary/20 text-primary'
+          }`}>
+            {isInternship ? 'Internship' : 'Job'}
+          </span>
+        </div>
+        {job.description && (
+          <p className="text-sm text-muted-foreground truncate mt-1 max-w-md">
+            {job.description}
+          </p>
+        )}
+      </div>
+
+      {/* Meta */}
+      <div className="relative flex items-center gap-4 text-sm z-10">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
+          <FileText className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium text-foreground tabular-nums">{resumeCount}</span>
+          <span className="text-muted-foreground text-xs">resumes</span>
+        </div>
+        <div className="hidden sm:block text-xs text-muted-foreground">
+          Updated {updatedAt}
+        </div>
+        <DeletePositionButton jobId={job.id} jobTitle={job.title} />
+        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+      </div>
+    </div>
   );
 }
 
