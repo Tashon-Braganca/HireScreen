@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { title, description } = body;
+    const { title, description, type } = body;
 
     if (!title || typeof title !== "string" || title.trim().length === 0) {
       return NextResponse.json(
@@ -103,6 +103,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate job type
+    const jobType = type === "internship" ? "internship" : "job";
+
     // Create the job
     const { data: job, error } = await supabase
       .from("jobs")
@@ -110,6 +113,7 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         title: title.trim(),
         description: description?.trim() || null,
+        type: jobType,
         status: "active",
         resume_count: 0,
       })

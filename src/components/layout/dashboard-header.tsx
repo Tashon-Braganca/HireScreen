@@ -71,7 +71,7 @@ export function DashboardHeader({ user, profile }: DashboardHeaderProps) {
   const isPro = profile?.subscription_status === "pro";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-md">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2.5 group">
@@ -79,7 +79,7 @@ export function DashboardHeader({ user, profile }: DashboardHeaderProps) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.svg" alt="HireScreen" className="w-full h-full object-cover" />
           </div>
-          <span className="font-bold text-lg text-zinc-100">HireScreen</span>
+          <span className="font-bold text-lg text-foreground">HireScreen</span>
         </Link>
 
         {/* Right Actions */}
@@ -89,7 +89,7 @@ export function DashboardHeader({ user, profile }: DashboardHeaderProps) {
             variant="ghost"
             size="sm"
             asChild
-            className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
+            className="text-muted-foreground hover:text-foreground hover:bg-secondary"
           >
             <a href="mailto:tashon.braganca@gmail.com">
               <Mail className="h-4 w-4" />
@@ -106,7 +106,7 @@ export function DashboardHeader({ user, profile }: DashboardHeaderProps) {
               size="sm" 
               onClick={handleUpgrade}
               disabled={upgradeLoading}
-              className="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-medium"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
             >
               {upgradeLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -130,45 +130,45 @@ export function DashboardHeader({ user, profile }: DashboardHeaderProps) {
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0 hover:bg-zinc-800">
-                <Avatar className="h-8 w-8 border border-zinc-700">
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0 hover:bg-secondary">
+                <Avatar className="h-8 w-8 border border-border">
                   <AvatarImage src={profile?.avatar_url || ""} />
-                  <AvatarFallback className="bg-zinc-800 text-zinc-300 text-sm font-medium">
+                  <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-medium">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
-              className="w-56 bg-zinc-900 border-zinc-800" 
+              className="w-56 bg-popover border-border" 
               align="end"
             >
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium text-zinc-100">{profile?.full_name || "User"}</p>
-                  <p className="text-xs text-zinc-500">{user.email}</p>
+                  <p className="text-sm font-medium text-foreground">{profile?.full_name || "User"}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-zinc-800" />
-              <DropdownMenuItem asChild className="text-zinc-300 focus:bg-zinc-800 focus:text-zinc-100">
+              <DropdownMenuSeparator className="bg-border" />
+              <DropdownMenuItem asChild className="text-foreground focus:bg-accent focus:text-accent-foreground">
                 <Link href="/settings">
                   <UserIcon className="mr-2 h-4 w-4" />
                   Profile
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="text-zinc-300 focus:bg-zinc-800 focus:text-zinc-100">
+              <DropdownMenuItem asChild className="text-foreground focus:bg-accent focus:text-accent-foreground">
                 <Link href="/settings?tab=billing">
                   <CreditCard className="mr-2 h-4 w-4" />
                   Billing
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="text-zinc-300 focus:bg-zinc-800 focus:text-zinc-100">
+              <DropdownMenuItem asChild className="text-foreground focus:bg-accent focus:text-accent-foreground">
                 <Link href="/settings?tab=danger">
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-zinc-800" />
+              <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuItem 
                 onClick={handleLogout} 
                 className="text-red-400 focus:bg-red-500/10 focus:text-red-400"

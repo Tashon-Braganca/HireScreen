@@ -3,10 +3,8 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Upload, FileText, X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, FileText, X, Loader2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface ResumeUploaderProps {
@@ -37,7 +35,6 @@ export function ResumeUploader({ jobId, canUpload, currentCount, limit, compact 
     for (const uploadFile of filesToUpload) {
       if (uploadFile.status !== "pending") continue;
 
-      // Update status to uploading
       setFiles((prev) =>
         prev.map((f) =>
           f.id === uploadFile.id ? { ...f, status: "uploading", progress: 20 } : f
@@ -58,17 +55,14 @@ export function ResumeUploader({ jobId, canUpload, currentCount, limit, compact 
           throw new Error(error.error?.message || "Upload failed");
         }
 
-        // Update to processing
         setFiles((prev) =>
           prev.map((f) =>
             f.id === uploadFile.id ? { ...f, status: "processing", progress: 60 } : f
           )
         );
 
-        // Simulate processing time
         await new Promise((r) => setTimeout(r, 500));
 
-        // Complete
         setFiles((prev) =>
           prev.map((f) =>
             f.id === uploadFile.id ? { ...f, status: "complete", progress: 100 } : f
@@ -87,7 +81,7 @@ export function ResumeUploader({ jobId, canUpload, currentCount, limit, compact 
 
     setIsUploading(false);
     router.refresh();
-    toast.success("Resumes uploaded and processed!");
+    toast.success("Resumes uploaded!");
   }, [jobId, router]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -100,110 +94,112 @@ export function ResumeUploader({ jobId, canUpload, currentCount, limit, compact 
     }));
     
     setFiles((prev) => [...prev, ...filesToAdd]);
-    
-    // Trigger upload immediately for new files
     uploadFiles(filesToAdd);
   }, [limit, currentCount, files.length, uploadFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { "application/pdf": [".pdf"] },
+    accept: { 
+      "application/pdf": [".pdf"],
+      "application/x-pdf": [".pdf"],
+      "application/acrobat": [".pdf"],
+      "applications/vnd.pdf": [".pdf"],
+      "text/pdf": [".pdf"],
+      "text/x-pdf": [".pdf"],
+    },
     disabled: !canUpload || isUploading,
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 10 * 1024 * 1024,
+    multiple: true,
+    onDropRejected: (rejections) => {
+      rejections.forEach((rejection) => {
+        const errors = rejection.errors.map(e => e.message).join(", ");
+        toast.error(`${rejection.file.name}: ${errors}`);
+      });
+    },
   });
 
   const removeFile = (id: string) => {
     setFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
-  const pendingCount = files.filter((f) => f.status === "pending").length;
+  const activeUploads = files.filter((f) => f.status === "uploading" || f.status === "processing" || f.status === "pending");
   const completedCount = files.filter((f) => f.status === "complete").length;
 
   return (
-    <div className={compact ? "space-y-2" : "space-y-4"}>
-      <Card
+    <div className="space-y-3">
+      {/* Drop Zone */}
+      <div
         {...getRootProps()}
-        className={`border-2 border-dashed cursor-pointer transition-colors ${
-          isDragActive ? "border-primary bg-primary/5" : "hover:border-primary/50"
-        } ${!canUpload ? "opacity-50 cursor-not-allowed" : ""}`}
+        className={`
+          relative rounded-lg border-2 border-dashed transition-all cursor-pointer
+          ${isDragActive 
+            ? "border-primary bg-primary/5" 
+            : "border-border hover:border-primary/50 hover:bg-accent/30"
+          }
+          ${!canUpload ? "opacity-50 cursor-not-allowed" : ""}
+        `}
       >
-        <CardContent className={compact ? "py-4 text-center" : "py-12 text-center"}>
-          <input {...getInputProps()} />
-          <Upload className={compact ? "h-6 w-6 mx-auto text-muted-foreground mb-2" : "h-12 w-12 mx-auto text-muted-foreground mb-4"} />
-          <p className={compact ? "text-sm font-medium" : "font-medium mb-1"}>
-            {isDragActive ? "Drop PDFs here" : compact ? "Drop PDFs" : "Drag & drop PDF resumes"}
+        <input {...getInputProps()} />
+        <div className={compact ? "py-6 px-4 text-center" : "py-8 px-4 text-center"}>
+          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center mx-auto mb-3">
+            <Upload className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <p className="text-sm font-medium text-foreground">
+            {isDragActive ? "Drop files here" : "Drop PDF resumes"}
           </p>
-          {!compact && (
-            <p className="text-sm text-muted-foreground">
-              or click to browse (max 10MB each)
-            </p>
-          )}
           <p className="text-xs text-muted-foreground mt-1">
-            {currentCount} / {limit} resumes
+            or click to browse
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {files.length > 0 && (
+      {/* Active Uploads */}
+      {activeUploads.length > 0 && (
         <div className="space-y-2">
-          {files.map((uploadFile) => (
+          {activeUploads.map((uploadFile) => (
             <div
               key={uploadFile.id}
-              className="flex items-center gap-3 p-3 rounded-lg border bg-card"
+              className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-card"
             >
-              <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+              <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                {uploadFile.status === "pending" && <FileText className="h-3.5 w-3.5 text-muted-foreground" />}
+                {(uploadFile.status === "uploading" || uploadFile.status === "processing") && (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                )}
+              </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{uploadFile.file.name}</p>
+                <p className="text-xs font-medium text-foreground truncate">
+                  {uploadFile.file.name}
+                </p>
                 {uploadFile.status === "uploading" && (
                   <Progress value={uploadFile.progress} className="h-1 mt-1" />
                 )}
                 {uploadFile.status === "processing" && (
-                  <p className="text-xs text-muted-foreground">Processing...</p>
-                )}
-                {uploadFile.status === "error" && (
-                  <p className="text-xs text-red-600">{uploadFile.error}</p>
+                  <p className="text-[10px] text-muted-foreground">Processing...</p>
                 )}
               </div>
-              <div className="flex-shrink-0">
-                {uploadFile.status === "pending" && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeFile(uploadFile.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-                {(uploadFile.status === "uploading" || uploadFile.status === "processing") && (
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                )}
-                {uploadFile.status === "complete" && (
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                )}
-                {uploadFile.status === "error" && (
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                )}
-              </div>
+              {uploadFile.status === "pending" && (
+                <button
+                  onClick={() => removeFile(uploadFile.id)}
+                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           ))}
-
-          {pendingCount > 0 && isUploading && (
-            <div className="flex items-center justify-center p-2 text-sm text-muted-foreground bg-secondary/50 rounded-md">
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Uploading {pendingCount} file{pendingCount > 1 ? "s" : ""}...
-            </div>
-          )}
-
-          {completedCount > 0 && pendingCount === 0 && !isUploading && (
-            <Button
-              variant="outline"
-              onClick={() => setFiles([])}
-              className="w-full"
-            >
-              Clear completed
-            </Button>
-          )}
         </div>
+      )}
+
+      {/* Completed notification */}
+      {completedCount > 0 && activeUploads.length === 0 && (
+        <button
+          onClick={() => setFiles([])}
+          className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-green-500/10 text-green-600 text-xs font-medium hover:bg-green-500/20 transition-colors"
+        >
+          <CheckCircle className="h-3.5 w-3.5" />
+          {completedCount} uploaded - Click to dismiss
+        </button>
       )}
     </div>
   );
