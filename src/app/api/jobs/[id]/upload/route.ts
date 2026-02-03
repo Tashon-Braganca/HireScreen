@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { createEmbeddings } from "@/lib/openai/embeddings";
 import { chunkText, cleanText } from "@/lib/pdf/chunking";
-import { parsePDF } from "@/lib/pdf/parser";
+import { extractText } from "unpdf";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -15,7 +15,12 @@ const LIMITS = {
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
+export const maxDuration = 60; // Allow up to 60 seconds for PDF processing
+
 export async function POST(request: NextRequest, { params }: RouteParams) {
+  const adminClient = createAdminClient();
+  let documentId: string | null = null;
+
   try {
     const { id: jobId } = await params;
     const supabase = await createClient();
@@ -141,67 +146,73 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Process the PDF asynchronously but return immediately
-    // In a production app, you'd use a queue like Inngest or Trigger.dev
-    processDocument(document.id, jobId, file).catch((err) => {
-      console.error("Error processing document:", err);
-    });
+    documentId = document.id;
+    console.log(`[PDF] Created document record: ${documentId}`);
 
-    return NextResponse.json(
-      { 
-        success: true, 
-        data: { 
-          id: document.id, 
-          filename: document.filename,
-          status: "processing" 
-        } 
-      },
-      { status: 202 }
-    );
-  } catch (error) {
-    console.error("Error uploading document:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
-      { status: 500 }
-    );
-  }
-}
-
-async function processDocument(
-  documentId: string,
-  jobId: string,
-  file: File
-) {
-  const adminClient = createAdminClient();
-  
-  try {
+    // ============ PROCESS PDF SYNCHRONOUSLY ============
     // Read file buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    const uint8Array = new Uint8Array(buffer);
 
-    // Parse PDF using pdfjs-dist (serverless compatible)
-    console.log(`Parsing PDF: ${file.name}, size: ${file.size} bytes`);
-    const pdfResult = await parsePDF(buffer);
-    const rawText = pdfResult.text;
-    const pageCount = pdfResult.numPages;
+    console.log(`[PDF] Parsing: ${file.name}, size: ${file.size} bytes`);
+
+    // Parse PDF using unpdf
+    let rawText = "";
+    let pageCount = 1;
     
-    console.log(`PDF parsed successfully: ${pageCount} pages, ${rawText.length} chars`);
+    try {
+      const result = await extractText(uint8Array, { mergePages: true });
+      rawText = result.text as string;
+      pageCount = result.totalPages;
+      console.log(`[PDF] Parsed successfully: ${pageCount} pages, ${rawText.length} chars`);
+    } catch (pdfError) {
+      console.error("[PDF] Parse error:", pdfError);
+      await adminClient.from("documents").update({ status: "failed" }).eq("id", documentId);
+      return NextResponse.json(
+        { success: false, error: { code: "PDF_ERROR", message: "Failed to parse PDF. Make sure it's a valid text-based PDF." } },
+        { status: 400 }
+      );
+    }
 
-    if (!rawText || rawText.trim().length === 0) {
-      throw new Error("Could not extract text from PDF. The PDF might be image-based.");
+    if (!rawText || rawText.trim().length < 10) {
+      console.error("[PDF] No text extracted");
+      await adminClient.from("documents").update({ status: "failed" }).eq("id", documentId);
+      return NextResponse.json(
+        { success: false, error: { code: "PDF_ERROR", message: "Could not extract text from PDF. The PDF might be image-based or empty." } },
+        { status: 400 }
+      );
     }
 
     // Clean and chunk the text
     const cleanedText = cleanText(rawText);
     const chunks = chunkText(cleanedText);
+    console.log(`[PDF] Created ${chunks.length} chunks`);
 
     if (chunks.length === 0) {
-      throw new Error("No text content found in PDF");
+      await adminClient.from("documents").update({ status: "failed" }).eq("id", documentId);
+      return NextResponse.json(
+        { success: false, error: { code: "PDF_ERROR", message: "No text content found in PDF" } },
+        { status: 400 }
+      );
     }
 
     // Generate embeddings for all chunks
+    console.log(`[PDF] Generating embeddings for ${chunks.length} chunks`);
     const chunkTexts = chunks.map((c) => c.content);
-    const embeddings = await createEmbeddings(chunkTexts);
+    
+    let embeddings: number[][];
+    try {
+      embeddings = await createEmbeddings(chunkTexts);
+      console.log(`[PDF] Generated ${embeddings.length} embeddings`);
+    } catch (embeddingError) {
+      console.error("[PDF] Embedding error:", embeddingError);
+      await adminClient.from("documents").update({ status: "failed" }).eq("id", documentId);
+      return NextResponse.json(
+        { success: false, error: { code: "EMBEDDING_ERROR", message: "Failed to generate embeddings. Please try again." } },
+        { status: 500 }
+      );
+    }
 
     // Prepare chunk records
     const chunkRecords = chunks.map((chunk, i) => ({
@@ -213,21 +224,28 @@ async function processDocument(
       embedding: JSON.stringify(embeddings[i]),
     }));
 
-    // Insert chunks using admin client (bypasses RLS for background processing)
+    // Insert chunks using admin client
+    console.log(`[PDF] Inserting ${chunkRecords.length} chunk records`);
     const { error: chunksError } = await adminClient
       .from("document_chunks")
       .insert(chunkRecords);
 
     if (chunksError) {
-      throw new Error(`Failed to store chunks: ${chunksError.message}`);
+      console.error("[PDF] Chunks insert error:", chunksError);
+      await adminClient.from("documents").update({ status: "failed" }).eq("id", documentId);
+      return NextResponse.json(
+        { success: false, error: { code: "DB_ERROR", message: `Failed to store chunks: ${chunksError.message}` } },
+        { status: 500 }
+      );
     }
 
     // Update document status to ready
+    console.log(`[PDF] Updating document status to ready`);
     await adminClient
       .from("documents")
       .update({
         status: "ready",
-        text_content: cleanedText.slice(0, 10000), // Store first 10k chars for reference
+        text_content: cleanedText.slice(0, 10000),
         page_count: pageCount,
       })
       .eq("id", documentId);
@@ -244,13 +262,33 @@ async function processDocument(
       .update({ resume_count: count || 0, updated_at: new Date().toISOString() })
       .eq("id", jobId);
 
+    console.log(`[PDF] Complete! Document ${documentId} is ready`);
+
+    return NextResponse.json(
+      { 
+        success: true, 
+        data: { 
+          id: document.id, 
+          filename: document.filename,
+          status: "ready",
+          pageCount,
+          chunkCount: chunks.length
+        } 
+      },
+      { status: 200 }
+    );
+
   } catch (error) {
-    console.error("Error processing document:", error);
+    console.error("[PDF] Unexpected error:", error);
     
-    // Mark document as failed
-    await adminClient
-      .from("documents")
-      .update({ status: "failed" })
-      .eq("id", documentId);
+    // Mark document as failed if we have an ID
+    if (documentId) {
+      await adminClient.from("documents").update({ status: "failed" }).eq("id", documentId);
+    }
+    
+    return NextResponse.json(
+      { success: false, error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
+      { status: 500 }
+    );
   }
 }
