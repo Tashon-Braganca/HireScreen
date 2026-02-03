@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Loader2, Sparkles, FileText, Download } from "lucide-react";
+import { Send, Loader2, Sparkles, FileText, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter } from "next/navigation";
 import { Query, QuerySource } from "@/types";
 import { toast } from "sonner";
@@ -24,13 +23,13 @@ const QUERY_LIMITS = {
 
 const JOB_EXAMPLES = [
   "Who has the most experience?",
-  "List candidates with Python skills",
-  "Who worked at FAANG?",
+  "Python or AWS skills?",
+  "FAANG experience?",
 ];
 
 const INTERNSHIP_EXAMPLES = [
-  "Best academic projects?",
-  "Leadership experience?",
+  "Best projects?",
+  "Leadership?",
   "Most potential?",
 ];
 
@@ -108,163 +107,192 @@ export function ChatPane({
     }
   };
 
-  // Empty state - no resumes
-  if (!hasResumes) {
-    return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="text-center max-w-xs">
-          <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <h3 className="font-medium text-foreground mb-1">Ready to screen</h3>
-          <p className="text-muted-foreground text-sm">
-            Upload resumes to start asking AI questions about candidates
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex-shrink-0 flex items-center justify-between px-6 py-3 border-b border-border bg-card/30">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-foreground">AI Assistant</span>
-          <span className="text-xs text-muted-foreground">
-            ({jobType === "internship" ? "Intern mode" : "Job mode"})
-          </span>
-        </div>
+    <div className="flex flex-col h-full relative">
+      {/* Chat Header - Like "Speak ai" */}
+      <div className="flex-shrink-0 px-6 py-5 border-b border-border">
         <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {queriesRemaining} queries left
-          </span>
-          {isPro && queries.length > 0 && (
-            <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
-              <a href={`/api/jobs/${jobId}/export`} download>
-                <Download className="h-3 w-3 mr-1" />
-                Export
-              </a>
-            </Button>
-          )}
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center shadow-lg shadow-primary/20">
+            <Sparkles className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-foreground">HireScreen AI</h2>
+            <p className="text-xs text-muted-foreground">
+              {queriesRemaining} queries remaining
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Messages Area */}
-      <ScrollArea className="flex-1 px-6" ref={scrollRef}>
-        <div className="py-6 space-y-4 max-w-2xl mx-auto">
-          {/* Empty state with examples */}
-          {messages.length === 0 && (
-            <div className="py-12 text-center">
-              <p className="text-muted-foreground text-sm mb-4">
-                Ask questions about your candidates
-              </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {examples.map((example) => (
-                  <button
-                    key={example}
-                    onClick={() => handleExampleClick(example)}
-                    disabled={!canQuery}
-                    className="px-3 py-1.5 text-xs rounded-full border border-border bg-card hover:bg-accent hover:border-primary/30 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {example}
-                  </button>
-                ))}
+      {/* Chat Messages Area */}
+      <div 
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-6 py-6"
+      >
+        {/* Welcome Message */}
+        {messages.length === 0 && (
+          <div className="space-y-6">
+            {/* AI Welcome */}
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center">
+                <Bot className="h-4 w-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="bg-muted/50 rounded-2xl rounded-tl-md px-4 py-3 max-w-[90%]">
+                  <p className="text-sm text-foreground">
+                    Hello, how can I help you screen candidates today?
+                  </p>
+                </div>
               </div>
             </div>
-          )}
 
-          {/* Messages */}
-          {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                  msg.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card border border-border"
-                }`}
-              >
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                {msg.sources && msg.sources.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-border/50 flex flex-wrap gap-1.5">
-                    {msg.sources.slice(0, 4).map((source, j) => (
-                      <span 
-                        key={j} 
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-background/50 text-[10px] text-muted-foreground"
-                      >
-                        <FileText className="h-3 w-3" />
-                        {source.filename.length > 15 
-                          ? source.filename.slice(0, 15) + "..." 
-                          : source.filename}
-                      </span>
-                    ))}
-                    {msg.sources.length > 4 && (
-                      <span className="text-[10px] text-muted-foreground px-2">
-                        +{msg.sources.length - 4} more
-                      </span>
-                    )}
-                  </div>
-                )}
+            {/* Example Questions */}
+            {hasResumes && canQuery && (
+              <div className="pl-11 space-y-2">
+                <p className="text-xs text-muted-foreground mb-3">Try asking:</p>
+                <div className="flex flex-wrap gap-2">
+                  {examples.map((example) => (
+                    <button
+                      key={example}
+                      onClick={() => handleExampleClick(example)}
+                      className="px-3 py-2 text-xs rounded-xl border border-border bg-card hover:bg-accent hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all duration-200"
+                    >
+                      {example}
+                    </button>
+                  ))}
+                </div>
               </div>
+            )}
+
+            {/* No Resumes State */}
+            {!hasResumes && (
+              <div className="pl-11">
+                <div className="p-4 rounded-xl border border-dashed border-border bg-muted/30 text-center">
+                  <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Upload resumes to start asking questions
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Chat Messages */}
+        <div className="space-y-6">
+          {messages.map((msg, i) => (
+            <div key={i} className="flex gap-3">
+              {msg.role === "assistant" ? (
+                <>
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center">
+                    <Bot className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="bg-muted/50 rounded-2xl rounded-tl-md px-4 py-3">
+                      <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                        {msg.content}
+                      </p>
+                      {msg.sources && msg.sources.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-border/50">
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Sources</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {msg.sources.slice(0, 4).map((source, j) => (
+                              <span 
+                                key={j} 
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-background text-[10px] text-muted-foreground border border-border"
+                              >
+                                <FileText className="h-3 w-3" />
+                                {source.filename.length > 12 
+                                  ? source.filename.slice(0, 12) + "..." 
+                                  : source.filename}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex-1 min-w-0 flex justify-end">
+                    <div className="bg-primary text-primary-foreground rounded-2xl rounded-tr-md px-4 py-3 max-w-[85%]">
+                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </>
+              )}
             </div>
           ))}
 
-          {/* Loading */}
+          {/* Loading State */}
           {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-card border border-border rounded-2xl px-4 py-3">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm">Analyzing resumes...</span>
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center">
+                <Bot className="h-4 w-4 text-white" />
+              </div>
+              <div className="bg-muted/50 rounded-2xl rounded-tl-md px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">Analyzing resumes...</span>
                 </div>
               </div>
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
-      {/* Input Area */}
-      <div className="flex-shrink-0 p-4 border-t border-border bg-card/30">
-        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-4 py-2 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+      {/* Input Area - Like the reference */}
+      <div className="flex-shrink-0 p-4 border-t border-border bg-card/50">
+        <form onSubmit={handleSubmit}>
+          <div className="flex items-center gap-3 p-2 bg-background border border-border rounded-2xl focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10 transition-all">
             <input
               ref={inputRef}
               type="text"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={canQuery ? "Ask about candidates..." : "Upload resumes first"}
-              className="flex-1 bg-transparent border-0 outline-none text-sm text-foreground placeholder:text-muted-foreground"
+              placeholder={canQuery ? "Ask our agent..." : "Upload resumes first"}
+              className="flex-1 bg-transparent border-0 outline-none text-sm text-foreground placeholder:text-muted-foreground px-3 py-2"
               disabled={isLoading || !canQuery}
             />
-            <Button
-              type="submit"
-              size="sm"
-              className="h-8 w-8 p-0 rounded-lg"
-              disabled={!question.trim() || isLoading || !canQuery}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
+            <div className="flex items-center gap-2 pr-1">
+              <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 text-xs text-muted-foreground">
+                <Sparkles className="h-3 w-3" />
+                <span>GPT-4</span>
+              </div>
+              <Button
+                type="submit"
+                size="sm"
+                className="h-9 px-4 rounded-xl bg-primary hover:bg-primary/90"
+                disabled={!question.trim() || isLoading || !canQuery}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    Send
+                    <Send className="h-3.5 w-3.5 ml-2" />
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-          {!canQuery && queriesRemaining <= 0 && (
-            <p className="text-xs text-destructive mt-2 text-center">
-              Query limit reached.{" "}
-              {!isPro && (
-                <a href="/settings?tab=billing" className="underline">
-                  Upgrade to Pro
-                </a>
-              )}
-            </p>
-          )}
         </form>
+        
+        {!canQuery && queriesRemaining <= 0 && (
+          <p className="text-xs text-destructive mt-3 text-center">
+            Query limit reached.{" "}
+            {!isPro && (
+              <a href="/settings?tab=billing" className="underline font-medium">
+                Upgrade to Pro
+              </a>
+            )}
+          </p>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Loader2, CheckCircle, AlertCircle, Trash2 } from "lucide-react";
+import { FileText, Loader2, CheckCircle, AlertCircle, Trash2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -35,65 +35,79 @@ export function CandidateList({ documents, jobId }: CandidateListProps) {
 
   if (documents.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center mb-3">
-          <FileText className="h-5 w-5 text-muted-foreground" />
+      <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-orange-500/5 border border-primary/10 flex items-center justify-center mb-4">
+          <User className="h-8 w-8 text-primary/50" />
         </div>
-        <p className="text-sm text-muted-foreground">No resumes yet</p>
-        <p className="text-xs text-muted-foreground/70 mt-1">Drop PDFs above</p>
+        <p className="text-base font-medium text-foreground">No candidates yet</p>
+        <p className="text-sm text-muted-foreground mt-1">Upload resumes to see them here</p>
       </div>
     );
   }
 
   return (
-    <div className="divide-y divide-border/50">
-      {documents.map((doc) => (
-        <div
-          key={doc.id}
-          className="group flex items-center gap-3 px-4 py-3 hover:bg-accent/30 transition-colors"
-        >
-          {/* Status Icon */}
-          <div className="flex-shrink-0">
-            {doc.status === "processing" && (
-              <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center">
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-              </div>
-            )}
-            {doc.status === "ready" && (
-              <div className="w-6 h-6 rounded-md bg-green-500/10 flex items-center justify-center">
-                <CheckCircle className="h-3.5 w-3.5 text-green-500" />
-              </div>
-            )}
-            {doc.status === "failed" && (
-              <div className="w-6 h-6 rounded-md bg-destructive/10 flex items-center justify-center">
-                <AlertCircle className="h-3.5 w-3.5 text-destructive" />
-              </div>
-            )}
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
-              {doc.filename.replace(/\.pdf$/i, "")}
-            </p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              {doc.status === "processing" && "Processing..."}
-              {doc.status === "ready" && "Ready"}
-              {doc.status === "failed" && "Failed"}
-            </p>
-          </div>
-
-          {/* Delete Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-            onClick={(e) => handleDelete(doc.id, e)}
+    <div className="p-2">
+      <div className="space-y-2">
+        {documents.map((doc, index) => (
+          <div
+            key={doc.id}
+            className="group flex items-center gap-4 p-4 rounded-xl bg-background border border-border hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 transition-all duration-200"
+            style={{ animationDelay: `${index * 30}ms` }}
           >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      ))}
+            {/* Status Icon */}
+            <div className="flex-shrink-0">
+              {doc.status === "processing" && (
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                </div>
+              )}
+              {doc.status === "ready" && (
+                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                </div>
+              )}
+              {doc.status === "failed" && (
+                <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
+                </div>
+              )}
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">
+                {doc.filename.replace(/\.pdf$/i, "")}
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                  doc.status === "processing" ? 'bg-primary/10 text-primary' :
+                  doc.status === "ready" ? 'bg-green-500/10 text-green-600' :
+                  'bg-destructive/10 text-destructive'
+                }`}>
+                  {doc.status === "processing" && "Processing"}
+                  {doc.status === "ready" && "Ready"}
+                  {doc.status === "failed" && "Failed"}
+                </span>
+                {doc.page_count && (
+                  <span className="text-[10px] text-muted-foreground">
+                    {doc.page_count} pages
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Delete Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              onClick={(e) => handleDelete(doc.id, e)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

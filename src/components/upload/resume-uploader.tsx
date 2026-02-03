@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import { Progress } from "@/components/ui/progress";
-import { Upload, FileText, X, Loader2, CheckCircle } from "lucide-react";
+import { Upload, FileText, X, Loader2, CheckCircle, CloudUpload } from "lucide-react";
 import { toast } from "sonner";
 
 interface ResumeUploaderProps {
@@ -126,64 +126,72 @@ export function ResumeUploader({ jobId, canUpload, currentCount, limit, compact 
   const completedCount = files.filter((f) => f.status === "complete").length;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Drop Zone */}
       <div
         {...getRootProps()}
         className={`
-          relative rounded-lg border-2 border-dashed transition-all cursor-pointer
+          relative rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden
           ${isDragActive 
-            ? "border-primary bg-primary/5" 
+            ? "border-primary bg-primary/10 scale-[1.02]" 
             : "border-border hover:border-primary/50 hover:bg-accent/30"
           }
           ${!canUpload ? "opacity-50 cursor-not-allowed" : ""}
         `}
       >
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-500/5 pointer-events-none" />
+        
         <input {...getInputProps()} />
-        <div className={compact ? "py-6 px-4 text-center" : "py-8 px-4 text-center"}>
-          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center mx-auto mb-3">
-            <Upload className="h-5 w-5 text-muted-foreground" />
+        <div className={compact ? "py-8 px-6 text-center" : "py-12 px-6 text-center"}>
+          <div className="relative inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-orange-500/10 border border-primary/20 mb-4">
+            <CloudUpload className={`h-8 w-8 text-primary ${isDragActive ? 'animate-bounce' : ''}`} />
           </div>
-          <p className="text-sm font-medium text-foreground">
-            {isDragActive ? "Drop files here" : "Drop PDF resumes"}
+          <p className="text-lg font-semibold text-foreground">
+            {isDragActive ? "Drop your files here" : "Drop PDF resumes here"}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            or click to browse
+          <p className="text-sm text-muted-foreground mt-1">
+            or click to browse • Max 10MB per file
           </p>
+          <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full bg-muted/50 text-xs text-muted-foreground">
+            <FileText className="h-3.5 w-3.5" />
+            <span>{currentCount} / {limit} resumes uploaded</span>
+          </div>
         </div>
       </div>
 
       {/* Active Uploads */}
       {activeUploads.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-2 p-4 rounded-xl border border-border bg-card/50">
+          <p className="text-xs font-medium text-muted-foreground mb-3">Uploading...</p>
           {activeUploads.map((uploadFile) => (
             <div
               key={uploadFile.id}
-              className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-card"
+              className="flex items-center gap-3 p-3 rounded-xl bg-muted/30"
             >
-              <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
-                {uploadFile.status === "pending" && <FileText className="h-3.5 w-3.5 text-muted-foreground" />}
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                {uploadFile.status === "pending" && <FileText className="h-4 w-4 text-muted-foreground" />}
                 {(uploadFile.status === "uploading" || uploadFile.status === "processing") && (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-foreground truncate">
+                <p className="text-sm font-medium text-foreground truncate">
                   {uploadFile.file.name}
                 </p>
                 {uploadFile.status === "uploading" && (
-                  <Progress value={uploadFile.progress} className="h-1 mt-1" />
+                  <Progress value={uploadFile.progress} className="h-1.5 mt-2" />
                 )}
                 {uploadFile.status === "processing" && (
-                  <p className="text-[10px] text-muted-foreground">Processing...</p>
+                  <p className="text-[10px] text-primary mt-1">Processing with AI...</p>
                 )}
               </div>
               {uploadFile.status === "pending" && (
                 <button
                   onClick={() => removeFile(uploadFile.id)}
-                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               )}
             </div>
@@ -195,10 +203,10 @@ export function ResumeUploader({ jobId, canUpload, currentCount, limit, compact 
       {completedCount > 0 && activeUploads.length === 0 && (
         <button
           onClick={() => setFiles([])}
-          className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-green-500/10 text-green-600 text-xs font-medium hover:bg-green-500/20 transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-600 text-sm font-medium hover:bg-green-500/20 transition-colors"
         >
-          <CheckCircle className="h-3.5 w-3.5" />
-          {completedCount} uploaded - Click to dismiss
+          <CheckCircle className="h-4 w-4" />
+          {completedCount} resume{completedCount > 1 ? 's' : ''} uploaded successfully! Click to dismiss
         </button>
       )}
     </div>

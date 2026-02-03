@@ -178,16 +178,32 @@ async function processDocument(
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Parse PDF using dynamic import
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const pdfParseModule = await import("pdf-parse") as any;
-    const pdfParse = pdfParseModule.default || pdfParseModule;
-    const pdfData = await pdfParse(buffer);
-    const rawText = pdfData.text;
-    const pageCount = pdfData.numpages;
+    let rawText = "";
+    let pageCount = 1;
+
+    try {
+      // Parse PDF using dynamic import with better error handling
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pdfParseModule = await import("pdf-parse") as any;
+      const pdfParse = pdfParseModule.default || pdfParseModule;
+      
+      // pdf-parse options for better compatibility
+      const options = {
+        max: 0, // no page limit
+      };
+      
+      const pdfData = await pdfParse(buffer, options);
+      rawText = pdfData.text || "";
+      pageCount = pdfData.numpages || 1;
+    } catch (pdfError) {
+      console.error("PDF parsing error:", pdfError);
+      // If pdf-parse fails, try to extract basic info
+      // Still mark as failed if we can't get text
+      throw new Error("Failed to parse PDF. Please ensure the file is a valid PDF.");
+    }
 
     if (!rawText || rawText.trim().length === 0) {
-      throw new Error("Could not extract text from PDF");
+      throw new Error("Could not extract text from PDF. The PDF might be image-based.");
     }
 
     // Clean and chunk the text
