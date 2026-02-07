@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FloatingShape } from "@/components/ui/FloatingShape";
 import { BentoCard } from "@/components/ui/BentoCard";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { Mail, Lock, AlertCircle } from "lucide-react";
 

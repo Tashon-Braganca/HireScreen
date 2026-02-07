@@ -10,7 +10,7 @@ import { chatWithJob } from "@/app/actions/chat";
 import { StatCard } from "@/components/ui/StatCard";
 import { ArrowLeft, MoreHorizontal, Users, FileText, Activity } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner"; // Assuming sonner is installed from package.json
 
 interface Message {

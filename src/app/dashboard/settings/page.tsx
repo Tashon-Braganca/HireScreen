@@ -2,8 +2,8 @@
 
 import React from "react";
 import { BentoCard, BentoHeader } from "@/components/ui/BentoCard";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { User, Bell, Shield } from "lucide-react";
 
 export default function SettingsPage() {

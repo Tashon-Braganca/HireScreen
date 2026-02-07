@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getJobs } from "@/app/actions/jobs";
 import { BentoCard, BentoHeader } from "@/components/ui/BentoCard";
 import { StatCard } from "@/components/ui/StatCard";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Plus, Briefcase, Users, Search, Clock } from "lucide-react";
 
 export default async function DashboardPage() {
