@@ -59,13 +59,11 @@ const Navbar = () => (
         <GlassCard className="px-8 py-4 flex items-center gap-12 rounded-full">
             <div className="font-bold text-2xl text-slate-800 tracking-normal px-2 py-1">HireScreen</div>
             <div className="flex gap-6 text-sm font-medium text-slate-600">
-                <a href="#" className="hover:text-blue-600 transition-colors">Products</a>
-                <a href="#" className="hover:text-blue-600 transition-colors">Solutions</a>
-                <a href="#" className="hover:text-blue-600 transition-colors">Pricing</a>
+                <a href="#pricing" className="hover:text-blue-600 transition-colors">Pricing</a>
             </div>
-            <button className="bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-medium hover:scale-105 transition-transform">
+            <a href="/login" className="bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-medium hover:scale-105 transition-transform">
                 Get Started
-            </button>
+            </a>
         </GlassCard>
     </nav>
 );
@@ -106,17 +104,18 @@ const Hero = () => {
                         transition={{ delay: 0.3 }}
                         className="flex gap-4"
                     >
-                        <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transition-all hover:-translate-y-1">
+                        <a href="/login" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transition-all hover:-translate-y-1">
                             Start Free Trial
-                        </button>
-                        <button className="px-8 py-4 rounded-xl font-semibold text-slate-600 hover:bg-white/50 transition-colors">
+                        </a>
+                        <a href="#mockup" className="px-8 py-4 rounded-xl font-semibold text-slate-600 hover:bg-white/50 transition-colors flex items-center justify-center">
                             Watch Demo
-                        </button>
+                        </a>
                     </motion.div>
                 </div>
 
                 {/* Glass UI Mockup */}
                 <motion.div
+                    id="mockup"
                     initial={{ opacity: 0, scale: 0.9, rotateX: 10 }}
                     animate={{ opacity: 1, scale: 1, rotateX: 0 }}
                     transition={{ delay: 0.4, type: "spring" }}
