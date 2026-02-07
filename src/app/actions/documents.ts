@@ -104,10 +104,13 @@ export async function uploadResume(formData: FormData, jobId: string) {
     revalidatePath(`/dashboard/jobs/${jobId}`);
     return { success: true };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
     console.error("Upload processing error:", error);
-    await supabase.from("documents").update({ status: 'failed' }).eq('id', doc.id);
-    return { success: false, error: error.message };
+    if (doc) {
+        await supabase.from("documents").update({ status: 'failed' }).eq('id', doc.id);
+    }
+    return { success: false, error: errorMessage };
   }
 }
 

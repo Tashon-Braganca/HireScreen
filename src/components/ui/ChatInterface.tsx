@@ -66,9 +66,9 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
             </div>
             <h4 className="text-lg font-semibold text-slate-800 mb-2">Ask anything about the candidates</h4>
             <p className="text-sm text-slate-500 max-w-xs">
-              "Who has the most React experience?"<br/>
-              "Compare the top 3 candidates"<br/>
-              "Draft an email to John Doe"
+              &quot;Who has the most React experience?&quot;<br/>
+              &quot;Compare the top 3 candidates&quot;<br/>
+              &quot;Draft an email to John Doe&quot;
             </p>
           </div>
         )}
