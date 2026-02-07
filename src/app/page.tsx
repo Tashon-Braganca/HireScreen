@@ -1,389 +1,215 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, Shield, Zap, Search, Sparkles, FileText, MessageSquare, Upload } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { TypewriterQuery } from "@/components/landing/typewriter-query";
+"use client";
+
+import React from "react";
+import { Outfit } from "next/font/google";
+import { motion } from "framer-motion";
+import { Search, FileText, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { FloatingShape } from "@/components/ui/FloatingShape";
+
+const outfit = Outfit({ subsets: ["latin"] });
+
+const Typewriter = ({ phrases }: { phrases: string[] }) => {
+    const [index, setIndex] = React.useState(0);
+    const [subIndex, setSubIndex] = React.useState(0);
+    const [reverse, setReverse] = React.useState(false);
+    const [blink, setBlink] = React.useState(true);
+
+    React.useEffect(() => {
+        const timeout2 = setTimeout(() => {
+            setBlink((prev) => !prev);
+        }, 500);
+        return () => clearTimeout(timeout2);
+    }, [blink]);
+
+    React.useEffect(() => {
+        if (subIndex === phrases[index].length + 1 && !reverse) {
+            const timeout = setTimeout(() => setReverse(true), 2000); // Wait before deleting
+            return () => clearTimeout(timeout);
+        }
+
+        if (subIndex === 0 && reverse) {
+            setReverse(false);
+            setIndex((prev) => (prev + 1) % phrases.length);
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            setSubIndex((prev) => prev + (reverse ? -1 : 1));
+        }, reverse ? 50 : 100); // Deleting speed vs typing speed
+
+        return () => clearTimeout(timeout);
+    }, [subIndex, index, reverse, phrases]);
+
+    return (
+        <span className="font-mono text-slate-600">
+            &quot;{phrases[index].substring(0, subIndex)}{blink ? "|" : "\u00A0"}&quot;
+        </span>
+    );
+};
+
+const GlassCard = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+    <div className={cn("backdrop-blur-xl bg-white/40 border border-white/50 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-2xl", className)}>
+        {children}
+    </div>
+);
+
+const Navbar = () => (
+    <nav className="fixed top-6 left-0 right-0 z-50 flex justify-center">
+        <GlassCard className="px-8 py-4 flex items-center gap-12 rounded-full">
+            <div className="font-bold text-2xl text-slate-800 tracking-normal px-2 py-1">HireScreen</div>
+            <div className="flex gap-6 text-sm font-medium text-slate-600">
+                <a href="#" className="hover:text-blue-600 transition-colors">Products</a>
+                <a href="#" className="hover:text-blue-600 transition-colors">Solutions</a>
+                <a href="#" className="hover:text-blue-600 transition-colors">Pricing</a>
+            </div>
+            <button className="bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-medium hover:scale-105 transition-transform">
+                Get Started
+            </button>
+        </GlassCard>
+    </nav>
+);
+
+const Hero = () => {
+    return (
+        <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+            {/* Background Blobs */}
+            <FloatingShape className="w-[500px] h-[500px] bg-purple-300 top-[-10%] left-[-10%]" delay={0} />
+            <FloatingShape className="w-[400px] h-[400px] bg-blue-300 bottom-[-10%] right-[-5%]" delay={2} />
+            <FloatingShape className="w-[300px] h-[300px] bg-pink-300 top-[40%] left-[20%]" delay={1} />
+
+            <div className="container relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center px-6">
+                <div className="space-y-8">
+
+                    <motion.h1
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="text-6xl lg:text-7xl font-bold text-slate-800 leading-tight tracking-tight pb-4"
+                    >
+                        Screening, <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 pb-2">Clarified.</span>
+                    </motion.h1>
+
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-lg text-slate-600 max-w-md leading-relaxed"
+                    >
+                        Experience the fluid way to process talent. Drop your PDFs into a smart workspace that thinks like a recruiter.
+                    </motion.p>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="flex gap-4"
+                    >
+                        <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transition-all hover:-translate-y-1">
+                            Start Free Trial
+                        </button>
+                        <button className="px-8 py-4 rounded-xl font-semibold text-slate-600 hover:bg-white/50 transition-colors">
+                            Watch Demo
+                        </button>
+                    </motion.div>
+                </div>
+
+                {/* Glass UI Mockup */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9, rotateX: 10 }}
+                    animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+                    transition={{ delay: 0.4, type: "spring" }}
+                    className="perspective-1000"
+                >
+                    <GlassCard className="p-6 w-full max-w-md mx-auto transform rotate-y-[-5deg] rotate-x-[5deg]">
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
+                                <FileText size={24} />
+                            </div>
+                            <div>
+                                <div className="font-bold text-slate-800">Senior React Developer</div>
+                                <div className="text-xs text-slate-500">24 Candidates • 8 Matches</div>
+                            </div>
+                        </div>
+
+                        <div className="mb-4">
+                            <div className="text-[10px] uppercase font-bold text-slate-400 mb-2 tracking-wider">Top Match Criteria</div>
+                            <div className="flex flex-wrap gap-2">
+                                <span className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-md font-medium border border-blue-100">React.js</span>
+                                <span className="text-xs px-2 py-1 bg-purple-50 text-purple-600 rounded-md font-medium border border-purple-100">TypeScript</span>
+                                <span className="text-xs px-2 py-1 bg-emerald-50 text-emerald-600 rounded-md font-medium border border-emerald-100">5+ Years</span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-white/50 shadow-sm cursor-pointer group">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">JD</div>
+                                <div className="flex-1">
+                                    <div className="text-sm font-semibold text-slate-700">John Doe</div>
+                                    <div className="flex gap-1 text-[10px] text-slate-500">
+                                        <span>Ex-Google</span>
+                                        <span>•</span>
+                                        <span>Senior Dev</span>
+                                    </div>
+                                </div>
+                                <div className="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg border border-green-100">95%</div>
+                            </div>
+
+                             <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/40 transition-colors cursor-pointer group opacity-60">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white text-xs font-bold">AS</div>
+                                <div className="flex-1">
+                                    <div className="text-sm font-semibold text-slate-700">Alice Smith</div>
+                                    <div className="text-[10px] text-slate-500">Full Stack Eng</div>
+                                </div>
+                                <div className="text-sm font-bold text-green-600/80">91%</div>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/40 transition-colors cursor-pointer group opacity-40">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xs font-bold">MK</div>
+                                <div className="flex-1">
+                                    <div className="text-sm font-semibold text-slate-700">Mike K.</div>
+                                    <div className="text-[10px] text-slate-500">Frontend Dev</div>
+                                </div>
+                                <div className="text-sm font-bold text-green-600/60">87%</div>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 pt-4 border-t border-slate-100">
+                            <div className="flex items-center gap-2 text-sm text-slate-500 h-6">
+                                <Search size={14} />
+                                <Typewriter phrases={[
+                                    "Find candidates with 3+ yrs Next.js...",
+                                    "Show Senior Product Designers in SF...",
+                                    "Filter by remote availability...",
+                                    "Sort by years of experience..."
+                                ]} />
+                            </div>
+                        </div>
+                    </GlassCard>
+
+                    {/* Floating Badge */}
+                    <GlassCard className="absolute -right-8 top-20 p-4 shadow-xl animate-bounce-slow">
+                        <div className="flex items-center gap-2">
+                            <div className="bg-green-100 p-1.5 rounded-lg text-green-600">
+                                <Zap size={16} fill="currentColor" />
+                            </div>
+                            <div className="text-xs font-bold text-slate-700">
+                                AI Analysis <br />Complete
+                            </div>
+                        </div>
+                    </GlassCard>
+                </motion.div>
+            </div>
+        </section>
+    );
+};
 
 export default function Home() {
-  return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 overflow-x-hidden">
-      {/* Header */}
-      <header className="fixed top-0 w-full z-50 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-xl">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-xl tracking-tight">HireScreen</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <Link href="/login">
-              <Button variant="ghost" className="text-zinc-400 hover:text-zinc-100">
-                Sign in
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-900 font-medium rounded-full px-6 shadow-lg shadow-amber-500/25">
-                Get Started
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-24 md:pt-44 md:pb-32 overflow-hidden">
-        {/* Background gradients */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-gradient-to-b from-amber-500/20 via-orange-500/10 to-transparent rounded-full blur-3xl" />
-          <div className="absolute top-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl" />
-          <div className="absolute top-60 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" />
-        </div>
-        
-        {/* Grid pattern */}
-        <div 
-          className="absolute inset-0 -z-10 opacity-[0.03]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                             linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px'
-          }}
-        />
-        
-        <div className="container mx-auto px-6 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-800/80 border border-zinc-700/50 mb-8">
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            <span className="text-sm text-zinc-300">AI-Powered Resume Screening</span>
-          </div>
-
-          {/* Hero Text */}
-          <div className="max-w-4xl mx-auto mb-8">
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
-              Upload resumes.
-              <br />
-              <span className="text-zinc-400">Ask </span>
-              <TypewriterQuery />
-              <br />
-              <span className="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-                Hire faster.
-              </span>
-            </h1>
-          </div>
-          
-          <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Stop reading every resume. Upload PDFs, ask natural language questions, 
-            get ranked candidates with citations in seconds.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Link href="/signup">
-              <Button size="lg" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-900 font-semibold rounded-full px-8 h-14 text-base shadow-xl shadow-amber-500/25 transition-all hover:scale-105">
-                Start Screening Free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="#demo">
-              <Button variant="outline" size="lg" className="rounded-full px-8 h-14 text-base border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:border-zinc-600">
-                See How It Works
-              </Button>
-            </Link>
-          </div>
-
-          {/* Stats */}
-          <div className="flex items-center justify-center gap-8 md:gap-16 text-sm">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-white">10x</p>
-              <p className="text-zinc-500">Faster screening</p>
-            </div>
-            <div className="w-px h-12 bg-zinc-800" />
-            <div className="text-center">
-              <p className="text-3xl font-bold text-white">100+</p>
-              <p className="text-zinc-500">Resumes at once</p>
-            </div>
-            <div className="w-px h-12 bg-zinc-800" />
-            <div className="text-center">
-              <p className="text-3xl font-bold text-white">60s</p>
-              <p className="text-zinc-500">To ranked list</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Demo Section */}
-      <section id="demo" className="py-20 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-900/50 to-transparent" />
-        <div className="container mx-auto px-6 relative">
-          <div className="max-w-5xl mx-auto rounded-3xl border border-zinc-800 bg-zinc-900/90 shadow-2xl shadow-black/50 overflow-hidden backdrop-blur-sm">
-            {/* Browser Chrome */}
-            <div className="h-12 bg-zinc-800/80 border-b border-zinc-700/50 flex items-center px-4 gap-2">
-              <div className="flex gap-2">
-                <div className="w-3 h-3 rounded-full bg-zinc-600" />
-                <div className="w-3 h-3 rounded-full bg-zinc-600" />
-                <div className="w-3 h-3 rounded-full bg-zinc-600" />
-              </div>
-              <div className="ml-4 h-7 flex-1 max-w-sm bg-zinc-700/50 rounded-lg flex items-center px-4 text-xs text-zinc-500">
-                <span className="text-amber-500/70">https://</span>hirescreen.ai/dashboard
-              </div>
-            </div>
-
-            {/* Split View */}
-            <div className="grid md:grid-cols-12 min-h-[480px]">
-              {/* Sidebar */}
-              <div className="md:col-span-4 border-r border-zinc-800/50 p-6 bg-zinc-950/50">
-                <div className="flex items-center gap-2 mb-6">
-                  <FileText className="w-4 h-4 text-zinc-500" />
-                  <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Candidates</span>
-                </div>
-                <div className="space-y-3">
-                  {[
-                    { name: "Sarah Chen", match: "95%", skills: "React, Node.js" },
-                    { name: "Mike Ross", match: "88%", skills: "Python, AWS" },
-                    { name: "Jessica Park", match: "82%", skills: "Full-stack" },
-                    { name: "David Kim", match: "76%", skills: "Backend" },
-                  ].map((c, i) => (
-                    <div key={i} className={`p-4 rounded-xl border ${i === 0 ? 'border-amber-500/30 bg-amber-500/5' : 'border-zinc-800 bg-zinc-900/50'} transition-all hover:border-zinc-700`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-lg ${i === 0 ? 'bg-gradient-to-br from-amber-500 to-orange-500' : 'bg-zinc-700'} flex items-center justify-center text-xs font-bold text-white`}>
-                            {c.name.split(' ').map(n => n[0]).join('')}
-                          </div>
-                          <div>
-                            <span className="text-sm font-medium text-zinc-200">{c.name}</span>
-                            <p className="text-xs text-zinc-500">{c.skills}</p>
-                          </div>
-                        </div>
-                        <span className={`text-xs font-bold ${i === 0 ? 'text-amber-500' : 'text-emerald-500'}`}>{c.match}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Chat */}
-              <div className="md:col-span-8 p-6 flex flex-col bg-zinc-900/30">
-                <div className="flex-1 space-y-4">
-                  <div className="flex justify-end">
-                    <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-900 px-5 py-3 rounded-2xl rounded-br-md text-sm font-medium max-w-sm shadow-lg shadow-amber-500/10">
-                      Who has React and Node.js experience?
-                    </div>
-                  </div>
-                  <div className="flex justify-start">
-                    <div className="bg-zinc-800/80 px-5 py-4 rounded-2xl rounded-bl-md text-sm max-w-lg space-y-3 border border-zinc-700/50">
-                      <p className="font-semibold text-amber-400 flex items-center gap-2">
-                        <Sparkles className="w-4 h-4" />
-                        Found 2 strong matches:
-                      </p>
-                      <ul className="space-y-2 text-zinc-300">
-                        <li className="flex items-start gap-2">
-                          <span className="text-amber-500 mt-1">•</span>
-                          <span><strong className="text-zinc-100">Sarah Chen</strong> — 5 years React, built 3 production apps at Series B startup</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-amber-500 mt-1">•</span>
-                          <span><strong className="text-zinc-100">Mike Ross</strong> — 3 years full-stack with Node.js, led backend team</span>
-                        </li>
-                      </ul>
-                      <div className="flex gap-2 pt-2">
-                        <span className="text-xs bg-zinc-700/80 px-2.5 py-1 rounded-lg text-zinc-400 border border-zinc-600/50">Sarah_Resume.pdf</span>
-                        <span className="text-xs bg-zinc-700/80 px-2.5 py-1 rounded-lg text-zinc-400 border border-zinc-600/50">Mike_CV.pdf</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-6 pt-4 border-t border-zinc-800/50">
-                  <div className="flex items-center gap-3 h-12 bg-zinc-800/50 rounded-xl border border-zinc-700/50 px-4 text-sm text-zinc-500">
-                    <MessageSquare className="w-4 h-4" />
-                    Ask a follow-up question...
-                    <div className="ml-auto flex items-center gap-2 text-xs text-zinc-600">
-                      <span className="px-2 py-0.5 rounded bg-zinc-700/50">GPT-4</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Three steps to better hiring</h2>
-            <p className="text-zinc-500 text-lg">
-              From 100 resumes to shortlist in under 60 seconds
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              {
-                step: "01",
-                icon: Upload,
-                title: "Upload PDFs",
-                desc: "Drop up to 100 resumes at once. We extract and index all the text content."
-              },
-              {
-                step: "02",
-                icon: MessageSquare,
-                title: "Ask Questions",
-                desc: '"Who has AWS experience?" "Find React developers with 3+ years" — ask anything.'
-              },
-              {
-                step: "03",
-                icon: Sparkles,
-                title: "Get Rankings",
-                desc: "AI analyzes all resumes and returns ranked candidates with cited evidence."
-              }
-            ].map((item, i) => (
-              <div key={i} className="relative group">
-                <div className="absolute -inset-px bg-gradient-to-b from-amber-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
-                <div className="relative p-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 hover:border-zinc-700 transition-all h-full">
-                  <div className="text-6xl font-bold text-zinc-800 mb-4">{item.step}</div>
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 flex items-center justify-center mb-4 border border-amber-500/20">
-                    <item.icon className="w-6 h-6 text-amber-500" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3">{item.title}</h3>
-                  <p className="text-zinc-400 leading-relaxed">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="py-24 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-zinc-900/50 to-zinc-950" />
-        <div className="container mx-auto px-6 relative">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why HireScreen?</h2>
-            <p className="text-zinc-500 text-lg">
-              Built for modern recruiting teams who value their time
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {[
-              {
-                icon: Search,
-                title: "Semantic Search",
-                desc: 'Find "Frontend" experts even if they only list React and Vue. AI understands context and synonyms.'
-              },
-              {
-                icon: Zap,
-                title: "Instant Results",
-                desc: "Upload 50 resumes, get a ranked list in under 60 seconds. Save hours of manual reading."
-              },
-              {
-                icon: Shield,
-                title: "Private & Secure",
-                desc: "Your data is encrypted and isolated. We never train on your candidate data. SOC2 compliant."
-              }
-            ].map((f, i) => (
-              <div key={i} className="p-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 hover:border-zinc-700 transition-all group">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/5 flex items-center justify-center mb-4 group-hover:from-amber-500/20 group-hover:to-orange-500/10 transition-all border border-amber-500/10">
-                  <f.icon className="w-6 h-6 text-amber-500" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
-                <p className="text-zinc-400 text-sm leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple pricing</h2>
-            <p className="text-zinc-500 text-lg">Start free. Upgrade when you need more.</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {/* Free */}
-            <div className="p-8 rounded-2xl border border-zinc-800 bg-zinc-900/50">
-              <h3 className="text-xl font-bold mb-2">Free</h3>
-              <div className="text-4xl font-bold mb-6">$0<span className="text-lg font-normal text-zinc-500">/mo</span></div>
-              <ul className="space-y-4 mb-8">
-                {["2 positions", "10 resumes per position", "20 AI queries/month"].map((f, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-zinc-400">
-                    <Check className="w-5 h-5 text-zinc-600" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/signup">
-                <Button variant="outline" className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800 rounded-xl h-12">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-
-            {/* Pro */}
-            <div className="relative p-8 rounded-2xl border-2 border-amber-500/50 bg-gradient-to-b from-amber-500/5 to-transparent">
-              <div className="absolute -top-3 right-6 bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-900 text-xs font-bold px-4 py-1 rounded-full">
-                POPULAR
-              </div>
-              <h3 className="text-xl font-bold mb-2">Pro</h3>
-              <div className="text-4xl font-bold mb-6">$29<span className="text-lg font-normal text-zinc-500">/mo</span></div>
-              <ul className="space-y-4 mb-8">
-                {["Unlimited positions", "100 resumes per position", "1,000 AI queries/month", "CSV export", "Priority support"].map((f, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-zinc-300">
-                    <Check className="w-5 h-5 text-amber-500" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/signup">
-                <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-900 font-medium rounded-xl h-12">
-                  Start Free Trial
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-500/5 to-transparent" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-amber-500/10 rounded-full blur-3xl" />
-        <div className="container mx-auto px-6 text-center relative">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to hire 10x faster?</h2>
-          <p className="text-xl text-zinc-400 mb-10 max-w-xl mx-auto">
-            Join recruiters who screen hundreds of candidates in minutes, not hours.
-          </p>
-          <Link href="/signup">
-            <Button size="lg" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-900 font-semibold rounded-full px-12 h-14 text-lg shadow-xl shadow-amber-500/25 transition-all hover:scale-105">
-              Create Free Account
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-10 border-t border-zinc-800">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold">HireScreen</span>
-          </div>
-          <div className="flex gap-8 text-sm text-zinc-500">
-            <Link href="/privacy" className="hover:text-zinc-300 transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-zinc-300 transition-colors">Terms</Link>
-            <a href="mailto:tashon.braganca@gmail.com" className="hover:text-zinc-300 transition-colors">Contact</a>
-          </div>
-          <div className="text-sm text-zinc-600">
-            © 2024 HireScreen. All rights reserved.
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
+    return (
+        <main className={cn(outfit.className, "min-h-screen bg-[#f0f4f8] selection:bg-purple-200 selection:text-purple-900 overflow-x-hidden")}>
+            <Navbar />
+            <Hero />
+        </main>
+    );
 }

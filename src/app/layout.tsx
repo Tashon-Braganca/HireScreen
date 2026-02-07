@@ -1,28 +1,11 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/components/theme-provider";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
 
 export const metadata: Metadata = {
-  title: "HireScreen - AI-Powered Resume Screening",
-  description: "Upload resumes, ask questions, get instant answers. Screen candidates 10x faster with AI.",
-  keywords: ["resume screening", "AI recruiting", "hiring tool", "resume AI", "candidate screening"],
+  title: "HireScreen | AI-Powered Resume Intelligence",
+  description: "Transform your hiring process with AI-powered resume screening. Find exceptional talent in seconds, not hours.",
   icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
-    apple: "/icon.svg",
+    icon: "/favicon.svg",
   },
 };
 
@@ -32,19 +15,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background`}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange={false}
-        >
-          {children}
-          <Toaster />
-        </ThemeProvider>
+    <html lang="en">
+      <body className="antialiased">
+        {children}
       </body>
     </html>
   );
