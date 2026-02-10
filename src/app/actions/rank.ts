@@ -39,7 +39,7 @@ export async function rankCandidates(
             "match_document_chunks",
             {
                 query_embedding: queryEmbedding,
-                match_threshold: 0.25, // Lowered from 0.35 to catch more results
+                match_threshold: 0.1, // Lowered to catch more results
                 match_count: 50,
                 filter_job_id: jobId,
             }
@@ -117,69 +117,70 @@ export async function rankCandidates(
         // 5. Call GPT with JSON mode
         console.log(`[RANK] Calling GPT-4o-mini with ${contexts.length} contexts...`);
         const response = await getOpenAI().chat.completions.create({
-            model: "gpt-5-nano",
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userMessage },
-            ],
-            temperature: 0.2,
-            max_tokens: 2000,
-            response_format: { type: "json_object" },
-        });
+            const response = await getOpenAI().chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userMessage },
+                ],
+                temperature: 0.2,
+                max_tokens: 2000,
+                response_format: { type: "json_object" },
+            });
 
-        const content = response.choices[0].message.content;
-        if (!content) {
-            return { success: false, error: "No response from AI" };
-        }
+            const content = response.choices[0].message.content;
+            if(!content) {
+                return { success: false, error: "No response from AI" };
+            }
 
         // 6. Parse and validate
         const parsed = JSON.parse(content);
-        const rawCandidates = parsed.candidates || [];
-        console.log(`[RANK] GPT returned ${rawCandidates.length} candidates`);
+            const rawCandidates = parsed.candidates || [];
+            console.log(`[RANK] GPT returned ${rawCandidates.length} candidates`);
 
-        const candidates: RankedCandidate[] = rawCandidates.map(
-            (
-                c: {
-                    name?: string;
-                    score?: number;
-                    matchReasons?: Array<{
-                        reason?: string;
-                        page?: number | null;
+            const candidates: RankedCandidate[] = rawCandidates.map(
+                (
+                    c: {
+                        name?: string;
+                        score?: number;
+                        matchReasons?: Array<{
+                            reason?: string;
+                            page?: number | null;
+                            filename?: string;
+                        }>;
+                        documentId?: string;
                         filename?: string;
-                    }>;
-                    documentId?: string;
-                    filename?: string;
-                },
-                i: number
-            ) => ({
-                rank: i + 1,
-                name: c.name || "Unknown Candidate",
-                score: Math.min(100, Math.max(0, c.score || 0)),
-                matchReasons: (c.matchReasons || []).map((r) => ({
-                    reason: r.reason || "",
-                    page: r.page || null,
-                    filename: r.filename || "",
-                })),
-                documentId: c.documentId || "",
-                filename: c.filename || "",
-            })
-        );
+                    },
+                    i: number
+                ) => ({
+                    rank: i + 1,
+                    name: c.name || "Unknown Candidate",
+                    score: Math.min(100, Math.max(0, c.score || 0)),
+                    matchReasons: (c.matchReasons || []).map((r) => ({
+                        reason: r.reason || "",
+                        page: r.page || null,
+                        filename: r.filename || "",
+                    })),
+                    documentId: c.documentId || "",
+                    filename: c.filename || "",
+                })
+            );
 
-        // 7. Save query for history
-        await supabase.from("queries").insert({
-            job_id: jobId,
-            user_id: user.id,
-            question: query,
-            answer: JSON.stringify(candidates),
-            tokens_used: response.usage?.total_tokens || 0,
-        });
+            // 7. Save query for history
+            await supabase.from("queries").insert({
+                job_id: jobId,
+                user_id: user.id,
+                question: query,
+                answer: JSON.stringify(candidates),
+                tokens_used: response.usage?.total_tokens || 0,
+            });
 
-        console.log(`[RANK] ✅ Done: ${candidates.length} candidates ranked`);
-        return { success: true, candidates };
-    } catch (error: unknown) {
-        const errorMessage =
-            error instanceof Error ? error.message : "An unknown error occurred";
-        console.error("[RANK] ❌ Error:", error);
-        return { success: false, error: errorMessage };
+            console.log(`[RANK] ✅ Done: ${candidates.length} candidates ranked`);
+            return { success: true, candidates };
+        } catch (error: unknown) {
+            const errorMessage =
+                error instanceof Error ? error.message : "An unknown error occurred";
+            console.error("[RANK] ❌ Error:", error);
+            return { success: false, error: errorMessage };
+        }
     }
-}

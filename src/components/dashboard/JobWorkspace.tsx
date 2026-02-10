@@ -319,7 +319,7 @@ export function JobWorkspace({
       {/* 3-Column Resizable Layout */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <ResizableColumns
-          defaultWidths={[33, 34, 33]}
+          defaultWidths={[33.3, 33.3, 33.4]}
           storageKey={`workspace-${job.id}`}
           minWidth={220}
           className="gap-0"
