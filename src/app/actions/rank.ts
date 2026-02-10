@@ -29,27 +29,65 @@ export async function rankCandidates(
 
     try {
         // 1. Embed the query
+        console.log(`[RANK] Generating embedding for: "${query}"`);
         const queryEmbedding = await createEmbedding(query);
+        console.log(`[RANK] Query embedding dimension: ${queryEmbedding.length}`);
 
         // 2. Search for relevant chunks (broader search for ranking)
+        console.log(`[RANK] Searching chunks for job ${jobId} with threshold 0.25...`);
         const { data: chunks, error: searchError } = await supabase.rpc(
             "match_document_chunks",
             {
                 query_embedding: queryEmbedding,
-                match_threshold: 0.35,
-                match_count: 30,
+                match_threshold: 0.25, // Lowered from 0.35 to catch more results
+                match_count: 50,
                 filter_job_id: jobId,
             }
         );
 
         if (searchError) {
-            console.error("Search error:", searchError);
+            console.error("[RANK] Search RPC error:", searchError);
             return { success: false, error: `Search failed: ${searchError.message}` };
         }
 
+        console.log(`[RANK] Found ${chunks?.length || 0} matching chunks`);
+
         if (!chunks || chunks.length === 0) {
+            // Debug: Check if any chunks exist for this job at all
+            const { data: debugChunks, error: debugError } = await supabase
+                .from("document_chunks")
+                .select("id, document_id, chunk_index")
+                .eq("job_id", jobId)
+                .limit(5);
+
+            console.log(`[RANK] DEBUG: Total chunks in job: ${debugChunks?.length || 0}`, debugError || '');
+
+            if (debugChunks && debugChunks.length > 0) {
+                // Check if embeddings are null
+                const { data: embCheck } = await supabase
+                    .from("document_chunks")
+                    .select("id, embedding")
+                    .eq("job_id", jobId)
+                    .limit(1);
+
+                const hasEmbedding = embCheck && embCheck.length > 0 && embCheck[0].embedding !== null;
+                console.log(`[RANK] DEBUG: Chunks have embeddings: ${hasEmbedding}`);
+
+                if (!hasEmbedding) {
+                    return { success: false, error: "Chunks exist but have no embeddings. Try re-uploading." };
+                }
+            } else {
+                console.log("[RANK] DEBUG: No chunks found for this job at all");
+            }
+
             return { success: true, candidates: [] };
         }
+
+        // Log top similarities
+        const topSimilarities = chunks.slice(0, 3).map((c: { similarity: number; filename: string }) =>
+            `${c.filename}: ${c.similarity.toFixed(3)}`
+        );
+        console.log(`[RANK] Top 3 similarities: ${topSimilarities.join(', ')}`);
 
         // 3. Format contexts with document IDs for the ranking prompt
         const contexts = chunks.map(
@@ -77,6 +115,7 @@ export async function rankCandidates(
         const userMessage = buildRankingUserPrompt(query, contexts);
 
         // 5. Call GPT with JSON mode
+        console.log(`[RANK] Calling GPT-4o-mini with ${contexts.length} contexts...`);
         const response = await getOpenAI().chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
@@ -96,6 +135,7 @@ export async function rankCandidates(
         // 6. Parse and validate
         const parsed = JSON.parse(content);
         const rawCandidates = parsed.candidates || [];
+        console.log(`[RANK] GPT returned ${rawCandidates.length} candidates`);
 
         const candidates: RankedCandidate[] = rawCandidates.map(
             (
@@ -134,11 +174,12 @@ export async function rankCandidates(
             tokens_used: response.usage?.total_tokens || 0,
         });
 
+        console.log(`[RANK] ✅ Done: ${candidates.length} candidates ranked`);
         return { success: true, candidates };
     } catch (error: unknown) {
         const errorMessage =
             error instanceof Error ? error.message : "An unknown error occurred";
-        console.error("Rank Action Error:", error);
+        console.error("[RANK] ❌ Error:", error);
         return { success: false, error: errorMessage };
     }
 }

@@ -16,6 +16,9 @@ alter table documents add column if not exists status text default 'processing';
 alter table jobs add column if not exists resume_count int default 0;
 
 -- 4. Fix match_document_chunks to ALSO return document_id (needed for ranking)
+-- MUST DROP FIRST because return type changed (added document_id)
+drop function if exists match_document_chunks(vector, double precision, integer, uuid);
+
 create or replace function match_document_chunks (
   query_embedding vector(1536),
   match_threshold float,

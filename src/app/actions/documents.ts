@@ -28,6 +28,11 @@ export async function uploadResume(
 
   console.log(`[UPLOAD] Starting: ${file.name} (${file.size} bytes) for job ${jobId}`);
 
+  // Read file content first so we get actual byte size
+  const arrayBuffer = await file.arrayBuffer();
+  const actualFileSize = arrayBuffer.byteLength;
+  console.log(`[UPLOAD] Actual file size from buffer: ${actualFileSize} bytes`);
+
   // 1. Create Document Record Immediately
   const { data: doc, error: docError } = await supabase
     .from("documents")
@@ -35,7 +40,7 @@ export async function uploadResume(
       job_id: jobId,
       user_id: user.id,
       filename: file.name,
-      file_size: file.size,
+      file_size: actualFileSize,
       status: "processing",
     })
     .select()
@@ -53,8 +58,7 @@ export async function uploadResume(
 
   try {
     // 2. Parse PDF
-    const arrayBuffer = await file.arrayBuffer();
-    console.log(`[UPLOAD] Parsing PDF (${arrayBuffer.byteLength} bytes)...`);
+    console.log(`[UPLOAD] Parsing PDF (${actualFileSize} bytes)...`);
 
     const { text, totalPages } = await extractText(
       new Uint8Array(arrayBuffer),
@@ -105,7 +109,7 @@ export async function uploadResume(
     );
     const flatEmbeddings = allEmbeddings.flat();
 
-    console.log(`[UPLOAD] Got ${flatEmbeddings.length} embeddings`);
+    console.log(`[UPLOAD] Got ${flatEmbeddings.length} embeddings, first dimension: ${flatEmbeddings[0]?.length || 'N/A'}`);
 
     // 5. Insert Chunks (Batch Insert)
     const chunksToInsert = chunks.map((chunk, index) => ({
@@ -149,7 +153,7 @@ export async function uploadResume(
 
     return {
       success: true,
-      document: { ...doc, status: "ready", page_count: totalPages } as Document,
+      document: { ...doc, status: "ready", page_count: totalPages, file_size: actualFileSize } as Document,
     };
   } catch (error: unknown) {
     const errorMessage =
