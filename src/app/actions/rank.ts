@@ -39,8 +39,8 @@ export async function rankCandidates(
             "match_document_chunks",
             {
                 query_embedding: queryEmbedding,
-                match_threshold: 0.01, // Extremely low to ensure we get ALL candidates
-                match_count: 100, // Fetch more chunks to cover more documents
+                match_threshold: 0, // No threshold - get everything
+                match_count: 150, // Fetch plenty of chunks
                 filter_job_id: jobId,
             }
         );
