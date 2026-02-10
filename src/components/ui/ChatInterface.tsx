@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Send, Bot, User, Sparkles, Clock, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BentoCard } from "./BentoCard";
@@ -39,14 +39,19 @@ export function ChatInterface({
     }
   }, [messages, isLoading]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Debounce ref to prevent rapid-fire submissions
+  const lastSubmitRef = useRef<number>(0);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    const now = Date.now();
+    if (!input.trim() || isLoading || now - lastSubmitRef.current < 300) return;
+    lastSubmitRef.current = now;
 
     const message = input;
     setInput("");
     await onSendMessage(message);
-  };
+  }, [input, isLoading, onSendMessage]);
 
   // Dynamic quick-ask chips
   const quickChips = [
@@ -66,7 +71,7 @@ export function ChatInterface({
         <div>
           <h3 className="text-xs font-bold text-slate-800">AI Assistant</h3>
           <p className="text-[10px] text-slate-500 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Ready
           </p>
         </div>

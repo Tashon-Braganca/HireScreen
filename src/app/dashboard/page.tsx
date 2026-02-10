@@ -107,7 +107,7 @@ export default async function DashboardPage() {
                     {job.title}
                   </h3>
                   <p className="text-sm text-slate-400 line-clamp-2 mb-4 min-h-[40px]">
-                    {job.description || "No description provided."}
+                    {job.description || "\u00A0"}
                   </p>
 
                   <div className="flex items-center justify-between text-xs text-slate-400 font-medium border-t border-slate-100 pt-3">
