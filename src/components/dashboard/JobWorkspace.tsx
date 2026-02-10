@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useCallback, useRef } from "react";
 import { Job, Document, RankedCandidate } from "@/types";
 import { ResumeList, UploadedFile } from "@/components/ui/ResumeList";
 import { ChatInterface } from "@/components/ui/ChatInterface";
@@ -24,8 +23,13 @@ interface JobWorkspaceProps {
   documents: Document[];
 }
 
-export function JobWorkspace({ job, documents }: JobWorkspaceProps) {
-  const router = useRouter();
+export function JobWorkspace({
+  job,
+  documents: initialDocuments,
+}: JobWorkspaceProps) {
+  // --- Client-side document state (no more router.refresh()) ---
+  const [documents, setDocuments] = useState<Document[]>(initialDocuments);
+  const [uploadingFiles, setUploadingFiles] = useState<UploadedFile[]>([]);
 
   // Chat state
   const [messages, setMessages] = useState<Message[]>([
@@ -38,11 +42,10 @@ export function JobWorkspace({ job, documents }: JobWorkspaceProps) {
   ]);
   const [isChatLoading, setIsChatLoading] = useState(false);
 
-  // Upload state
-  const [uploadingFiles, setUploadingFiles] = useState<UploadedFile[]>([]);
-
   // Ranked results state
-  const [rankedCandidates, setRankedCandidates] = useState<RankedCandidate[]>([]);
+  const [rankedCandidates, setRankedCandidates] = useState<RankedCandidate[]>(
+    []
+  );
   const [isRanking, setIsRanking] = useState(false);
   const [activeQuery, setActiveQuery] = useState<string | undefined>();
   const [recentQueries, setRecentQueries] = useState<string[]>([]);
@@ -51,7 +54,10 @@ export function JobWorkspace({ job, documents }: JobWorkspaceProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showExport, setShowExport] = useState(false);
 
-  // Map server docs to UI format
+  // Ref to prevent duplicate deletes
+  const deletingIds = useRef<Set<string>>(new Set());
+
+  // Map server docs + uploading files to unified UI format
   const fileList: UploadedFile[] = [
     ...uploadingFiles,
     ...documents.map((d) => ({
@@ -62,41 +68,90 @@ export function JobWorkspace({ job, documents }: JobWorkspaceProps) {
     })),
   ];
 
-  // --- Handlers ---
+  // --- OPTIMISTIC DELETE ---
+  const handleDelete = useCallback(
+    async (id: string) => {
+      // Prevent double-delete
+      if (deletingIds.current.has(id)) return;
+      deletingIds.current.add(id);
 
-  const handleUpload = async (files: File[]) => {
-    const newUploads: UploadedFile[] = files.map((f) => ({
-      id: Math.random().toString(),
-      name: f.name,
-      size: f.size,
-      status: "uploading",
-    }));
-    setUploadingFiles((prev) => [...prev, ...newUploads]);
+      // Save for rollback
+      const previousDocs = documents;
 
-    for (const file of files) {
+      // Instantly remove from UI
+      setDocuments((prev) => prev.filter((d) => d.id !== id));
+
+      // Fire backend delete in background
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-        const res = await uploadResume(formData, job.id);
+        const res = await deleteDocument(id, job.id);
         if (!res.success) {
-          toast.error(`Upload failed: ${res.error}`);
-        } else {
-          toast.success(`${file.name} uploaded`);
+          // Rollback on failure
+          setDocuments(previousDocs);
+          toast.error(`Delete failed: ${res.error}`);
         }
       } catch {
-        toast.error("Network error during upload.");
+        // Rollback on network error
+        setDocuments(previousDocs);
+        toast.error("Network error — document restored.");
+      } finally {
+        deletingIds.current.delete(id);
       }
-    }
+    },
+    [documents, job.id]
+  );
 
-    setUploadingFiles([]);
-    router.refresh();
-  };
+  // --- PARALLEL UPLOADS ---
+  const handleUpload = useCallback(
+    async (files: File[]) => {
+      // Create optimistic uploading entries
+      const newUploads: UploadedFile[] = files.map((f, i) => ({
+        id: `uploading-${Date.now()}-${i}`,
+        name: f.name,
+        size: f.size,
+        status: "uploading" as const,
+      }));
+      setUploadingFiles((prev) => [...prev, ...newUploads]);
 
-  const handleDelete = async (id: string) => {
-    await deleteDocument(id);
-    router.refresh();
-  };
+      // Process ALL files in parallel
+      const results = await Promise.allSettled(
+        files.map(async (file, i) => {
+          const formData = new FormData();
+          formData.append("file", file);
 
+          const res = await uploadResume(formData, job.id);
+
+          // Remove this file from uploading list
+          setUploadingFiles((prev) =>
+            prev.filter((f) => f.id !== newUploads[i].id)
+          );
+
+          if (res.success && res.document) {
+            // Add completed document directly to state
+            setDocuments((prev) => [res.document!, ...prev]);
+            toast.success(`${file.name} ready`);
+          } else {
+            toast.error(`${file.name}: ${res.error || "Upload failed"}`);
+          }
+
+          return res;
+        })
+      );
+
+      // Clean up any stragglers
+      const uploadIds = new Set(newUploads.map((u) => u.id));
+      setUploadingFiles((prev) => prev.filter((f) => !uploadIds.has(f.id)));
+
+      const succeeded = results.filter(
+        (r) => r.status === "fulfilled" && r.value.success
+      ).length;
+      if (files.length > 1) {
+        toast.info(`${succeeded}/${files.length} resumes processed`);
+      }
+    },
+    [job.id]
+  );
+
+  // --- Selection ---
   const handleToggleSelect = useCallback((documentId: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -119,7 +174,7 @@ export function JobWorkspace({ job, documents }: JobWorkspaceProps) {
     [documents]
   );
 
-  // Rank candidates (center panel)
+  // --- Rank candidates ---
   const handleRankQuery = useCallback(
     async (query: string) => {
       setIsRanking(true);
@@ -130,7 +185,6 @@ export function JobWorkspace({ job, documents }: JobWorkspaceProps) {
       });
 
       const res = await rankCandidates(query, job.id);
-
       setIsRanking(false);
 
       if (res.success && res.candidates) {
@@ -146,7 +200,7 @@ export function JobWorkspace({ job, documents }: JobWorkspaceProps) {
     [job.id]
   );
 
-  // Freeform chat (right panel)
+  // --- Chat ---
   const handleSendMessage = async (content: string) => {
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -158,7 +212,6 @@ export function JobWorkspace({ job, documents }: JobWorkspaceProps) {
     setIsChatLoading(true);
 
     const res = await chatWithJob(content, job.id);
-
     setIsChatLoading(false);
 
     const aiMsg: Message = {
@@ -169,7 +222,6 @@ export function JobWorkspace({ job, documents }: JobWorkspaceProps) {
         : res.error || "Sorry, I encountered an error.",
       timestamp: new Date(),
     };
-
     setMessages((prev) => [...prev, aiMsg]);
   };
 
