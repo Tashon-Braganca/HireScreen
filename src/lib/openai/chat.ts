@@ -29,13 +29,13 @@ export async function generateAnswer(
   const userMessage = buildUserPrompt(question, contexts);
 
   const response = await getOpenAI().chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-5-nano',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userMessage },
     ],
     temperature: 0.3,
-    max_tokens: 1000,
+    max_tokens: 2000,
   });
 
   return {

@@ -117,7 +117,7 @@ export async function rankCandidates(
         // 5. Call GPT with JSON mode
         console.log(`[RANK] Calling GPT-4o-mini with ${contexts.length} contexts...`);
         const response = await getOpenAI().chat.completions.create({
-            model: "gpt-4o-mini",
+            model: "gpt-5-nano",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userMessage },

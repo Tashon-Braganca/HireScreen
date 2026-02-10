@@ -21,12 +21,11 @@ Each candidate object must have:
 - "filename": string — The source document filename
 
 Rules:
-1. Rank candidates from highest to lowest score
-2. Only include candidates who have at least some relevance to the query (score > 30)
-3. Provide 2-4 match reasons per candidate, each citing specific evidence from the resume
-4. Be strict with scoring — a 90%+ score means nearly perfect match
-5. If no candidates match, return {"candidates": []}
-6. Never invent information not present in the resume text`;
+1. Rank ALL candidates from highest to lowest score — include every candidate provided, even low-scorers
+2. Provide 3-5 match reasons per candidate, each citing specific evidence from the resume
+3. Be strict with scoring — a 90%+ score means nearly perfect match
+4. Never return an empty candidates array if resume excerpts were provided
+5. Never invent information not present in the resume text`;
 }
 
 export function buildRankingUserPrompt(

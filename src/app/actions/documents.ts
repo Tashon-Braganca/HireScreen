@@ -209,17 +209,36 @@ export async function getResumeUrl(docId: string): Promise<{ success: boolean; u
 
   const { data: doc, error: docError } = await supabase
     .from("documents")
-    .select("file_path")
+    .select("file_path, job_id, filename")
     .eq("id", docId)
     .single();
 
-  if (docError || !doc?.file_path) {
-    return { success: false, error: "Resume file not found" };
+  if (docError || !doc) {
+    return { success: false, error: "Document not found" };
+  }
+
+  let filePath = doc.file_path;
+
+  // Fallback: if no file_path stored, try to find in storage by listing
+  if (!filePath) {
+    console.log(`[PREVIEW] No file_path for doc ${docId}, trying storage listing...`);
+    const { data: files } = await supabase.storage
+      .from("resumes")
+      .list(`${doc.job_id}/${docId}`);
+
+    if (files && files.length > 0) {
+      filePath = `${doc.job_id}/${docId}/${files[0].name}`;
+      // Save it so future lookups are instant
+      await supabase.from("documents").update({ file_path: filePath }).eq("id", docId);
+      console.log(`[PREVIEW] Found and saved file_path: ${filePath}`);
+    } else {
+      return { success: false, error: "Resume file not found in storage. Try re-uploading." };
+    }
   }
 
   const { data, error } = await supabase.storage
     .from("resumes")
-    .createSignedUrl(doc.file_path, 3600); // 1 hour
+    .createSignedUrl(filePath, 3600);
 
   if (error || !data?.signedUrl) {
     return { success: false, error: "Failed to generate preview link" };

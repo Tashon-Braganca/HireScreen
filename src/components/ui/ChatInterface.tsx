@@ -6,6 +6,66 @@ import { cn } from "@/lib/utils";
 import { BentoCard } from "./BentoCard";
 import { motion, AnimatePresence } from "framer-motion";
 
+/** Lightweight markdown renderer for chat messages */
+function SimpleMarkdown({ content }: { content: string }) {
+  const lines = content.split("\n");
+  const elements: React.ReactNode[] = [];
+
+  const renderInline = (text: string): React.ReactNode[] => {
+    const parts: React.ReactNode[] = [];
+    // Handle **bold**, `code`, and plain text
+    const regex = /(\*\*(.+?)\*\*|`(.+?)`)/g;
+    let lastIndex = 0;
+    let match;
+    let key = 0;
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+      if (match[2]) {
+        parts.push(<strong key={key++} className="font-semibold text-slate-900">{match[2]}</strong>);
+      } else if (match[3]) {
+        parts.push(<code key={key++} className="px-1 py-0.5 bg-slate-100 rounded text-[10px] font-mono">{match[3]}</code>);
+      }
+      lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+    return parts;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      elements.push(<div key={i} className="h-1.5" />);
+    } else if (trimmed.startsWith("### ")) {
+      elements.push(<h4 key={i} className="text-xs font-bold text-slate-800 mt-2 mb-1">{renderInline(trimmed.slice(4))}</h4>);
+    } else if (trimmed.startsWith("## ")) {
+      elements.push(<h3 key={i} className="text-sm font-bold text-slate-800 mt-2 mb-1">{renderInline(trimmed.slice(3))}</h3>);
+    } else if (/^\d+\.\s/.test(trimmed)) {
+      const text = trimmed.replace(/^\d+\.\s/, "");
+      elements.push(
+        <div key={i} className="flex gap-1.5 ml-1">
+          <span className="text-indigo-400 font-medium flex-shrink-0">{trimmed.match(/^\d+/)![0]}.</span>
+          <span>{renderInline(text)}</span>
+        </div>
+      );
+    } else if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
+      elements.push(
+        <div key={i} className="flex gap-1.5 ml-2">
+          <span className="text-indigo-400 mt-0.5 flex-shrink-0">•</span>
+          <span>{renderInline(trimmed.slice(2))}</span>
+        </div>
+      );
+    } else {
+      elements.push(<p key={i}>{renderInline(trimmed)}</p>);
+    }
+  }
+
+  return <div className="space-y-0.5">{elements}</div>;
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -140,11 +200,15 @@ export function ChatInterface({
                 className={cn(
                   "p-2.5 rounded-xl text-xs leading-relaxed",
                   msg.role === "assistant"
-                    ? "bg-white text-slate-700 border border-slate-100 rounded-tl-none shadow-sm"
+                    ? "bg-white text-slate-700 border border-slate-100 rounded-tl-none shadow-sm prose-chat"
                     : "bg-slate-800 text-white rounded-tr-none"
                 )}
               >
-                {msg.content}
+                {msg.role === "assistant" ? (
+                  <SimpleMarkdown content={msg.content} />
+                ) : (
+                  msg.content
+                )}
               </div>
             </motion.div>
           ))}

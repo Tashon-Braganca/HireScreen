@@ -65,5 +65,11 @@ ${contextText}
 Instructions:
 - Reference specific resumes by filename when making claims
 - If you can't find relevant information, say so clearly
-- Be concise but thorough`;
+- Be concise but thorough
+- Use markdown formatting for readability:
+  - Use **bold** for candidate names and key terms
+  - Use ### headers to separate candidates or sections
+  - Use numbered lists and bullet points for key findings
+  - Include a short verdict/summary at the end
+- Keep each point specific and evidence-based`;
 }
