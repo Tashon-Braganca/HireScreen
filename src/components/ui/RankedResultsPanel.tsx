@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { BentoCard } from "./BentoCard";
 import { motion, AnimatePresence } from "framer-motion";
-import type { RankedCandidate } from "@/types";
+import type { RankedCandidate, Document } from "@/types";
 import {
     Trophy,
     ChevronDown,
@@ -16,6 +16,8 @@ import {
     Search,
     Loader2,
     FileDown,
+    Mail,
+    Phone,
 } from "lucide-react";
 import { exportToPDF } from "@/lib/pdf/export";
 
@@ -29,6 +31,7 @@ interface RankedResultsPanelProps {
     isLoading?: boolean;
     activeQuery?: string;
     jobTitle?: string;
+    documents?: Document[];
 }
 
 function getScoreColor(score: number) {
@@ -51,12 +54,16 @@ function CandidateCard({
     onToggleSelect,
     onViewResume,
     index,
+    contactEmail,
+    contactPhone,
 }: {
     candidate: RankedCandidate;
     isSelected: boolean;
     onToggleSelect: () => void;
     onViewResume: () => void;
     index: number;
+    contactEmail?: string | null;
+    contactPhone?: string | null;
 }) {
     const [expanded, setExpanded] = useState(false);
 
@@ -170,8 +177,24 @@ function CandidateCard({
                 </div>
             </div>
 
-            {/* Source file */}
-            <div className="px-4 pb-3">
+            {/* Contact info + source file */}
+            <div className="px-4 pb-3 space-y-1">
+                {(contactEmail || contactPhone) && (
+                    <div className="flex items-center gap-3 text-[10px] text-slate-500">
+                        {contactEmail && (
+                            <span className="flex items-center gap-1 truncate">
+                                <Mail size={10} className="text-slate-400 flex-shrink-0" />
+                                {contactEmail}
+                            </span>
+                        )}
+                        {contactPhone && (
+                            <span className="flex items-center gap-1">
+                                <Phone size={10} className="text-slate-400 flex-shrink-0" />
+                                {contactPhone}
+                            </span>
+                        )}
+                    </div>
+                )}
                 <span className="text-[10px] text-slate-400 font-mono truncate block">
                     📄 {candidate.filename}
                 </span>
@@ -190,6 +213,7 @@ export function RankedResultsPanel({
     isLoading,
     activeQuery,
     jobTitle,
+    documents = [],
 }: RankedResultsPanelProps) {
     const [isExporting, setIsExporting] = useState(false);
     const selectedCount = selectedIds.size;
@@ -348,16 +372,21 @@ export function RankedResultsPanel({
             {!isLoading && candidates.length > 0 && (
                 <div className="flex-1 overflow-y-auto p-3 space-y-2">
                     <AnimatePresence>
-                        {candidates.map((candidate, i) => (
-                            <CandidateCard
-                                key={candidate.documentId + candidate.rank}
-                                candidate={candidate}
-                                isSelected={selectedIds.has(candidate.documentId)}
-                                onToggleSelect={() => onToggleSelect(candidate.documentId)}
-                                onViewResume={() => onViewResume(candidate.documentId)}
-                                index={i}
-                            />
-                        ))}
+                        {candidates.map((candidate, i) => {
+                            const doc = documents.find(d => d.id === candidate.documentId);
+                            return (
+                                <CandidateCard
+                                    key={candidate.documentId + candidate.rank}
+                                    candidate={candidate}
+                                    isSelected={selectedIds.has(candidate.documentId)}
+                                    onToggleSelect={() => onToggleSelect(candidate.documentId)}
+                                    onViewResume={() => onViewResume(candidate.documentId)}
+                                    index={i}
+                                    contactEmail={doc?.candidate_email}
+                                    contactPhone={doc?.candidate_phone}
+                                />
+                            );
+                        })}
                     </AnimatePresence>
                 </div>
             )}

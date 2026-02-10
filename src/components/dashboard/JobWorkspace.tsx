@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Job, Document, RankedCandidate } from "@/types";
 import { ResumeList, UploadedFile } from "@/components/ui/ResumeList";
 import { ChatInterface } from "@/components/ui/ChatInterface";
 import { RankedResultsPanel } from "@/components/ui/RankedResultsPanel";
 import { ExportModal } from "@/components/ui/ExportModal";
+import { ResizableColumns } from "@/components/ui/ResizableColumns";
 import { uploadResume, deleteDocument, getDocuments, getResumeUrl } from "@/app/actions/documents";
 import { chatWithJob } from "@/app/actions/chat";
 import { rankCandidates } from "@/app/actions/rank";
@@ -23,32 +24,60 @@ interface JobWorkspaceProps {
   documents: Document[];
 }
 
+// --- Session storage helpers ---
+function loadSession<T>(jobId: string, key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = sessionStorage.getItem(`hs-${key}-${jobId}`);
+    if (raw) return JSON.parse(raw) as T;
+  } catch { /* ignore */ }
+  return fallback;
+}
+
+function saveSession<T>(jobId: string, key: string, value: T) {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(`hs-${key}-${jobId}`, JSON.stringify(value));
+  } catch { /* ignore */ }
+}
+
+// Ranking keyword detector
+const RANK_KEYWORDS = /\b(rank|best|top|compare|who has|who can|strongest|weakest|most experienced|least|fit for|suitable|qualified)\b/i;
+
 export function JobWorkspace({
   job,
   documents: initialDocuments,
 }: JobWorkspaceProps) {
-  // --- Client-side document state (no more router.refresh()) ---
+  // --- Client-side document state ---
   const [documents, setDocuments] = useState<Document[]>(initialDocuments);
   const [uploadingFiles, setUploadingFiles] = useState<UploadedFile[]>([]);
 
-  // Chat state
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content: `Ready to screen candidates for ${job.title}. Upload resumes and ask me anything — or use the Quick Ask chips!`,
-      timestamp: new Date(),
-    },
-  ]);
+  // Chat state — restore from session
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = loadSession<Message[]>(job.id, "msgs", []);
+    if (saved.length > 0) return saved;
+    return [
+      {
+        id: "1",
+        role: "assistant",
+        content: `Ready to screen candidates for ${job.title}. Upload resumes and ask me anything — or use the Quick Ask chips!`,
+        timestamp: new Date(),
+      },
+    ];
+  });
   const [isChatLoading, setIsChatLoading] = useState(false);
 
-  // Ranked results state
+  // Ranked results state — restore from session
   const [rankedCandidates, setRankedCandidates] = useState<RankedCandidate[]>(
-    []
+    () => loadSession<RankedCandidate[]>(job.id, "ranked", [])
   );
   const [isRanking, setIsRanking] = useState(false);
-  const [activeQuery, setActiveQuery] = useState<string | undefined>();
-  const [recentQueries, setRecentQueries] = useState<string[]>([]);
+  const [activeQuery, setActiveQuery] = useState<string | undefined>(
+    () => loadSession<string | undefined>(job.id, "query", undefined)
+  );
+  const [recentQueries, setRecentQueries] = useState<string[]>(
+    () => loadSession<string[]>(job.id, "recent", [])
+  );
 
   // Selection & export state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -57,12 +86,31 @@ export function JobWorkspace({
   // Ref to prevent duplicate deletes
   const deletingIds = useRef<Set<string>>(new Set());
 
+  // --- Persist important state to sessionStorage ---
+  useEffect(() => {
+    saveSession(job.id, "ranked", rankedCandidates);
+  }, [job.id, rankedCandidates]);
+
+  useEffect(() => {
+    saveSession(job.id, "msgs", messages);
+  }, [job.id, messages]);
+
+  useEffect(() => {
+    if (activeQuery !== undefined) saveSession(job.id, "query", activeQuery);
+  }, [job.id, activeQuery]);
+
+  useEffect(() => {
+    saveSession(job.id, "recent", recentQueries);
+  }, [job.id, recentQueries]);
+
   // Map server docs + uploading files to unified UI format
   const fileList: UploadedFile[] = [
     ...uploadingFiles,
     ...documents.map((d) => ({
       id: d.id,
-      name: d.filename,
+      name: d.candidate_name
+        ? `${d.candidate_name} — ${d.filename}`
+        : d.filename,
       size: d.file_size || 0,
       status: d.status as "processing" | "ready" | "error" | "uploading",
     })),
@@ -74,24 +122,19 @@ export function JobWorkspace({
       if (deletingIds.current.has(id)) return;
       deletingIds.current.add(id);
 
-      // Save for rollback
       const previousDocs = documents;
-
-      // Instantly remove from UI
       setDocuments((prev) => prev.filter((d) => d.id !== id));
 
-      // Fire backend delete in background
       try {
         const res = await deleteDocument(id, job.id);
         if (!res.success) {
           setDocuments(previousDocs);
           toast.error(`Delete failed: ${res.error}`);
-          console.error("[UI] Delete rollback — server returned error:", res.error);
         }
       } catch (err) {
         setDocuments(previousDocs);
         toast.error("Network error — document restored.");
-        console.error("[UI] Delete rollback — network error:", err);
+        console.error("[UI] Delete rollback:", err);
       } finally {
         deletingIds.current.delete(id);
       }
@@ -104,7 +147,6 @@ export function JobWorkspace({
     async (files: File[]) => {
       console.log(`[UI] Starting upload of ${files.length} file(s)`);
 
-      // Create optimistic uploading entries
       const newUploads: UploadedFile[] = files.map((f, i) => ({
         id: `uploading-${Date.now()}-${i}`,
         name: f.name,
@@ -113,27 +155,21 @@ export function JobWorkspace({
       }));
       setUploadingFiles((prev) => [...prev, ...newUploads]);
 
-      // Process ALL files in parallel
       const results = await Promise.allSettled(
         files.map(async (file, i) => {
           const formData = new FormData();
           formData.append("file", file);
 
-          console.log(`[UI] Uploading ${file.name}...`);
           const res = await uploadResume(formData, job.id);
-          console.log(`[UI] Upload result for ${file.name}:`, res.success, res.error || "");
 
-          // Remove this file from uploading list
           setUploadingFiles((prev) =>
             prev.filter((f) => f.id !== newUploads[i].id)
           );
 
           if (res.success && res.document) {
-            // Add completed document directly to state
             setDocuments((prev) => [res.document!, ...prev]);
             toast.success(`${file.name} ready`);
           } else if (res.document) {
-            // Upload failed but document record exists — show it with error/processing status
             setDocuments((prev) => [res.document!, ...prev]);
             toast.error(`${file.name}: ${res.error || "Processing failed"}`);
           } else {
@@ -144,16 +180,14 @@ export function JobWorkspace({
         })
       );
 
-      // Clean up any leftover uploading entries
+      // Clean up
       const uploadIds = new Set(newUploads.map((u) => u.id));
       setUploadingFiles((prev) => prev.filter((f) => !uploadIds.has(f.id)));
 
-      // Safety net: refetch from server to make sure state is in sync
-      console.log("[UI] Refetching documents from server for sync...");
+      // Refetch from server for sync
       try {
         const freshDocs = await getDocuments(job.id);
         setDocuments(freshDocs as Document[]);
-        console.log(`[UI] Synced: ${freshDocs.length} documents from server`);
       } catch (err) {
         console.error("[UI] Failed to refetch documents:", err);
       }
@@ -172,11 +206,8 @@ export function JobWorkspace({
   const handleToggleSelect = useCallback((documentId: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(documentId)) {
-        next.delete(documentId);
-      } else {
-        next.add(documentId);
-      }
+      if (next.has(documentId)) next.delete(documentId);
+      else next.add(documentId);
       return next;
     });
   }, []);
@@ -213,9 +244,7 @@ export function JobWorkspace({
         return [query, ...filtered].slice(0, 10);
       });
 
-      console.log(`[UI] Ranking query: "${query}"`);
       const res = await rankCandidates(query, job.id);
-      console.log("[UI] Ranking result:", res.success, res.candidates?.length || 0, "candidates");
       setIsRanking(false);
 
       if (res.success && res.candidates) {
@@ -231,7 +260,7 @@ export function JobWorkspace({
     [job.id]
   );
 
-  // --- Chat ---
+  // --- Chat (also triggers ranking for ranking-like queries) ---
   const handleSendMessage = async (content: string) => {
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -242,9 +271,13 @@ export function JobWorkspace({
     setMessages((prev) => [...prev, userMsg]);
     setIsChatLoading(true);
 
-    console.log(`[UI] Chat: "${content}"`);
+    // If the message looks like a ranking query, fire ranking in parallel
+    const isRankingQuery = RANK_KEYWORDS.test(content);
+    if (isRankingQuery) {
+      handleRankQuery(content); // runs in parallel — don't await
+    }
+
     const res = await chatWithJob(content, job.id);
-    console.log("[UI] Chat result:", res.success, res.error || "");
     setIsChatLoading(false);
 
     const aiMsg: Message = {
@@ -283,45 +316,53 @@ export function JobWorkspace({
         </div>
       </div>
 
-      {/* 3-Column Layout */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0 overflow-hidden">
-        {/* Left: Resumes (25%) */}
-        <div className="lg:col-span-3 flex flex-col min-h-0">
-          <ResumeList
-            files={fileList}
-            onUpload={handleUpload}
-            onDelete={handleDelete}
-            isUploading={uploadingFiles.length > 0}
-            selectedIds={selectedIds}
-          />
-        </div>
+      {/* 3-Column Resizable Layout */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <ResizableColumns
+          defaultWidths={[20, 55, 25]}
+          storageKey={`workspace-${job.id}`}
+          minWidth={220}
+          className="gap-0"
+        >
+          {/* Left: Resumes */}
+          <div className="flex flex-col min-h-0 pr-1.5">
+            <ResumeList
+              files={fileList}
+              onUpload={handleUpload}
+              onDelete={handleDelete}
+              isUploading={uploadingFiles.length > 0}
+              selectedIds={selectedIds}
+            />
+          </div>
 
-        {/* Center: Ranked Results (50%) */}
-        <div className="lg:col-span-6 flex flex-col min-h-0">
-          <RankedResultsPanel
-            candidates={rankedCandidates}
-            selectedIds={selectedIds}
-            onToggleSelect={handleToggleSelect}
-            onViewResume={handleViewResume}
-            onExport={() => setShowExport(true)}
-            onQueryClick={handleRankQuery}
-            isLoading={isRanking}
-            activeQuery={activeQuery}
-            jobTitle={job.title}
-          />
-        </div>
+          {/* Center: Ranked Results */}
+          <div className="flex flex-col min-h-0 px-1.5">
+            <RankedResultsPanel
+              candidates={rankedCandidates}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
+              onViewResume={handleViewResume}
+              onExport={() => setShowExport(true)}
+              onQueryClick={handleRankQuery}
+              isLoading={isRanking}
+              activeQuery={activeQuery}
+              jobTitle={job.title}
+              documents={documents}
+            />
+          </div>
 
-        {/* Right: AI Chat (25%) */}
-        <div className="lg:col-span-3 flex flex-col min-h-0">
-          <ChatInterface
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            onRankQuery={handleRankQuery}
-            isLoading={isChatLoading}
-            recentQueries={recentQueries}
-            jobTitle={job.title}
-          />
-        </div>
+          {/* Right: AI Chat */}
+          <div className="flex flex-col min-h-0 pl-1.5">
+            <ChatInterface
+              messages={messages}
+              onSendMessage={handleSendMessage}
+              onRankQuery={handleRankQuery}
+              isLoading={isChatLoading}
+              recentQueries={recentQueries}
+              jobTitle={job.title}
+            />
+          </div>
+        </ResizableColumns>
       </div>
 
       {/* Export Modal */}

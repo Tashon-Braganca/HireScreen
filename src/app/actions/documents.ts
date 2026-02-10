@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { extractText } from "unpdf";
 import { chunkText } from "@/lib/pdf/chunking";
 import { createEmbeddings } from "@/lib/openai/embeddings";
+import { extractContactInfo } from "@/lib/pdf/extract-contact";
 import type { Document } from "@/types";
 
 export async function uploadResume(
@@ -57,11 +58,12 @@ export async function uploadResume(
   console.log(`[UPLOAD] Document record created: ${doc.id}`);
 
   try {
-    // 2. Parse PDF
+    // 2. Parse PDF — IMPORTANT: copy buffer first, extractText detaches the original
     console.log(`[UPLOAD] Parsing PDF (${actualFileSize} bytes)...`);
+    const pdfBuffer = arrayBuffer.slice(0); // defensive copy for storage upload later
 
     const { text, totalPages } = await extractText(
-      new Uint8Array(arrayBuffer),
+      new Uint8Array(pdfBuffer),
       { mergePages: true }
     );
 
@@ -71,10 +73,19 @@ export async function uploadResume(
       console.warn(`[UPLOAD] Very little text extracted from ${file.name}`);
     }
 
-    // Update page count
+    // Extract contact info
+    const contact = extractContactInfo(text);
+    console.log(`[UPLOAD] Extracted contact: name="${contact.name}", email="${contact.email}", phone="${contact.phone}"`);
+
+    // Update page count + contact info
     await supabase
       .from("documents")
-      .update({ page_count: totalPages })
+      .update({
+        page_count: totalPages,
+        candidate_name: contact.name,
+        candidate_email: contact.email,
+        candidate_phone: contact.phone,
+      })
       .eq("id", doc.id);
 
     // 3. Chunk Text
@@ -149,12 +160,13 @@ export async function uploadResume(
       console.error("[UPLOAD] increment_resume_count RPC error:", rpcError);
     }
 
-    // 8. Upload to Supabase Storage
+    // 8. Upload to Supabase Storage — use the ORIGINAL arrayBuffer (not the copy)
     console.log(`[UPLOAD] Uploading file to Storage (resumes bucket)...`);
     const storagePath = `${jobId}/${doc.id}/${file.name}`;
+    const storageBuffer = arrayBuffer.slice(0); // fresh copy since original may be detached
     const { error: storageError } = await supabase.storage
       .from("resumes")
-      .upload(storagePath, arrayBuffer, {
+      .upload(storagePath, storageBuffer, {
         contentType: "application/pdf",
         upsert: true,
       });
@@ -171,7 +183,7 @@ export async function uploadResume(
 
     return {
       success: true,
-      document: { ...doc, status: "ready", page_count: totalPages, file_size: actualFileSize, file_path: storagePath } as Document,
+      document: { ...doc, status: "ready", page_count: totalPages, file_size: actualFileSize, file_path: storagePath, candidate_name: contact.name, candidate_email: contact.email, candidate_phone: contact.phone } as Document,
     };
   } catch (error: unknown) {
     const errorMessage =

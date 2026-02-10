@@ -34,8 +34,12 @@ export interface Document {
   user_id: string;
   filename: string;
   file_size: number | null;
+  file_path: string | null;
   page_count: number | null;
   text_content: string | null;
+  candidate_name: string | null;
+  candidate_email: string | null;
+  candidate_phone: string | null;
   status: 'processing' | 'ready' | 'failed';
   created_at: string;
 }
