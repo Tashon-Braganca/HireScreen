@@ -16,15 +16,19 @@ export async function uploadResume(
   } = await supabase.auth.getUser();
 
   if (!user) {
+    console.error("[UPLOAD] Unauthorized — no user session");
     return { success: false, error: "Unauthorized" };
   }
 
   const file = formData.get("file") as File;
   if (!file) {
+    console.error("[UPLOAD] No file in FormData");
     return { success: false, error: "No file provided" };
   }
 
-  // 1. Create Document Record Immediately (Optimistic)
+  console.log(`[UPLOAD] Starting: ${file.name} (${file.size} bytes) for job ${jobId}`);
+
+  // 1. Create Document Record Immediately
   const { data: doc, error: docError } = await supabase
     .from("documents")
     .insert({
@@ -38,21 +42,32 @@ export async function uploadResume(
     .single();
 
   if (docError || !doc) {
+    console.error("[UPLOAD] Failed to create document record:", docError);
     return {
       success: false,
       error: docError?.message || "Failed to create document",
     };
   }
 
+  console.log(`[UPLOAD] Document record created: ${doc.id}`);
+
   try {
     // 2. Parse PDF
     const arrayBuffer = await file.arrayBuffer();
+    console.log(`[UPLOAD] Parsing PDF (${arrayBuffer.byteLength} bytes)...`);
+
     const { text, totalPages } = await extractText(
       new Uint8Array(arrayBuffer),
       { mergePages: true }
     );
 
-    // Update basic info
+    console.log(`[UPLOAD] Extracted ${text.length} chars, ${totalPages} pages`);
+
+    if (!text || text.trim().length < 20) {
+      console.warn(`[UPLOAD] Very little text extracted from ${file.name}`);
+    }
+
+    // Update page count
     await supabase
       .from("documents")
       .update({ page_count: totalPages })
@@ -60,13 +75,28 @@ export async function uploadResume(
 
     // 3. Chunk Text
     const chunks = chunkText(text);
+    console.log(`[UPLOAD] Created ${chunks.length} chunks`);
 
-    // 4. Generate Embeddings (Parallelized in batches of 20)
+    if (chunks.length === 0) {
+      console.warn(`[UPLOAD] No chunks generated for ${file.name} — marking as ready anyway`);
+      await supabase
+        .from("documents")
+        .update({ status: "ready" })
+        .eq("id", doc.id);
+      return {
+        success: true,
+        document: { ...doc, status: "ready", page_count: totalPages } as Document,
+      };
+    }
+
+    // 4. Generate Embeddings (batches of 20)
     const batchSize = 20;
     const chunkBatches = [];
     for (let i = 0; i < chunks.length; i += batchSize) {
       chunkBatches.push(chunks.slice(i, i + batchSize));
     }
+
+    console.log(`[UPLOAD] Generating embeddings for ${chunks.length} chunks in ${chunkBatches.length} batches...`);
 
     const allEmbeddings = await Promise.all(
       chunkBatches.map((batch) =>
@@ -75,6 +105,8 @@ export async function uploadResume(
     );
     const flatEmbeddings = allEmbeddings.flat();
 
+    console.log(`[UPLOAD] Got ${flatEmbeddings.length} embeddings`);
+
     // 5. Insert Chunks (Batch Insert)
     const chunksToInsert = chunks.map((chunk, index) => ({
       document_id: doc.id,
@@ -82,50 +114,74 @@ export async function uploadResume(
       chunk_index: chunk.chunkIndex,
       content: chunk.content,
       embedding: flatEmbeddings[index],
-      page_number: 1,
     }));
+
+    console.log(`[UPLOAD] Inserting ${chunksToInsert.length} chunks into document_chunks...`);
 
     const { error: chunkError } = await supabase
       .from("document_chunks")
       .insert(chunksToInsert);
 
-    if (chunkError) throw new Error(chunkError.message);
+    if (chunkError) {
+      console.error("[UPLOAD] Chunk insert error:", chunkError);
+      throw new Error(chunkError.message);
+    }
+
+    console.log(`[UPLOAD] Chunks inserted successfully`);
 
     // 6. Mark as Ready
-    await supabase
+    const { error: updateError } = await supabase
       .from("documents")
       .update({ status: "ready" })
       .eq("id", doc.id);
 
-    // 7. Increment Resume Count
-    await supabase.rpc("increment_resume_count", { job_id_input: jobId });
+    if (updateError) {
+      console.error("[UPLOAD] Failed to update status to ready:", updateError);
+    }
 
-    // Return the completed document so client can update state directly
+    // 7. Increment Resume Count
+    const { error: rpcError } = await supabase.rpc("increment_resume_count", { job_id_input: jobId });
+    if (rpcError) {
+      console.error("[UPLOAD] increment_resume_count RPC error:", rpcError);
+    }
+
+    console.log(`[UPLOAD] ✅ Complete: ${file.name} → ready`);
+
     return {
       success: true,
-      document: { ...doc, status: "ready" } as Document,
+      document: { ...doc, status: "ready", page_count: totalPages } as Document,
     };
   } catch (error: unknown) {
     const errorMessage =
       error instanceof Error ? error.message : "An unknown error occurred";
-    console.error("Upload processing error:", error);
+    console.error(`[UPLOAD] ❌ FAILED: ${file.name} — ${errorMessage}`, error);
     if (doc) {
       await supabase
         .from("documents")
         .update({ status: "failed" })
         .eq("id", doc.id);
     }
-    return { success: false, error: errorMessage };
+    // Return the failed document so UI can show it with error status
+    return {
+      success: false,
+      error: errorMessage,
+      document: { ...doc, status: "failed" } as Document,
+    };
   }
 }
 
 export async function getDocuments(jobId: string) {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("documents")
     .select("*")
     .eq("job_id", jobId)
     .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("[GET_DOCS] Error fetching documents:", error);
+  }
+
   return data || [];
 }
 
@@ -135,23 +191,31 @@ export async function deleteDocument(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
 
+  console.log(`[DELETE] Deleting document ${docId} from job ${jobId}`);
+
   try {
-    // Chunks are deleted by CASCADE from documents table
     const { error } = await supabase
       .from("documents")
       .delete()
       .eq("id", docId);
 
-    if (error) throw error;
+    if (error) {
+      console.error("[DELETE] Delete error:", error);
+      throw error;
+    }
 
     // Decrement resume count
-    await supabase.rpc("decrement_resume_count", { job_id_input: jobId });
+    const { error: rpcError } = await supabase.rpc("decrement_resume_count", { job_id_input: jobId });
+    if (rpcError) {
+      console.error("[DELETE] decrement_resume_count RPC error:", rpcError);
+    }
 
+    console.log(`[DELETE] ✅ Document ${docId} deleted`);
     return { success: true };
   } catch (error: unknown) {
     const errorMessage =
       error instanceof Error ? error.message : "Delete failed";
-    console.error("Delete error:", error);
+    console.error(`[DELETE] ❌ FAILED: ${docId} — ${errorMessage}`);
     return { success: false, error: errorMessage };
   }
 }

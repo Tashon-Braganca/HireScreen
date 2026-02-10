@@ -6,7 +6,7 @@ import { ResumeList, UploadedFile } from "@/components/ui/ResumeList";
 import { ChatInterface } from "@/components/ui/ChatInterface";
 import { RankedResultsPanel } from "@/components/ui/RankedResultsPanel";
 import { ExportModal } from "@/components/ui/ExportModal";
-import { uploadResume, deleteDocument } from "@/app/actions/documents";
+import { uploadResume, deleteDocument, getDocuments } from "@/app/actions/documents";
 import { chatWithJob } from "@/app/actions/chat";
 import { rankCandidates } from "@/app/actions/rank";
 import { toast } from "sonner";
@@ -71,7 +71,6 @@ export function JobWorkspace({
   // --- OPTIMISTIC DELETE ---
   const handleDelete = useCallback(
     async (id: string) => {
-      // Prevent double-delete
       if (deletingIds.current.has(id)) return;
       deletingIds.current.add(id);
 
@@ -85,14 +84,14 @@ export function JobWorkspace({
       try {
         const res = await deleteDocument(id, job.id);
         if (!res.success) {
-          // Rollback on failure
           setDocuments(previousDocs);
           toast.error(`Delete failed: ${res.error}`);
+          console.error("[UI] Delete rollback — server returned error:", res.error);
         }
-      } catch {
-        // Rollback on network error
+      } catch (err) {
         setDocuments(previousDocs);
         toast.error("Network error — document restored.");
+        console.error("[UI] Delete rollback — network error:", err);
       } finally {
         deletingIds.current.delete(id);
       }
@@ -103,6 +102,8 @@ export function JobWorkspace({
   // --- PARALLEL UPLOADS ---
   const handleUpload = useCallback(
     async (files: File[]) => {
+      console.log(`[UI] Starting upload of ${files.length} file(s)`);
+
       // Create optimistic uploading entries
       const newUploads: UploadedFile[] = files.map((f, i) => ({
         id: `uploading-${Date.now()}-${i}`,
@@ -118,7 +119,9 @@ export function JobWorkspace({
           const formData = new FormData();
           formData.append("file", file);
 
+          console.log(`[UI] Uploading ${file.name}...`);
           const res = await uploadResume(formData, job.id);
+          console.log(`[UI] Upload result for ${file.name}:`, res.success, res.error || "");
 
           // Remove this file from uploading list
           setUploadingFiles((prev) =>
@@ -129,6 +132,10 @@ export function JobWorkspace({
             // Add completed document directly to state
             setDocuments((prev) => [res.document!, ...prev]);
             toast.success(`${file.name} ready`);
+          } else if (res.document) {
+            // Upload failed but document record exists — show it with error/processing status
+            setDocuments((prev) => [res.document!, ...prev]);
+            toast.error(`${file.name}: ${res.error || "Processing failed"}`);
           } else {
             toast.error(`${file.name}: ${res.error || "Upload failed"}`);
           }
@@ -137,9 +144,19 @@ export function JobWorkspace({
         })
       );
 
-      // Clean up any stragglers
+      // Clean up any leftover uploading entries
       const uploadIds = new Set(newUploads.map((u) => u.id));
       setUploadingFiles((prev) => prev.filter((f) => !uploadIds.has(f.id)));
+
+      // Safety net: refetch from server to make sure state is in sync
+      console.log("[UI] Refetching documents from server for sync...");
+      try {
+        const freshDocs = await getDocuments(job.id);
+        setDocuments(freshDocs as Document[]);
+        console.log(`[UI] Synced: ${freshDocs.length} documents from server`);
+      } catch (err) {
+        console.error("[UI] Failed to refetch documents:", err);
+      }
 
       const succeeded = results.filter(
         (r) => r.status === "fulfilled" && r.value.success
@@ -184,7 +201,9 @@ export function JobWorkspace({
         return [query, ...filtered].slice(0, 10);
       });
 
+      console.log(`[UI] Ranking query: "${query}"`);
       const res = await rankCandidates(query, job.id);
+      console.log("[UI] Ranking result:", res.success, res.candidates?.length || 0, "candidates");
       setIsRanking(false);
 
       if (res.success && res.candidates) {
@@ -211,7 +230,9 @@ export function JobWorkspace({
     setMessages((prev) => [...prev, userMsg]);
     setIsChatLoading(true);
 
+    console.log(`[UI] Chat: "${content}"`);
     const res = await chatWithJob(content, job.id);
+    console.log("[UI] Chat result:", res.success, res.error || "");
     setIsChatLoading(false);
 
     const aiMsg: Message = {
