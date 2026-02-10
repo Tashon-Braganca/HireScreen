@@ -2,196 +2,305 @@ import React from "react";
 import Link from "next/link";
 import { getJobs } from "@/app/actions/jobs";
 import { getDashboardStats } from "@/app/actions/stats";
-import { Button } from "@/components/ui/button";
-import { Plus, Briefcase, Users, Clock, ArrowRight, Zap, CheckCircle2 } from "lucide-react";
+import {
+  Plus,
+  Briefcase,
+  Users,
+  ArrowRight,
+  CheckCircle2,
+  Circle,
+  Clock,
+  BarChart3,
+} from "lucide-react";
 
 export default async function DashboardPage() {
-  const [jobs, stats] = await Promise.all([
-    getJobs(),
-    getDashboardStats()
-  ]);
+  const [jobs, stats] = await Promise.all([getJobs(), getDashboardStats()]);
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
   const queryPercentage = (stats.queriesThisMonth / stats.queryLimit) * 100;
+  const hasJobs = jobs.length > 0;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 px-4 pb-12 pt-6">
-      {/* Hero */}
-      <div className="flex items-end justify-between">
+    <div className="max-w-[1200px] mx-auto px-6 py-8">
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-            {greeting} 👋
+          <h1 className="font-display text-2xl text-ink tracking-tight">
+            Jobs
           </h1>
-          <p className="text-slate-500 mt-1 text-sm">
-            Here&apos;s what&apos;s happening with your hiring pipeline.
+          <p className="text-sm text-muted mt-1">
+            {hasJobs
+              ? `${jobs.length} active job${jobs.length !== 1 ? "s" : ""}`
+              : "Create your first screening job to get started."}
           </p>
         </div>
-        <Link href="/dashboard/new">
-          <Button className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/20 text-white border-0">
-            <Plus size={16} />
-            New Job
-          </Button>
-        </Link>
-      </div>
-
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="flex items-center gap-2.5 px-5 py-3 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 shadow-sm">
-          <div className="p-1.5 bg-blue-50 rounded-lg text-blue-600">
-            <Briefcase size={16} />
-          </div>
-          <div>
-            <p className="text-xl font-bold text-slate-900 leading-tight">{stats.totalJobs}</p>
-            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Jobs</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2.5 px-5 py-3 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 shadow-sm">
-          <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600">
-            <Users size={16} />
-          </div>
-          <div>
-            <p className="text-xl font-bold text-slate-900 leading-tight">{stats.totalCandidates}</p>
-            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Candidates</p>
-          </div>
-        </div>
-        <div className="md:col-span-2 flex flex-col justify-center px-5 py-3 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 shadow-sm">
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-purple-50 rounded-lg text-purple-600">
-                <Zap size={16} />
-              </div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Queries this month</p>
+        <div className="flex items-center gap-4">
+          {/* Usage meter — compact */}
+          <div className="hidden sm:flex items-center gap-3 text-sm text-muted border border-border rounded px-3 py-2 bg-panel">
+            <div className="flex items-center gap-1.5">
+              <BarChart3 size={14} />
+              <span className="font-medium">
+                {stats.queriesThisMonth}/{stats.queryLimit}
+              </span>
+              <span className="text-xs">queries</span>
             </div>
-            <p className="text-xs font-bold text-slate-700">{stats.queriesThisMonth} / {stats.queryLimit}</p>
+            <div className="w-px h-4 bg-border" />
+            <div className="flex items-center gap-1.5">
+              <Briefcase size={14} />
+              <span className="font-medium">{stats.totalJobs}</span>
+              <span className="text-xs">jobs</span>
+            </div>
           </div>
-          <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-indigo-500 transition-all duration-500"
-              style={{ width: `${Math.min(100, queryPercentage)}%` }}
-            />
-          </div>
+
+          <Link href="/dashboard/new">
+            <button className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-semibold rounded hover:bg-accent-light transition-colors">
+              <Plus size={16} />
+              New Job
+            </button>
+          </Link>
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Jobs Column */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-800">Your Jobs</h2>
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-              {jobs.length} total
-            </span>
-          </div>
+      {/* Usage bar — mobile */}
+      <div className="sm:hidden mb-6 flex items-center gap-3 text-sm text-muted border border-border rounded px-3 py-2 bg-panel">
+        <div className="flex items-center gap-1.5 flex-1">
+          <BarChart3 size={14} />
+          <span className="font-medium">
+            {stats.queriesThisMonth}/{stats.queryLimit} queries
+          </span>
+        </div>
+        <div className="w-20 h-1.5 bg-border rounded-full overflow-hidden">
+          <div
+            className="h-full bg-accent rounded-full transition-all"
+            style={{ width: `${Math.min(100, queryPercentage)}%` }}
+          />
+        </div>
+      </div>
 
-          {jobs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 bg-white/60 backdrop-blur-sm rounded-3xl border border-white/50 shadow-sm text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl flex items-center justify-center text-blue-500 mb-4">
-                <Briefcase size={28} />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-1">No jobs yet</h3>
-              <p className="text-slate-500 max-w-sm mb-6 text-sm">
-                Create your first job to start screening resumes with AI.
-              </p>
-              <Link href="/dashboard/new">
-                <Button className="gap-2">
-                  <Plus size={16} /> Create Job
-                </Button>
-              </Link>
+      {/* Main grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left main — Jobs table */}
+        <div className="lg:col-span-2">
+          {hasJobs ? (
+            <div className="panel overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left">
+                    <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">
+                      Title
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider hidden md:table-cell">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider text-center">
+                      Resumes
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider hidden sm:table-cell">
+                      Created
+                    </th>
+                    <th className="px-4 py-3 w-10" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {jobs.map((job, i) => (
+                    <tr
+                      key={job.id}
+                      className={`group border-b border-border/50 last:border-0 hover:bg-paper transition-colors ${i % 2 === 1 ? "bg-paper/40" : ""
+                        }`}
+                    >
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/dashboard/jobs/${job.id}`}
+                          className="font-semibold text-ink hover:text-accent transition-colors"
+                        >
+                          {job.title}
+                        </Link>
+                        {job.description && (
+                          <p className="text-xs text-muted mt-0.5 line-clamp-1 max-w-[280px]">
+                            {job.description}
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#15803D]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
+                          Active
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex items-center gap-1 text-xs text-muted">
+                          <Users size={12} />
+                          {job.resume_count || 0}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        <span className="text-xs text-muted flex items-center gap-1">
+                          <Clock size={12} />
+                          {new Date(job.created_at).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                            }
+                          )}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Link href={`/dashboard/jobs/${job.id}`}>
+                          <ArrowRight
+                            size={16}
+                            className="text-border group-hover:text-accent transition-colors"
+                          />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {jobs.map((job) => (
-                <Link key={job.id} href={`/dashboard/jobs/${job.id}`}>
-                  <div className="group relative bg-white/60 backdrop-blur-sm rounded-2xl border border-white/50 shadow-sm hover:shadow-md hover:border-blue-100 hover:-translate-y-0.5 transition-all duration-200 p-5 cursor-pointer h-full">
-                    <div className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-blue-500 to-purple-500 rounded-b opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="p-2 bg-slate-50 text-slate-600 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-                        <Briefcase size={18} />
-                      </div>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 uppercase tracking-wider">
-                        Active
-                      </span>
-                    </div>
-
-                    <h3 className="font-bold text-slate-900 mb-1 line-clamp-1 group-hover:text-blue-700 transition-colors">
-                      {job.title}
-                    </h3>
-                    <p className="text-sm text-slate-400 line-clamp-2 mb-4 min-h-[40px]">
-                      {job.description || "\u00A0"}
-                    </p>
-
-                    <div className="flex items-center justify-between text-xs text-slate-400 font-medium border-t border-slate-100 pt-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1">
-                          <Users size={13} />
-                          {job.resume_count || 0}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock size={13} />
-                          {new Date(job.created_at).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-blue-500" />
-                    </div>
-                  </div>
+            /* Empty state */
+            <div className="panel flex flex-col items-center justify-center py-20 text-center">
+              <div className="w-14 h-14 rounded-lg border border-border flex items-center justify-center text-muted mb-5">
+                <Briefcase size={24} />
+              </div>
+              <h3 className="font-display text-lg text-ink mb-2">
+                No jobs yet
+              </h3>
+              <p className="text-sm text-muted max-w-sm mb-6">
+                Create your first screening job, upload resumes, and let AI rank
+                candidates against your requirements.
+              </p>
+              <div className="flex items-center gap-3">
+                <Link href="/dashboard/new">
+                  <button className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white text-sm font-semibold rounded hover:bg-accent-light transition-colors">
+                    <Plus size={16} />
+                    Create Job
+                  </button>
                 </Link>
-              ))}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Sidebar / Guide Column */}
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-500/20">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Zap size={20} className="text-amber-300" />
-              🚀 Quick Start Guide
+        {/* Right rail — Getting Started */}
+        <div className="space-y-5">
+          <div className="panel p-5">
+            <h3 className="font-display text-base text-ink mb-4">
+              Getting Started
             </h3>
             <div className="space-y-4">
               <div className="flex gap-3">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold flex-shrink-0">1</div>
+                <div className="flex-shrink-0 mt-0.5">
+                  {hasJobs ? (
+                    <CheckCircle2 size={18} className="text-accent" />
+                  ) : (
+                    <Circle size={18} className="text-border" />
+                  )}
+                </div>
                 <div>
-                  <p className="text-sm font-bold">Create a Job</p>
-                  <p className="text-xs text-indigo-100">Set the title and role type for context.</p>
+                  <p className="text-sm font-semibold text-ink">
+                    Create a job
+                  </p>
+                  <p className="text-xs text-muted mt-0.5">
+                    Define the role title and type for AI context.
+                  </p>
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold flex-shrink-0">2</div>
+                <div className="flex-shrink-0 mt-0.5">
+                  {stats.totalCandidates > 0 ? (
+                    <CheckCircle2 size={18} className="text-accent" />
+                  ) : (
+                    <Circle size={18} className="text-border" />
+                  )}
+                </div>
                 <div>
-                  <p className="text-sm font-bold">Upload Resumes</p>
-                  <p className="text-xs text-indigo-100">Drop your candidate PDFs into the workspace.</p>
+                  <p className="text-sm font-semibold text-ink">
+                    Upload resumes
+                  </p>
+                  <p className="text-xs text-muted mt-0.5">
+                    Drop candidate PDFs into your job workspace.
+                  </p>
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold flex-shrink-0">3</div>
+                <div className="flex-shrink-0 mt-0.5">
+                  {stats.queriesThisMonth > 0 ? (
+                    <CheckCircle2 size={18} className="text-accent" />
+                  ) : (
+                    <Circle size={18} className="text-border" />
+                  )}
+                </div>
                 <div>
-                  <p className="text-sm font-bold">Ask Anything</p>
-                  <p className="text-xs text-indigo-100">Ask &quot;Who has 5+ yrs React?&quot; to see rankings.</p>
+                  <p className="text-sm font-semibold text-ink">
+                    Rank candidates
+                  </p>
+                  <p className="text-xs text-muted mt-0.5">
+                    Ask &quot;Who has 5+ yrs React?&quot; to see ranked results
+                    with citations.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/50 p-6 shadow-sm">
-            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-              <Clock size={18} className="text-slate-400" />
-              Tips & Tricks
+          {/* Quick tips */}
+          <div className="panel p-5">
+            <h3 className="font-display text-base text-ink mb-3">Tips</h3>
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-2.5 text-xs text-muted">
+                <CheckCircle2
+                  size={14}
+                  className="text-accent mt-0.5 flex-shrink-0"
+                />
+                <p>
+                  Be specific about years of experience for better accuracy.
+                </p>
+              </div>
+              <div className="flex items-start gap-2.5 text-xs text-muted">
+                <CheckCircle2
+                  size={14}
+                  className="text-accent mt-0.5 flex-shrink-0"
+                />
+                <p>Use the Ask panel to compare candidates side-by-side.</p>
+              </div>
+              <div className="flex items-start gap-2.5 text-xs text-muted">
+                <CheckCircle2
+                  size={14}
+                  className="text-accent mt-0.5 flex-shrink-0"
+                />
+                <p>Export results to PDF to share with hiring managers.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Usage detail */}
+          <div className="panel p-5">
+            <h3 className="font-display text-base text-ink mb-3">
+              Usage This Month
             </h3>
             <div className="space-y-3">
-              <div className="flex items-start gap-3 text-xs text-slate-600">
-                <CheckCircle2 size={14} className="text-emerald-500 mt-0.5" />
-                <p>Be specific with years of experience for better accuracy.</p>
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-muted">Queries</span>
+                  <span className="font-semibold text-ink">
+                    {stats.queriesThisMonth} / {stats.queryLimit}
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-accent rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min(100, queryPercentage)}%`,
+                    }}
+                  />
+                </div>
               </div>
-              <div className="flex items-start gap-3 text-xs text-slate-600">
-                <CheckCircle2 size={14} className="text-emerald-500 mt-0.5" />
-                <p>Use &quot;Compare&quot; to see winners side-by-side.</p>
-              </div>
-              <div className="flex items-start gap-3 text-xs text-slate-600">
-                <CheckCircle2 size={14} className="text-emerald-500 mt-0.5" />
-                <p>Export results to PDF to share with hiring managers.</p>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted">Total candidates</span>
+                <span className="font-semibold text-ink">
+                  {stats.totalCandidates}
+                </span>
               </div>
             </div>
           </div>

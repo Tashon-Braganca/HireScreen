@@ -104,7 +104,7 @@ export function ResizableColumns({
                         >
                             {/* Visual handle */}
                             <div className="absolute inset-y-0 -left-1 -right-1 flex items-center justify-center">
-                                <div className="w-1 h-8 rounded-full bg-slate-200 group-hover:bg-indigo-400 group-active:bg-indigo-500 transition-colors" />
+                                <div className="w-1 h-8 rounded-full bg-border group-hover:bg-accent group-active:bg-accent-light transition-colors" />
                             </div>
                             {/* Wider hit area */}
                             <div className="absolute inset-y-0 -left-2 -right-2" />

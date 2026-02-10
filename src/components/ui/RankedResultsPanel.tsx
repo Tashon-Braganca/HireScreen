@@ -2,22 +2,21 @@
 
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { BentoCard } from "./BentoCard";
 import { motion, AnimatePresence } from "framer-motion";
 import type { RankedCandidate, Document } from "@/types";
 import {
-    Trophy,
     ChevronDown,
     ChevronUp,
-    CheckCircle2,
     Eye,
     Download,
-    Sparkles,
     Search,
     Loader2,
     FileDown,
     Mail,
     Phone,
+    Star,
+    ExternalLink,
+    FileText,
 } from "lucide-react";
 import { exportToPDF } from "@/lib/pdf/export";
 
@@ -34,18 +33,11 @@ interface RankedResultsPanelProps {
     documents?: Document[];
 }
 
-function getScoreColor(score: number) {
-    if (score >= 85) return "text-emerald-600 bg-emerald-50 border-emerald-200";
-    if (score >= 70) return "text-blue-600 bg-blue-50 border-blue-200";
-    if (score >= 50) return "text-amber-600 bg-amber-50 border-amber-200";
-    return "text-slate-500 bg-slate-50 border-slate-200";
-}
-
-function getScoreBarColor(score: number) {
-    if (score >= 85) return "bg-emerald-500";
-    if (score >= 70) return "bg-blue-500";
-    if (score >= 50) return "bg-amber-500";
-    return "bg-slate-400";
+function getScoreTier(score: number): string {
+    if (score >= 85) return "Strong";
+    if (score >= 70) return "Good";
+    if (score >= 50) return "Fair";
+    return "Weak";
 }
 
 function CandidateCard({
@@ -69,25 +61,25 @@ function CandidateCard({
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.06, duration: 0.3 }}
+            transition={{ delay: index * 0.04, duration: 0.25 }}
             className={cn(
-                "group rounded-2xl border transition-all duration-200 overflow-hidden",
+                "group border rounded transition-colors",
                 isSelected
-                    ? "border-emerald-300 bg-emerald-50/40 shadow-sm shadow-emerald-100"
-                    : "border-slate-150 bg-white hover:border-slate-300 hover:shadow-sm"
+                    ? "border-accent/40 bg-accent-bg"
+                    : "border-border bg-panel hover:border-border"
             )}
         >
             {/* Main Row */}
-            <div className="p-4 flex items-start gap-3">
-                {/* Rank Badge */}
+            <div className="px-4 py-3 flex items-start gap-3">
+                {/* Rank Badge — monochrome */}
                 <div
                     className={cn(
-                        "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5",
+                        "w-7 h-7 rounded flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 border",
                         candidate.rank <= 3
-                            ? "bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-sm shadow-orange-200"
-                            : "bg-slate-100 text-slate-600"
+                            ? "border-ink bg-ink text-white"
+                            : "border-border bg-paper text-muted"
                     )}
                 >
                     {candidate.rank}
@@ -96,49 +88,72 @@ function CandidateCard({
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                        <h4 className="text-sm font-bold text-slate-800 truncate">
+                        <h4 className="text-sm font-semibold text-ink truncate">
                             {candidate.name}
                         </h4>
-                        <div
+                        <span
                             className={cn(
-                                "px-2 py-0.5 rounded-full text-[11px] font-bold border",
-                                getScoreColor(candidate.score)
+                                "px-2 py-0.5 rounded text-[11px] font-semibold border flex-shrink-0",
+                                candidate.score >= 70
+                                    ? "border-ink/20 bg-ink/5 text-ink"
+                                    : "border-border bg-paper text-muted"
                             )}
                         >
-                            {candidate.score}%
-                        </div>
+                            {candidate.score}% {getScoreTier(candidate.score)}
+                        </span>
                     </div>
 
-                    {/* Score bar */}
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full mb-2 overflow-hidden">
+                    {/* Score bar — subtle */}
+                    <div className="w-full h-1 bg-border rounded-full mb-2.5 overflow-hidden">
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${candidate.score}%` }}
-                            transition={{ delay: index * 0.06 + 0.2, duration: 0.5 }}
-                            className={cn("h-full rounded-full", getScoreBarColor(candidate.score))}
+                            transition={{ delay: index * 0.04 + 0.15, duration: 0.4 }}
+                            className="h-full rounded-full bg-accent"
                         />
                     </div>
 
-                    {/* Top 3 match reasons (always visible) */}
+                    {/* Match reasons — 2-3 bullets */}
                     <div className="space-y-1">
-                        {candidate.matchReasons.slice(0, expanded ? undefined : 3).map((r, i) => (
-                            <div key={i} className="flex items-start gap-1.5 text-xs text-slate-600">
-                                <span className="text-slate-300 mt-0.5 flex-shrink-0">├</span>
-                                <span className="flex-1">{r.reason}</span>
-                                {r.page && (
-                                    <span className="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded font-mono flex-shrink-0">
-                                        p.{r.page}
+                        {candidate.matchReasons
+                            .slice(0, expanded ? undefined : 3)
+                            .map((r, i) => (
+                                <div
+                                    key={i}
+                                    className="flex items-start gap-1.5 text-xs text-muted"
+                                >
+                                    <span className="text-border mt-px flex-shrink-0">
+                                        &bull;
                                     </span>
-                                )}
-                            </div>
-                        ))}
+                                    <span className="flex-1 leading-snug">{r.reason}</span>
+                                </div>
+                            ))}
+                    </div>
+
+                    {/* Citation chips */}
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                        {candidate.matchReasons
+                            .filter((r) => r.page || r.filename)
+                            .slice(0, expanded ? undefined : 2)
+                            .map((r, i) => (
+                                <span
+                                    key={i}
+                                    className="inline-flex items-center gap-1 text-[10px] text-muted bg-paper border border-border px-1.5 py-0.5 rounded font-mono"
+                                >
+                                    <FileText size={9} />
+                                    {r.filename
+                                        ? r.filename.replace(/\.pdf$/i, "").slice(0, 15)
+                                        : "doc"}
+                                    {r.page && ` p${r.page}`}
+                                </span>
+                            ))}
                     </div>
 
                     {/* Expand / Collapse */}
                     {candidate.matchReasons.length > 3 && (
                         <button
                             onClick={() => setExpanded(!expanded)}
-                            className="mt-1.5 text-[11px] text-indigo-500 hover:text-indigo-700 font-medium flex items-center gap-0.5"
+                            className="mt-1.5 text-xs text-accent hover:text-accent-light font-medium flex items-center gap-0.5"
                         >
                             {expanded ? (
                                 <>
@@ -146,7 +161,8 @@ function CandidateCard({
                                 </>
                             ) : (
                                 <>
-                                    <ChevronDown size={12} /> +{candidate.matchReasons.length - 3} more
+                                    <ChevronDown size={12} /> +
+                                    {candidate.matchReasons.length - 3} more
                                 </>
                             )}
                         </button>
@@ -158,47 +174,42 @@ function CandidateCard({
                     <button
                         onClick={onToggleSelect}
                         className={cn(
-                            "p-1.5 rounded-lg transition-all text-xs",
+                            "p-1.5 rounded transition-colors",
                             isSelected
-                                ? "bg-emerald-500 text-white shadow-sm"
-                                : "bg-slate-50 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600"
+                                ? "bg-accent text-white"
+                                : "text-muted hover:text-accent hover:bg-accent-bg border border-border"
                         )}
-                        title={isSelected ? "Deselect" : "Select for shortlist"}
+                        title={isSelected ? "Remove from shortlist" : "Add to shortlist"}
                     >
-                        <CheckCircle2 size={14} />
+                        <Star size={14} fill={isSelected ? "currentColor" : "none"} />
                     </button>
                     <button
                         onClick={onViewResume}
-                        className="p-1.5 rounded-lg bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                        className="p-1.5 rounded text-muted hover:text-ink hover:bg-paper border border-border transition-colors"
                         title="View resume"
                     >
-                        <Eye size={14} />
+                        <ExternalLink size={14} />
                     </button>
                 </div>
             </div>
 
-            {/* Contact info + source file */}
-            <div className="px-4 pb-3 space-y-1">
-                {(contactEmail || contactPhone) && (
-                    <div className="flex items-center gap-3 text-[10px] text-slate-500">
-                        {contactEmail && (
-                            <span className="flex items-center gap-1 truncate">
-                                <Mail size={10} className="text-slate-400 flex-shrink-0" />
-                                {contactEmail}
-                            </span>
-                        )}
-                        {contactPhone && (
-                            <span className="flex items-center gap-1">
-                                <Phone size={10} className="text-slate-400 flex-shrink-0" />
-                                {contactPhone}
-                            </span>
-                        )}
-                    </div>
-                )}
-                <span className="text-[10px] text-slate-400 font-mono truncate block">
-                    📄 {candidate.filename}
-                </span>
-            </div>
+            {/* Contact row */}
+            {(contactEmail || contactPhone) && (
+                <div className="px-4 pb-2.5 flex items-center gap-3 text-[10px] text-muted">
+                    {contactEmail && (
+                        <span className="flex items-center gap-1 truncate">
+                            <Mail size={10} className="flex-shrink-0" />
+                            {contactEmail}
+                        </span>
+                    )}
+                    {contactPhone && (
+                        <span className="flex items-center gap-1">
+                            <Phone size={10} className="flex-shrink-0" />
+                            {contactPhone}
+                        </span>
+                    )}
+                </div>
+            )}
         </motion.div>
     );
 }
@@ -221,10 +232,10 @@ export function RankedResultsPanel({
     const handleExportPDF = async () => {
         setIsExporting(true);
         try {
-            // If candidates are selected, export those. Otherwise export top 10.
-            const candidatesToExport = selectedCount > 0
-                ? candidates.filter(c => selectedIds.has(c.documentId))
-                : candidates.slice(0, 10);
+            const candidatesToExport =
+                selectedCount > 0
+                    ? candidates.filter((c) => selectedIds.has(c.documentId))
+                    : candidates.slice(0, 10);
 
             exportToPDF(jobTitle || "Job", candidatesToExport);
         } finally {
@@ -232,30 +243,26 @@ export function RankedResultsPanel({
         }
     };
 
-    // Example queries based on job title
+    // Suggested queries
     const suggestedQueries = [
         `Who has 5+ years experience relevant to ${jobTitle || "this role"}?`,
         "Who worked at a well-known company or funded startup?",
         "Rank candidates by overall fit and list their strongest skills",
     ];
 
-    // Empty state - no query asked yet
+    // Empty state — no query yet
     if (!isLoading && candidates.length === 0 && !activeQuery) {
         return (
-            <BentoCard className="h-full flex flex-col items-center justify-center text-center p-8">
-                <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="flex flex-col items-center gap-4 max-w-sm"
-                >
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                        <Search size={28} className="text-indigo-500" />
+            <div className="panel h-full flex flex-col items-center justify-center text-center p-8">
+                <div className="flex flex-col items-center gap-4 max-w-sm">
+                    <div className="w-14 h-14 rounded-lg border border-border flex items-center justify-center text-muted">
+                        <Search size={24} />
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold text-slate-800 mb-1">
+                        <h3 className="font-display text-lg text-ink mb-1">
                             Ask a question to rank candidates
                         </h3>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-sm text-muted">
                             Try one of these to see ranked results with citations
                         </p>
                     </div>
@@ -265,65 +272,66 @@ export function RankedResultsPanel({
                             <button
                                 key={i}
                                 onClick={() => onQueryClick(q)}
-                                className="text-left text-sm px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all group"
+                                className="text-left text-sm px-4 py-3 rounded border border-border bg-panel text-muted hover:bg-paper hover:text-ink hover:border-accent/40 transition-colors"
                             >
-                                <span className="text-indigo-400 group-hover:text-indigo-500 mr-2">→</span>
+                                <span className="text-accent mr-2">&rarr;</span>
                                 {q}
                             </button>
                         ))}
                     </div>
-                </motion.div>
-            </BentoCard>
+                </div>
+            </div>
         );
     }
 
     return (
-        <BentoCard className="h-full flex flex-col p-0 overflow-hidden">
-            {/* Header */}
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-                <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-sm shadow-orange-200">
-                        <Trophy size={16} />
-                    </div>
-                    <div>
-                        <h3 className="text-sm font-bold text-slate-800">Ranked Results</h3>
-                        <p className="text-[11px] text-slate-500">
-                            {isLoading
-                                ? "Analyzing resumes..."
-                                : `${candidates.length} candidate${candidates.length !== 1 ? "s" : ""} found`}
-                        </p>
-                    </div>
+        <div className="panel h-full flex flex-col overflow-hidden">
+            {/* Sticky Header */}
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between flex-shrink-0">
+                <div>
+                    <h3 className="text-sm font-semibold text-ink">Ranked Results</h3>
+                    <p className="text-xs text-muted">
+                        {isLoading
+                            ? "Analyzing resumes..."
+                            : `${candidates.length} candidate${candidates.length !== 1 ? "s" : ""} found`}
+                    </p>
                 </div>
 
                 <div className="flex items-center gap-2">
                     {selectedCount > 0 && (
                         <button
                             onClick={onExport}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-all shadow-sm"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border rounded text-ink hover:bg-paper transition-colors"
                         >
                             <Download size={12} />
-                            CSV / Copy
+                            CSV ({selectedCount})
                         </button>
                     )}
                     {(candidates.length > 0 || selectedCount > 0) && (
                         <button
                             onClick={handleExportPDF}
                             disabled={isExporting}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all shadow-sm disabled:opacity-50"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-ink text-white rounded hover:bg-muted transition-colors disabled:opacity-50"
                         >
-                            {isExporting ? <Loader2 size={12} className="animate-spin" /> : <FileDown size={12} />}
+                            {isExporting ? (
+                                <Loader2 size={12} className="animate-spin" />
+                            ) : (
+                                <FileDown size={12} />
+                            )}
                             Export PDF
                         </button>
                     )}
                 </div>
             </div>
 
-            {/* Active query */}
+            {/* Active query banner */}
             {activeQuery && (
-                <div className="px-4 py-2.5 bg-indigo-50/50 border-b border-indigo-100/50">
-                    <div className="flex items-center gap-2 text-xs text-indigo-600">
-                        <Sparkles size={12} />
-                        <span className="font-medium truncate">&ldquo;{activeQuery}&rdquo;</span>
+                <div className="px-4 py-2.5 bg-accent-bg border-b border-accent/20 flex-shrink-0">
+                    <div className="flex items-center gap-2 text-xs text-accent">
+                        <Search size={12} />
+                        <span className="font-medium truncate">
+                            &ldquo;{activeQuery}&rdquo;
+                        </span>
                     </div>
                 </div>
             )}
@@ -334,34 +342,36 @@ export function RankedResultsPanel({
                     {[...Array(4)].map((_, i) => (
                         <div
                             key={i}
-                            className="rounded-2xl border border-slate-100 p-4 animate-pulse"
+                            className="rounded border border-border p-4 animate-pulse"
                         >
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-xl bg-slate-200" />
+                                <div className="w-7 h-7 rounded bg-border" />
                                 <div className="flex-1 space-y-2">
-                                    <div className="h-3 bg-slate-200 rounded w-1/3" />
-                                    <div className="h-1.5 bg-slate-100 rounded w-full" />
-                                    <div className="h-2 bg-slate-100 rounded w-2/3" />
+                                    <div className="h-3 bg-border rounded w-1/3" />
+                                    <div className="h-1 bg-border/60 rounded w-full" />
+                                    <div className="h-2 bg-border/40 rounded w-2/3" />
                                 </div>
                             </div>
                         </div>
                     ))}
-                    <div className="flex items-center justify-center gap-2 text-sm text-slate-500 py-4">
-                        <Loader2 size={14} className="animate-spin" />
+                    <div className="flex items-center justify-center gap-2 text-sm text-muted py-4">
+                        <Loader2 size={14} className="animate-spin text-accent" />
                         Ranking candidates...
                     </div>
                 </div>
             )}
 
-            {/* No results for query */}
+            {/* No results */}
             {!isLoading && candidates.length === 0 && activeQuery && (
                 <div className="flex-1 flex items-center justify-center p-8 text-center">
                     <div>
-                        <div className="text-3xl mb-3">🤔</div>
-                        <h4 className="text-sm font-bold text-slate-700 mb-1">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-lg border border-border flex items-center justify-center text-muted">
+                            <Search size={20} />
+                        </div>
+                        <h4 className="text-sm font-semibold text-ink mb-1">
                             No strong matches found
                         </h4>
-                        <p className="text-xs text-slate-500 max-w-xs">
+                        <p className="text-xs text-muted max-w-xs">
                             Try broadening your query or upload more resumes.
                         </p>
                     </div>
@@ -373,13 +383,17 @@ export function RankedResultsPanel({
                 <div className="flex-1 overflow-y-auto p-3 space-y-2">
                     <AnimatePresence>
                         {candidates.map((candidate, i) => {
-                            const doc = documents.find(d => d.id === candidate.documentId);
+                            const doc = documents.find(
+                                (d) => d.id === candidate.documentId
+                            );
                             return (
                                 <CandidateCard
                                     key={candidate.documentId + candidate.rank}
                                     candidate={candidate}
                                     isSelected={selectedIds.has(candidate.documentId)}
-                                    onToggleSelect={() => onToggleSelect(candidate.documentId)}
+                                    onToggleSelect={() =>
+                                        onToggleSelect(candidate.documentId)
+                                    }
                                     onViewResume={() => onViewResume(candidate.documentId)}
                                     index={i}
                                     contactEmail={doc?.candidate_email}
@@ -390,6 +404,6 @@ export function RankedResultsPanel({
                     </AnimatePresence>
                 </div>
             )}
-        </BentoCard>
+        </div>
     );
 }

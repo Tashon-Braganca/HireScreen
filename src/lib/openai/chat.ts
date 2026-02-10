@@ -35,7 +35,7 @@ export async function generateAnswer(
       { role: 'user', content: userMessage },
     ],
     temperature: 0.3,
-    max_tokens: 2000,
+    max_completion_tokens: 2000,
   });
 
   return {

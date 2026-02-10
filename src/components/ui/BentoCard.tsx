@@ -11,7 +11,7 @@ export function BentoCard({ children, className, noPadding = false, ...props }: 
   return (
     <div
       className={cn(
-        "backdrop-blur-xl bg-white/60 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]",
+        "bg-panel border border-border rounded-md overflow-hidden transition-colors",
         noPadding ? "p-0" : "p-6",
         className
       )}
@@ -26,8 +26,8 @@ export function BentoHeader({ title, subtitle, action }: { title: string; subtit
   return (
     <div className="flex items-center justify-between mb-6">
       <div>
-        <h3 className="text-xl font-bold text-slate-800 tracking-tight">{title}</h3>
-        {subtitle && <p className="text-sm text-slate-500 font-medium mt-1">{subtitle}</p>}
+        <h3 className="font-display text-xl text-ink tracking-tight">{title}</h3>
+        {subtitle && <p className="text-sm text-muted mt-1">{subtitle}</p>}
       </div>
       {action && <div>{action}</div>}
     </div>

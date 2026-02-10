@@ -60,7 +60,7 @@ export function JobWorkspace({
       {
         id: "1",
         role: "assistant",
-        content: `Ready to screen candidates for ${job.title}. Upload resumes and ask me anything — or use the Quick Ask chips!`,
+        content: `Ready to screen candidates for ${job.title}. Upload resumes and ask me anything.`,
         timestamp: new Date(),
       },
     ];
@@ -145,8 +145,6 @@ export function JobWorkspace({
   // --- PARALLEL UPLOADS ---
   const handleUpload = useCallback(
     async (files: File[]) => {
-      console.log(`[UI] Starting upload of ${files.length} file(s)`);
-
       const newUploads: UploadedFile[] = files.map((f, i) => ({
         id: `uploading-${Date.now()}-${i}`,
         name: f.name,
@@ -216,7 +214,6 @@ export function JobWorkspace({
     async (documentId: string) => {
       const doc = documents.find((d) => d.id === documentId);
       if (!doc) {
-        console.error(`[PREVIEW] Document ${documentId} not found in local state`, documents);
         toast.error("Document not found. Please refresh the page.");
         return;
       }
@@ -278,7 +275,7 @@ export function JobWorkspace({
     // If the message looks like a ranking query, fire ranking in parallel
     const isRankingQuery = RANK_KEYWORDS.test(content);
     if (isRankingQuery) {
-      handleRankQuery(content); // runs in parallel — don't await
+      handleRankQuery(content);
     }
 
     const res = await chatWithJob(content, job.id);
@@ -301,21 +298,19 @@ export function JobWorkspace({
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-theme(spacing.20))] overflow-hidden">
+    <div className="max-w-[1440px] mx-auto px-6 py-5 flex flex-col h-[calc(100vh-theme(spacing.14))] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3 flex-shrink-0 px-1">
-        <div className="flex items-center gap-3">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-              {job.title}
-            </h1>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <p className="text-xs font-medium text-slate-500">
-                Active • {documents.length} Resumes •{" "}
-                {documents.filter((d) => d.status === "ready").length} Ready
-              </p>
-            </div>
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
+        <div>
+          <h1 className="font-display text-xl text-ink tracking-tight">
+            {job.title}
+          </h1>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
+            <p className="text-xs font-medium text-muted">
+              Active &middot; {documents.length} Resumes &middot;{" "}
+              {documents.filter((d) => d.status === "ready").length} Ready
+            </p>
           </div>
         </div>
       </div>
@@ -323,13 +318,13 @@ export function JobWorkspace({
       {/* 3-Column Resizable Layout */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <ResizableColumns
-          defaultWidths={[33.3, 33.3, 33.4]}
+          defaultWidths={[22, 48, 30]}
           storageKey={`workspace-${job.id}`}
           minWidth={220}
           className="gap-0"
         >
           {/* Left: Resumes */}
-          <div className="flex flex-col min-h-0 pr-1.5">
+          <div className="flex flex-col min-h-0 pr-2.5">
             <ResumeList
               files={fileList}
               onUpload={handleUpload}
@@ -340,7 +335,7 @@ export function JobWorkspace({
           </div>
 
           {/* Center: Ranked Results */}
-          <div className="flex flex-col min-h-0 px-1.5">
+          <div className="flex flex-col min-h-0 px-2.5">
             <RankedResultsPanel
               candidates={rankedCandidates}
               selectedIds={selectedIds}
@@ -355,8 +350,8 @@ export function JobWorkspace({
             />
           </div>
 
-          {/* Right: AI Chat */}
-          <div className="flex flex-col min-h-0 pl-1.5">
+          {/* Right: Ask Panel */}
+          <div className="flex flex-col min-h-0 pl-2.5">
             <ChatInterface
               messages={messages}
               onSendMessage={handleSendMessage}

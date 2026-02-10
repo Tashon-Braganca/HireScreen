@@ -19,54 +19,52 @@ export function DashboardNavbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 px-4 py-3">
-      <div className="mx-auto flex items-center justify-between px-5 py-2.5 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/50 shadow-sm">
+    <nav className="sticky top-0 z-50 border-b border-border bg-panel">
+      <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 h-14">
 
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+          <div className="w-8 h-8 rounded bg-accent flex items-center justify-center text-white font-bold text-sm">
             H
           </div>
-          <span className="font-bold text-lg text-slate-800 tracking-tight">HireScreen</span>
+          <span className="font-display text-lg text-ink tracking-tight">HireScreen</span>
         </Link>
 
-        {/* Center — context-aware navigation */}
+        {/* Center — breadcrumb or tabs */}
         <div className="hidden md:flex items-center gap-1">
           {isJobPage ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-sm">
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
+                className="flex items-center gap-1.5 text-muted hover:text-ink transition-colors font-medium"
               >
                 <LayoutDashboard size={14} />
                 Dashboard
               </Link>
-              <ChevronRight size={14} className="text-slate-300" />
-              <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100/50 rounded-lg">
+              <ChevronRight size={14} className="text-border" />
+              <div className="flex items-center gap-1.5 text-ink font-semibold">
                 <Briefcase size={14} />
                 Job Workspace
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-1 p-1 bg-slate-100/50 rounded-xl border border-slate-200/50">
+            <div className="flex items-center gap-1 text-sm">
               <Link
                 href="/dashboard"
-                className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${pathname === "/dashboard"
-                  ? "text-slate-900 bg-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-900"
+                className={`px-3 py-1.5 font-medium rounded transition-colors ${pathname === "/dashboard"
+                    ? "text-ink bg-paper"
+                    : "text-muted hover:text-ink"
                   }`}
               >
-                <LayoutDashboard size={14} />
                 Overview
               </Link>
               <Link
                 href="/dashboard/settings"
-                className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${pathname === "/dashboard/settings"
-                  ? "text-slate-900 bg-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-900"
+                className={`px-3 py-1.5 font-medium rounded transition-colors ${pathname === "/dashboard/settings"
+                    ? "text-ink bg-paper"
+                    : "text-muted hover:text-ink"
                   }`}
               >
-                <User size={14} />
                 Settings
               </Link>
             </div>
@@ -75,16 +73,16 @@ export function DashboardNavbar() {
 
         {/* Right */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
-            <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
-              <User size={13} className="text-slate-500" />
+          <div className="hidden sm:flex items-center gap-2 text-sm font-medium text-muted px-3 py-1.5 rounded border border-border bg-paper">
+            <div className="w-6 h-6 rounded-full bg-border flex items-center justify-center">
+              <User size={13} className="text-muted" />
             </div>
             <span>Recruiter</span>
           </div>
 
           <button
             onClick={handleSignOut}
-            className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="p-2 rounded text-muted hover:text-[#B91C1C] hover:bg-[#FEF2F2] transition-colors"
             title="Sign Out"
           >
             <LogOut size={18} />
