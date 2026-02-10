@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { getJobs } from "@/app/actions/jobs";
 import { Button } from "@/components/ui/button";
-import { Plus, Briefcase, Users, Search, Clock, ArrowRight, Zap } from "lucide-react";
+import { Plus, Briefcase, Users, Clock, ArrowRight, Zap } from "lucide-react";
 
 export default async function DashboardPage() {
   const jobs = await getJobs();
