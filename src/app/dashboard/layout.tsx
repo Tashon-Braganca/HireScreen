@@ -20,12 +20,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="absolute w-[300px] h-[300px] rounded-full bg-indigo-100/40 blur-3xl top-[50%] left-[40%]" />
       </div>
 
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col h-screen overflow-hidden">
         <DashboardNavbar />
-        <main className="flex-1 w-full">
-          <div className="px-4 pb-6">
-            {children}
-          </div>
+        <main className="flex-1 w-full overflow-hidden">
+          {children}
         </main>
       </div>
     </div>

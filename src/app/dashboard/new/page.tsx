@@ -33,7 +33,7 @@ export default function NewJobPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto px-4 pb-12 pt-6 overflow-y-auto h-full">
       <Link href="/dashboard" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 mb-6 transition-colors text-sm font-medium">
         <ArrowLeft size={16} />
         Back to Dashboard

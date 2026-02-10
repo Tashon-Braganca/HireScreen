@@ -149,11 +149,29 @@ export async function uploadResume(
       console.error("[UPLOAD] increment_resume_count RPC error:", rpcError);
     }
 
+    // 8. Upload to Supabase Storage
+    console.log(`[UPLOAD] Uploading file to Storage (resumes bucket)...`);
+    const storagePath = `${jobId}/${doc.id}/${file.name}`;
+    const { error: storageError } = await supabase.storage
+      .from("resumes")
+      .upload(storagePath, arrayBuffer, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
+
+    if (storageError) {
+      console.error("[UPLOAD] Storage upload error (continuing anyway):", storageError);
+      // We don't fail the whole process if storage fails, but it will break previews
+    } else {
+      console.log(`[UPLOAD] Storage upload successful: ${storagePath}`);
+      await supabase.from("documents").update({ file_path: storagePath }).eq("id", doc.id);
+    }
+
     console.log(`[UPLOAD] ✅ Complete: ${file.name} → ready`);
 
     return {
       success: true,
-      document: { ...doc, status: "ready", page_count: totalPages, file_size: actualFileSize } as Document,
+      document: { ...doc, status: "ready", page_count: totalPages, file_size: actualFileSize, file_path: storagePath } as Document,
     };
   } catch (error: unknown) {
     const errorMessage =
@@ -172,6 +190,30 @@ export async function uploadResume(
       document: { ...doc, status: "failed" } as Document,
     };
   }
+}
+
+export async function getResumeUrl(docId: string): Promise<{ success: boolean; url?: string; error?: string }> {
+  const supabase = await createClient();
+
+  const { data: doc, error: docError } = await supabase
+    .from("documents")
+    .select("file_path")
+    .eq("id", docId)
+    .single();
+
+  if (docError || !doc?.file_path) {
+    return { success: false, error: "Resume file not found" };
+  }
+
+  const { data, error } = await supabase.storage
+    .from("resumes")
+    .createSignedUrl(doc.file_path, 3600); // 1 hour
+
+  if (error || !data?.signedUrl) {
+    return { success: false, error: "Failed to generate preview link" };
+  }
+
+  return { success: true, url: data.signedUrl };
 }
 
 export async function getDocuments(jobId: string) {
@@ -212,6 +254,17 @@ export async function deleteDocument(
     const { error: rpcError } = await supabase.rpc("decrement_resume_count", { job_id_input: jobId });
     if (rpcError) {
       console.error("[DELETE] decrement_resume_count RPC error:", rpcError);
+    }
+
+    // Cleanup Storage
+    const { data: doc } = await supabase.from("documents").select("file_path").eq("id", docId).single();
+    if (doc?.file_path) {
+      const { error: storageError } = await supabase.storage.from("resumes").remove([doc.file_path]);
+      if (storageError) {
+        console.warn("[DELETE] Failed to remove file from storage:", storageError);
+      } else {
+        console.log(`[DELETE] Storage file removed: ${doc.file_path}`);
+      }
     }
 
     console.log(`[DELETE] ✅ Document ${docId} deleted`);

@@ -8,7 +8,7 @@ import { User, Bell, Shield } from "lucide-react";
 
 export default function SettingsPage() {
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto px-4 pb-12 pt-6 overflow-y-auto h-full">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Settings</h1>
         <p className="text-slate-500 mt-1">Manage your account preferences and workspace settings.</p>

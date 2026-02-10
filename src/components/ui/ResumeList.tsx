@@ -206,7 +206,9 @@ export function ResumeList({
                 </p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="text-[9px] text-slate-400 font-medium">
-                    {(file.size / 1024 / 1024).toFixed(1)} MB
+                    {file.size < 1024 * 100
+                      ? `${(file.size / 1024).toFixed(0)} KB`
+                      : `${(file.size / 1024 / 1024).toFixed(1)} MB`}
                   </span>
                   {file.status === "uploading" && (
                     <span className="text-[9px] text-blue-500 font-medium">

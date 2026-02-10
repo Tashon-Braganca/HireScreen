@@ -6,7 +6,7 @@ import { ResumeList, UploadedFile } from "@/components/ui/ResumeList";
 import { ChatInterface } from "@/components/ui/ChatInterface";
 import { RankedResultsPanel } from "@/components/ui/RankedResultsPanel";
 import { ExportModal } from "@/components/ui/ExportModal";
-import { uploadResume, deleteDocument, getDocuments } from "@/app/actions/documents";
+import { uploadResume, deleteDocument, getDocuments, getResumeUrl } from "@/app/actions/documents";
 import { chatWithJob } from "@/app/actions/chat";
 import { rankCandidates } from "@/app/actions/rank";
 import { toast } from "sonner";
@@ -182,10 +182,22 @@ export function JobWorkspace({
   }, []);
 
   const handleViewResume = useCallback(
-    (documentId: string) => {
+    async (documentId: string) => {
       const doc = documents.find((d) => d.id === documentId);
-      if (doc) {
-        toast.info(`Viewing: ${doc.filename}`);
+      if (!doc) return;
+
+      const toastId = toast.loading(`Preparing preview for ${doc.filename}...`);
+
+      try {
+        const res = await getResumeUrl(documentId);
+        if (res.success && res.url) {
+          toast.dismiss(toastId);
+          window.open(res.url, "_blank");
+        } else {
+          toast.error(res.error || "Failed to get preview link", { id: toastId });
+        }
+      } catch {
+        toast.error("Error opening resume", { id: toastId });
       }
     },
     [documents]
@@ -252,9 +264,9 @@ export function JobWorkspace({
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-theme(spacing.20))] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3 flex-shrink-0">
+      <div className="flex items-center justify-between mb-3 flex-shrink-0 px-1">
         <div className="flex items-center gap-3">
           <div>
             <h1 className="text-xl font-bold text-slate-900 tracking-tight">

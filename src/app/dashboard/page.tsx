@@ -16,7 +16,7 @@ export default async function DashboardPage() {
   const queryPercentage = (stats.queriesThisMonth / stats.queryLimit) * 100;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pt-2">
+    <div className="max-w-6xl mx-auto space-y-8 px-4 pb-12 pt-6">
       {/* Hero */}
       <div className="flex items-end justify-between">
         <div>
