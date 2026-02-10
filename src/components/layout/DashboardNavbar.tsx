@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, User, ArrowLeft } from "lucide-react";
+import { LogOut, User, ChevronRight, LayoutDashboard, Briefcase } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export function DashboardNavbar() {
@@ -30,34 +30,43 @@ export function DashboardNavbar() {
           <span className="font-bold text-lg text-slate-800 tracking-tight">HireScreen</span>
         </Link>
 
-        {/* Center — context-aware */}
+        {/* Center — context-aware navigation */}
         <div className="hidden md:flex items-center gap-1">
           {isJobPage ? (
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 bg-slate-50/80 hover:bg-slate-100 rounded-xl transition-colors"
-            >
-              <ArrowLeft size={14} />
-              Back to Jobs
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
+              >
+                <LayoutDashboard size={14} />
+                Dashboard
+              </Link>
+              <ChevronRight size={14} className="text-slate-300" />
+              <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100/50 rounded-lg">
+                <Briefcase size={14} />
+                Job Workspace
+              </div>
+            </div>
           ) : (
             <div className="flex items-center gap-1 p-1 bg-slate-100/50 rounded-xl border border-slate-200/50">
               <Link
                 href="/dashboard"
-                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${pathname === "/dashboard"
-                    ? "text-slate-900 bg-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-900"
+                className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${pathname === "/dashboard"
+                  ? "text-slate-900 bg-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
                   }`}
               >
+                <LayoutDashboard size={14} />
                 Overview
               </Link>
               <Link
                 href="/dashboard/settings"
-                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${pathname === "/dashboard/settings"
-                    ? "text-slate-900 bg-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-900"
+                className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${pathname === "/dashboard/settings"
+                  ? "text-slate-900 bg-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
                   }`}
               >
+                <User size={14} />
                 Settings
               </Link>
             </div>

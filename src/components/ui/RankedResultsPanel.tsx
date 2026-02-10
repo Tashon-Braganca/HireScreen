@@ -15,7 +15,9 @@ import {
     Sparkles,
     Search,
     Loader2,
+    FileDown,
 } from "lucide-react";
+import { exportToPDF } from "@/lib/pdf/export";
 
 interface RankedResultsPanelProps {
     candidates: RankedCandidate[];
@@ -189,7 +191,22 @@ export function RankedResultsPanel({
     activeQuery,
     jobTitle,
 }: RankedResultsPanelProps) {
+    const [isExporting, setIsExporting] = useState(false);
     const selectedCount = selectedIds.size;
+
+    const handleExportPDF = async () => {
+        setIsExporting(true);
+        try {
+            // If candidates are selected, export those. Otherwise export top 10.
+            const candidatesToExport = selectedCount > 0
+                ? candidates.filter(c => selectedIds.has(c.documentId))
+                : candidates.slice(0, 10);
+
+            exportToPDF(jobTitle || "Job", candidatesToExport);
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     // Example queries based on job title
     const suggestedQueries = [
@@ -254,15 +271,27 @@ export function RankedResultsPanel({
                     </div>
                 </div>
 
-                {selectedCount > 0 && (
-                    <button
-                        onClick={onExport}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all shadow-sm"
-                    >
-                        <Download size={12} />
-                        Export {selectedCount}
-                    </button>
-                )}
+                <div className="flex items-center gap-2">
+                    {selectedCount > 0 && (
+                        <button
+                            onClick={onExport}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-all shadow-sm"
+                        >
+                            <Download size={12} />
+                            CSV / Copy
+                        </button>
+                    )}
+                    {(candidates.length > 0 || selectedCount > 0) && (
+                        <button
+                            onClick={handleExportPDF}
+                            disabled={isExporting}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all shadow-sm disabled:opacity-50"
+                        >
+                            {isExporting ? <Loader2 size={12} className="animate-spin" /> : <FileDown size={12} />}
+                            Export PDF
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Active query */}

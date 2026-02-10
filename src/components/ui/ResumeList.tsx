@@ -41,6 +41,7 @@ export function ResumeList({
 }: ResumeListProps) {
   const [showUploadZone, setShowUploadZone] = useState(files.length === 0);
   const [filter, setFilter] = useState<"all" | "shortlisted">("all");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -224,10 +225,22 @@ export function ResumeList({
                 {statusIcon(file.status)}
                 {onDelete && (
                   <button
-                    onClick={() => onDelete(file.id)}
-                    className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-all"
+                    onClick={async () => {
+                      if (deletingId) return;
+                      setDeletingId(file.id);
+                      try {
+                        await onDelete(file.id);
+                      } finally {
+                        setDeletingId(null);
+                      }
+                    }}
+                    disabled={deletingId === file.id}
+                    className={cn(
+                      "p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded transition-all",
+                      deletingId === file.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    )}
                   >
-                    <Trash2 size={12} />
+                    {deletingId === file.id ? <Loader2 size={12} className="animate-spin text-red-500" /> : <Trash2 size={12} />}
                   </button>
                 )}
               </div>
