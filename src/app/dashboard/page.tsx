@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getJobs } from "@/app/actions/jobs";
 import { BentoCard, BentoHeader } from "@/components/ui/BentoCard";
 import { StatCard } from "@/components/ui/StatCard";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Plus, Briefcase, Users, Search, Clock } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -27,20 +27,20 @@ export default async function DashboardPage() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard 
-          label="Active Jobs" 
-          value={jobs.length} 
+        <StatCard
+          label="Active Jobs"
+          value={jobs.length}
           icon={Briefcase}
           trend={{ value: "12%", isPositive: true }}
         />
-        <StatCard 
-          label="Candidates" 
-          value={jobs.reduce((acc, job) => acc + (job.resume_count || 0), 0)} 
+        <StatCard
+          label="Candidates"
+          value={jobs.reduce((acc, job) => acc + (job.resume_count || 0), 0)}
           icon={Users}
         />
-        <StatCard 
-          label="Queries" 
-          value="124" 
+        <StatCard
+          label="Queries"
+          value="124"
           icon={Search}
         />
       </div>
@@ -72,10 +72,10 @@ export default async function DashboardPage() {
                       Active
                     </span>
                   </div>
-                  
+
                   <h3 className="font-bold text-lg text-slate-900 mb-2 line-clamp-1">{job.title}</h3>
                   <p className="text-sm text-slate-500 line-clamp-2 mb-6 h-10">{job.description || "No description provided."}</p>
-                  
+
                   <div className="flex items-center gap-4 text-xs text-slate-400 font-medium border-t border-slate-100 pt-4">
                     <div className="flex items-center gap-1">
                       <Users size={14} />

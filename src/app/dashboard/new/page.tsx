@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createJob } from "@/app/actions/jobs";
 import { BentoCard, BentoHeader } from "@/components/ui/BentoCard";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -17,7 +17,7 @@ export default function NewJobPage() {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
-    
+
     const res = await createJob({
       title: formData.get("title") as string,
       description: formData.get("description") as string,
@@ -41,7 +41,7 @@ export default function NewJobPage() {
 
       <BentoCard>
         <BentoHeader title="Create New Job" subtitle="Set up a new position to start screening." />
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700">Job Title</label>
@@ -50,8 +50,8 @@ export default function NewJobPage() {
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700">Description</label>
-            <textarea 
-              name="description" 
+            <textarea
+              name="description"
               className="flex min-h-[120px] w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm"
               placeholder="Paste the job description here..."
             />

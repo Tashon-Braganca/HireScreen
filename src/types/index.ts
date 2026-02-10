@@ -97,3 +97,20 @@ export interface UploadProgress {
   status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error';
   error?: string;
 }
+
+export interface MatchReason {
+  reason: string;
+  page: number | null;
+  filename: string;
+}
+
+export interface RankedCandidate {
+  rank: number;
+  name: string;
+  score: number;
+  matchReasons: MatchReason[];
+  documentId: string;
+  filename: string;
+}
+
+export type ExportFormat = 'csv' | 'clipboard';

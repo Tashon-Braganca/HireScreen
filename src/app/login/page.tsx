@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FloatingShape } from "@/components/ui/FloatingShape";
 import { BentoCard } from "@/components/ui/BentoCard";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { createClient } from "@/lib/supabase/client";
 import { Mail, Lock, AlertCircle } from "lucide-react";
 
@@ -109,24 +109,24 @@ export default function LoginPage() {
             <Button type="submit" className="w-full h-11" isLoading={loading}>
               Sign In
             </Button>
-            
+
             <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-slate-100" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-2 text-slate-400">Or</span>
-                </div>
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-slate-100" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-slate-400">Or</span>
+              </div>
             </div>
 
-            <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full"
-                onClick={handleSignUp}
-                isLoading={loading}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleSignUp}
+              isLoading={loading}
             >
-                Create Account
+              Create Account
             </Button>
           </form>
         </BentoCard>

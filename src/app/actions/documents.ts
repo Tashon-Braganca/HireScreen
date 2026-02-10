@@ -38,14 +38,14 @@ export async function uploadResume(formData: FormData, jobId: string) {
 
   // Start processing in background (but since Vercel serverless kills background tasks, 
   // we must await it if we want to be sure. To be "fast", we optimize the steps).
-  
+
   try {
     // 2. Parse PDF (Fastest method)
     const arrayBuffer = await file.arrayBuffer();
     const { text, totalPages } = await extractText(new Uint8Array(arrayBuffer), {
-        mergePages: true
+      mergePages: true
     });
-    
+
     // Update basic info
     await supabase.from("documents").update({ page_count: totalPages }).eq("id", doc.id);
 
@@ -54,27 +54,27 @@ export async function uploadResume(formData: FormData, jobId: string) {
 
     // 4. Generate Embeddings (Parallelized)
     // Create batches of 10 to avoid hitting API limits or timeouts
-    const batchSize = 10;
+    const batchSize = 20;
     const chunkBatches = [];
     for (let i = 0; i < chunks.length; i += batchSize) {
-        chunkBatches.push(chunks.slice(i, i + batchSize));
+      chunkBatches.push(chunks.slice(i, i + batchSize));
     }
 
     const embeddings: number[][] = [];
-    
+
     // Process batches in parallel
     await Promise.all(chunkBatches.map(async (batch) => {
-        const batchTexts = batch.map(c => c.content);
-        const batchEmbeddings = await createEmbeddings(batchTexts);
-        embeddings.push(...batchEmbeddings);
+      const batchTexts = batch.map(c => c.content);
+      const batchEmbeddings = await createEmbeddings(batchTexts);
+      embeddings.push(...batchEmbeddings);
     }));
 
     // Re-align embeddings with original chunks (Promise.all might finish out of order, but map preserves order of start)
     // Wait, createEmbeddings returns the array in order of input, so pushing spread is risky if batches finish out of order.
     // Let's fix that.
-    
+
     const allEmbeddings = await Promise.all(
-        chunkBatches.map(batch => createEmbeddings(batch.map(c => c.content)))
+      chunkBatches.map(batch => createEmbeddings(batch.map(c => c.content)))
     );
     const flatEmbeddings = allEmbeddings.flat();
 
@@ -85,7 +85,7 @@ export async function uploadResume(formData: FormData, jobId: string) {
       chunk_index: chunk.chunkIndex,
       content: chunk.content,
       embedding: flatEmbeddings[index],
-      page_number: 1 
+      page_number: 1
     }));
 
     const { error: chunkError } = await supabase.from("document_chunks").insert(chunksToInsert);
@@ -108,24 +108,24 @@ export async function uploadResume(formData: FormData, jobId: string) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
     console.error("Upload processing error:", error);
     if (doc) {
-        await supabase.from("documents").update({ status: 'failed' }).eq('id', doc.id);
+      await supabase.from("documents").update({ status: 'failed' }).eq('id', doc.id);
     }
     return { success: false, error: errorMessage };
   }
 }
 
 export async function getDocuments(jobId: string) {
-    const supabase = await createClient();
-    const { data } = await supabase
-        .from("documents")
-        .select("*")
-        .eq("job_id", jobId)
-        .order("created_at", { ascending: false });
-    return data || [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("documents")
+    .select("*")
+    .eq("job_id", jobId)
+    .order("created_at", { ascending: false });
+  return data || [];
 }
 
 export async function deleteDocument(docId: string) {
-    const supabase = await createClient();
-    await supabase.from("documents").delete().eq("id", docId);
-    revalidatePath("/dashboard/jobs/[id]"); 
+  const supabase = await createClient();
+  await supabase.from("documents").delete().eq("id", docId);
+  revalidatePath("/dashboard/jobs/[id]");
 }
