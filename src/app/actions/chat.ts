@@ -18,12 +18,12 @@ export async function chatWithJob(question: string, jobId: string) {
     const queryEmbedding = await createEmbedding(question);
     console.log(`[CHAT] Query embedding dimension: ${queryEmbedding.length}`);
 
-    // 2. Search for relevant chunks
-    console.log(`[CHAT] Searching chunks for job ${jobId} with threshold 0.3...`);
+    // 2. Search for relevant chunks — threshold 0 to catch EVERYTHING
+    console.log(`[CHAT] Searching chunks for job ${jobId} with threshold 0 (catch all)...`);
     const { data: chunks, error: searchError } = await supabase.rpc("match_document_chunks", {
       query_embedding: queryEmbedding,
-      match_threshold: 0.3, // Lowered from 0.4 to catch more results
-      match_count: 10,
+      match_threshold: 0, // Zero threshold to see ALL similarities
+      match_count: 20,
       filter_job_id: jobId,
     });
 
@@ -55,6 +55,15 @@ export async function chatWithJob(question: string, jobId: string) {
 
         const hasEmbedding = embCheck && embCheck.length > 0 && embCheck[0].embedding !== null;
         console.log(`[CHAT] DEBUG: Chunks have embeddings: ${hasEmbedding}`);
+
+        if (hasEmbedding) {
+          const emb = embCheck![0].embedding;
+          const embType = typeof emb;
+          const embIsArray = Array.isArray(emb);
+          const embStr = typeof emb === 'string' ? emb.substring(0, 200) : JSON.stringify(emb).substring(0, 200);
+          console.log(`[CHAT] DEBUG: Stored embedding type=${embType}, isArray=${embIsArray}, preview=${embStr}`);
+          console.log(`[CHAT] DEBUG: Query embedding type=${typeof queryEmbedding}, isArray=${Array.isArray(queryEmbedding)}, first5=${JSON.stringify(queryEmbedding.slice(0, 5))}`);
+        }
       }
 
       return {
