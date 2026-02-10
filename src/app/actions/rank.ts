@@ -56,12 +56,12 @@ export async function rankCandidates(
             (chunk: {
                 content: string;
                 filename?: string;
-                page_number: number;
+                page_number?: number;
                 document_id: string;
             }) => ({
                 content: chunk.content,
                 filename: chunk.filename || "Unknown",
-                page: chunk.page_number,
+                page: chunk.page_number ?? null,
                 documentId: chunk.document_id,
             })
         );

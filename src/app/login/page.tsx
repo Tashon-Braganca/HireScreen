@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FloatingShape } from "@/components/ui/FloatingShape";
 import { BentoCard } from "@/components/ui/BentoCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,9 +56,9 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#f0f4f8]">
-      {/* Background Blobs */}
-      <FloatingShape className="w-[500px] h-[500px] bg-purple-300 top-[-10%] left-[-10%]" delay={0} />
-      <FloatingShape className="w-[400px] h-[400px] bg-blue-300 bottom-[-10%] right-[-5%]" delay={2} />
+      {/* Static gradient blobs */}
+      <div className="absolute w-[500px] h-[500px] rounded-full bg-purple-300/40 blur-3xl top-[-10%] left-[-10%]" />
+      <div className="absolute w-[400px] h-[400px] rounded-full bg-blue-300/40 blur-3xl bottom-[-10%] right-[-5%]" />
 
       <div className="relative z-10 w-full max-w-md px-4">
         <BentoCard className="p-8">

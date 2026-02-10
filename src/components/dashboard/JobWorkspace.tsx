@@ -10,9 +10,6 @@ import { ExportModal } from "@/components/ui/ExportModal";
 import { uploadResume, deleteDocument } from "@/app/actions/documents";
 import { chatWithJob } from "@/app/actions/chat";
 import { rankCandidates } from "@/app/actions/rank";
-import { ArrowLeft, MoreHorizontal } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 interface Message {
@@ -182,22 +179,16 @@ export function JobWorkspace({ job, documents }: JobWorkspaceProps) {
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)]">
+    <div className="flex flex-col h-[calc(100vh-80px)] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 flex-shrink-0">
+      <div className="flex items-center justify-between mb-3 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="p-2 bg-white/60 hover:bg-white rounded-xl text-slate-500 hover:text-slate-900 transition-all border border-white/60 shadow-sm"
-          >
-            <ArrowLeft size={16} />
-          </Link>
           <div>
             <h1 className="text-xl font-bold text-slate-900 tracking-tight">
               {job.title}
             </h1>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
               <p className="text-xs font-medium text-slate-500">
                 Active • {documents.length} Resumes •{" "}
                 {documents.filter((d) => d.status === "ready").length} Ready
@@ -205,17 +196,10 @@ export function JobWorkspace({ job, documents }: JobWorkspaceProps) {
             </div>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="icon"
-          className="rounded-xl border-white/60 bg-white/60 hover:bg-white"
-        >
-          <MoreHorizontal size={16} />
-        </Button>
       </div>
 
       {/* 3-Column Layout */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0 overflow-hidden">
         {/* Left: Resumes (25%) */}
         <div className="lg:col-span-3 flex flex-col min-h-0">
           <ResumeList

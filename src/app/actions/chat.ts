@@ -30,18 +30,18 @@ export async function chatWithJob(question: string, jobId: string) {
     }
 
     if (!chunks || chunks.length === 0) {
-      return { 
-          success: true, 
-          answer: "I checked the resumes but couldn't find any specific information matching your question.",
-          sources: []
+      return {
+        success: true,
+        answer: "I checked the resumes but couldn't find any specific information matching your question.",
+        sources: []
       };
     }
 
     // 3. Format Context for OpenAI
-    const contexts = chunks.map((chunk: { content: string; filename?: string; page_number: number }) => ({
+    const contexts = chunks.map((chunk: { content: string; filename?: string; page_number?: number }) => ({
       content: chunk.content,
-      filename: chunk.filename || "Unknown Document", 
-      page: chunk.page_number
+      filename: chunk.filename || "Unknown Document",
+      page: chunk.page_number ?? null
     }));
 
     // 4. Generate Answer
@@ -49,17 +49,17 @@ export async function chatWithJob(question: string, jobId: string) {
 
     // 5. Save Query
     await supabase.from("queries").insert({
-        job_id: jobId,
-        user_id: user.id,
-        question: question,
-        answer: answer,
-        tokens_used: tokensUsed
+      job_id: jobId,
+      user_id: user.id,
+      question: question,
+      answer: answer,
+      tokens_used: tokensUsed
     });
 
-    return { 
-        success: true, 
-        answer,
-        sources: chunks.map((c: { filename: string; content: string }) => ({ filename: c.filename, snippet: c.content }))
+    return {
+      success: true,
+      answer,
+      sources: chunks.map((c: { filename: string; content: string }) => ({ filename: c.filename, snippet: c.content }))
     };
 
   } catch (error: unknown) {
