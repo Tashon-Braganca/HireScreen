@@ -215,7 +215,11 @@ export function JobWorkspace({
   const handleViewResume = useCallback(
     async (documentId: string) => {
       const doc = documents.find((d) => d.id === documentId);
-      if (!doc) return;
+      if (!doc) {
+        console.error(`[PREVIEW] Document ${documentId} not found in local state`, documents);
+        toast.error("Document not found. Please refresh the page.");
+        return;
+      }
 
       const toastId = toast.loading(`Preparing preview for ${doc.filename}...`);
 

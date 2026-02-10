@@ -39,8 +39,8 @@ export async function rankCandidates(
             "match_document_chunks",
             {
                 query_embedding: queryEmbedding,
-                match_threshold: 0.1, // Lowered to catch more results
-                match_count: 50,
+                match_threshold: 0.01, // Extremely low to ensure we get ALL candidates
+                match_count: 100, // Fetch more chunks to cover more documents
                 filter_job_id: jobId,
             }
         );
@@ -113,8 +113,6 @@ export async function rankCandidates(
 
         const systemPrompt = getRankingSystemPrompt(job?.type || "job");
         const userMessage = buildRankingUserPrompt(query, contexts);
-
-        // 5. Call GPT with JSON mode
         console.log(`[RANK] Calling GPT-4o-mini with ${contexts.length} contexts...`);
         const response = await getOpenAI().chat.completions.create({
             model: "gpt-4o-mini",
@@ -123,7 +121,7 @@ export async function rankCandidates(
                 { role: "user", content: userMessage },
             ],
             temperature: 0.2,
-            max_tokens: 2000,
+            max_completion_tokens: 2000,
             response_format: { type: "json_object" },
         });
 
