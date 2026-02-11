@@ -224,7 +224,7 @@ export function ChatInterface({
           {/* Render findings (assistant messages) with their corresponding user query */}
           {messages
             .filter((m) => m.id !== "1")
-            .map((msg, idx) => {
+            .map((msg) => {
               if (msg.role === "user") {
                 return (
                   <motion.div

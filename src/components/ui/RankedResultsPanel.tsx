@@ -7,7 +7,6 @@ import type { RankedCandidate, Document } from "@/types";
 import {
     ChevronDown,
     ChevronUp,
-    Eye,
     Download,
     Search,
     Loader2,
