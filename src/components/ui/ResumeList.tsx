@@ -28,7 +28,9 @@ interface ResumeListProps {
   onUpload: (files: File[]) => void;
   onDelete?: (id: string) => void;
   isUploading?: boolean;
-  selectedIds?: Set<string>;
+  shortlistedIds?: Set<string>;
+  onToggleShortlist?: (id: string) => void;
+  onViewResume?: (id: string) => void;
 }
 
 export function ResumeList({
@@ -36,7 +38,9 @@ export function ResumeList({
   onUpload,
   onDelete,
   isUploading,
-  selectedIds,
+  shortlistedIds,
+  onToggleShortlist,
+  onViewResume,
 }: ResumeListProps) {
   const [showUploadZone, setShowUploadZone] = useState(files.length === 0);
   const [filter, setFilter] = useState<"all" | "shortlisted">("all");
@@ -62,8 +66,8 @@ export function ResumeList({
   ).length;
 
   const filteredFiles =
-    filter === "shortlisted" && selectedIds
-      ? files.filter((f) => selectedIds.has(f.id))
+    filter === "shortlisted" && shortlistedIds
+      ? files.filter((f) => shortlistedIds.has(f.id))
       : files;
 
   const statusIcon = (status: string) => {
@@ -117,7 +121,7 @@ export function ResumeList({
                   : "text-muted hover:text-ink"
               )}
             >
-              Starred{selectedIds ? ` (${selectedIds.size})` : ""}
+              Starred{shortlistedIds ? ` (${shortlistedIds.size})` : ""}
             </button>
           </div>
 
@@ -191,16 +195,27 @@ export function ResumeList({
               exit={{ opacity: 0, y: -4 }}
               className={cn(
                 "group flex items-center gap-2 p-2 rounded border transition-colors",
-                selectedIds?.has(file.id)
+                shortlistedIds?.has(file.id)
                   ? "border-accent/30 bg-accent-bg"
                   : "border-border/50 bg-panel hover:border-border"
               )}
             >
+              {/* Star Toggle */}
+              <button
+                onClick={(e) => { e.stopPropagation(); onToggleShortlist?.(file.id); }}
+                className={cn(
+                  "w-4 h-4 flex items-center justify-center rounded hover:bg-black/5 transition-colors",
+                  shortlistedIds?.has(file.id) ? "text-yellow-500" : "text-muted/30 hover:text-yellow-500"
+                )}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill={shortlistedIds?.has(file.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+              </button>
+
               <div className="w-7 h-7 rounded bg-[#FEF2F2] flex items-center justify-center text-[#B91C1C]/60 flex-shrink-0">
                 <FileText size={14} />
               </div>
 
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => {/* Handle view resume? */ }}>
                 <p className="text-xs font-medium text-ink truncate">
                   {file.name}
                 </p>

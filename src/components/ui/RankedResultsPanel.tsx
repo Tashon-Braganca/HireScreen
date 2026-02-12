@@ -21,8 +21,10 @@ import { exportToPDF } from "@/lib/pdf/export";
 
 interface RankedResultsPanelProps {
     candidates: RankedCandidate[];
-    selectedIds: Set<string>;
+    selectedIds: Set<string>; // filtered/shortlisted
     onToggleSelect: (documentId: string) => void;
+    compareIds: Set<string>;
+    onToggleCompare: (documentId: string) => void;
     onViewResume: (documentId: string) => void;
     onExport: () => void;
     onQueryClick: (query: string) => void;
@@ -43,6 +45,8 @@ function CandidateCard({
     candidate,
     isSelected,
     onToggleSelect,
+    isCompared,
+    onToggleCompare,
     onViewResume,
     index,
     contactEmail,
@@ -51,6 +55,8 @@ function CandidateCard({
     candidate: RankedCandidate;
     isSelected: boolean;
     onToggleSelect: () => void;
+    isCompared: boolean;
+    onToggleCompare: () => void;
     onViewResume: () => void;
     index: number;
     contactEmail?: string | null;
@@ -64,12 +70,23 @@ function CandidateCard({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.04, duration: 0.25 }}
             className={cn(
-                "group border rounded transition-colors",
+                "group border rounded transition-colors relative",
                 isSelected
                     ? "border-accent/40 bg-accent-bg"
                     : "border-border bg-panel hover:border-border"
             )}
         >
+            {/* Compare Checkbox */}
+            <div className="absolute top-3 right-3 z-10">
+                <input
+                    type="checkbox"
+                    checked={isCompared}
+                    onChange={onToggleCompare}
+                    className="h-4 w-4 rounded border-gray-300 text-accent focus:ring-accent cursor-pointer accent-accent"
+                    title="Select to compare"
+                />
+            </div>
+
             {/* Main Row */}
             <div className="px-4 py-3 flex items-start gap-3">
                 {/* Rank Badge — monochrome */}
@@ -169,7 +186,7 @@ function CandidateCard({
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col gap-1.5 flex-shrink-0">
+                <div className="flex flex-col gap-1.5 flex-shrink-0 pt-0.5">
                     <button
                         onClick={onToggleSelect}
                         className={cn(
@@ -217,6 +234,8 @@ export function RankedResultsPanel({
     candidates,
     selectedIds,
     onToggleSelect,
+    compareIds,
+    onToggleCompare,
     onViewResume,
     onExport,
     onQueryClick,
@@ -393,6 +412,8 @@ export function RankedResultsPanel({
                                     onToggleSelect={() =>
                                         onToggleSelect(candidate.documentId)
                                     }
+                                    isCompared={compareIds.has(candidate.documentId)}
+                                    onToggleCompare={() => onToggleCompare(candidate.documentId)}
                                     onViewResume={() => onViewResume(candidate.documentId)}
                                     index={i}
                                     contactEmail={doc?.candidate_email}

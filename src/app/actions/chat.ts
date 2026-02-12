@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createEmbedding } from "@/lib/openai/embeddings";
 import { generateAnswer } from "@/lib/openai/chat";
 
-export async function chatWithJob(question: string, jobId: string) {
+export async function chatWithJob(question: string, jobId: string, filterDocumentIds?: string[]) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -25,6 +25,7 @@ export async function chatWithJob(question: string, jobId: string) {
       match_threshold: 0, // Zero threshold to see ALL similarities
       match_count: 20,
       filter_job_id: jobId,
+      filter_document_ids: filterDocumentIds || null
     });
 
     if (searchError) {
