@@ -70,19 +70,7 @@ interface JobContextType {
 }
 
 const JobContext = createContext<JobContextType | null>(null);
-// ... (keep usage same)
 
-// ... Provider ...
-// In value:
-filteredDocuments,
-    filteredRankedCandidates,
-    filters,
-    setFilters
-        }}>
-    { children }
-        </JobContext.Provider >
-    );
-}
 
 export const useJobContext = () => {
     const context = useContext(JobContext);
