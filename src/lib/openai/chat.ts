@@ -34,7 +34,6 @@ export async function generateAnswer(
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userMessage },
     ],
-    temperature: 0.3,
     max_completion_tokens: 2000,
   });
 

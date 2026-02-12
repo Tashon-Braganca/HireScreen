@@ -25,7 +25,7 @@ export default async function DashboardPage() {
       {/* Header row */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-display text-2xl text-ink tracking-tight">
+          <h1 className="font-display text-2xl text-ink">
             Jobs
           </h1>
           <p className="text-sm text-muted mt-1">

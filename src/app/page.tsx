@@ -55,7 +55,7 @@ const Hero = ({ user }: { user: { id: string } | null }) => (
                 </div>
 
                 <h1
-                    className="text-5xl lg:text-6xl font-bold text-[var(--text)] leading-[1.1] tracking-tight animate-stagger-in"
+                    className="text-5xl lg:text-6xl font-bold text-[var(--text)] leading-[1.1] animate-stagger-in"
                     style={{ animationDelay: "100ms" }}
                 >
                     Stop reading resumes. <br />

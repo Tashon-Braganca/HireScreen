@@ -28,7 +28,6 @@ export function LeftPanelClient() {
 
     return (
         <div className="flex flex-col h-full overflow-hidden">
-            <FiltersPanel />
             <ResumeList
                 files={fileList}
                 onUpload={handleUpload}
@@ -38,6 +37,7 @@ export function LeftPanelClient() {
                 onViewResume={viewResume}
                 onToggleShortlist={toggleShortlist}
             />
+            <FiltersPanel />
         </div>
     );
 }

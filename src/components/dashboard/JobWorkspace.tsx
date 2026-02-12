@@ -23,7 +23,7 @@ export function JobWorkspace({
         {/* Header */}
         <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <div>
-            <h1 className="font-display text-xl text-ink tracking-tight">
+            <h1 className="font-display text-xl text-ink">
               {job.title}
             </h1>
             <div className="flex items-center gap-2 mt-1">
