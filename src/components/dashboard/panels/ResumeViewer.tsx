@@ -29,7 +29,7 @@ export function ResumeViewer({ documentId }: ResumeViewerProps) {
                     }
                     setLoading(false);
                 }
-            } catch (_err) {
+            } catch {
                 if (mounted) {
                     setError("Network error loading resume");
                     setLoading(false);

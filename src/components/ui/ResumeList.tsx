@@ -40,7 +40,6 @@ export function ResumeList({
   isUploading,
   shortlistedIds,
   onToggleShortlist,
-  onViewResume,
 }: ResumeListProps) {
   const [showUploadZone, setShowUploadZone] = useState(files.length === 0);
   const [filter, setFilter] = useState<"all" | "shortlisted">("all");
