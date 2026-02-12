@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { getResumeUrl } from "@/app/actions/documents";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, ExternalLink } from "lucide-react";
 
 interface ResumeViewerProps {
     documentId: string;
@@ -52,7 +52,7 @@ export function ResumeViewer({ documentId }: ResumeViewerProps) {
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center h-full text-red-500">
+            <div className="flex flex-col items-center justify-center h-full text-[var(--error)]">
                 <AlertCircle size={24} className="mb-2" />
                 <p className="text-sm font-medium">{error}</p>
             </div>
@@ -62,12 +62,26 @@ export function ResumeViewer({ documentId }: ResumeViewerProps) {
     if (!url) return null;
 
     return (
-        <div className="h-full w-full bg-gray-100">
-            <iframe
-                src={url}
-                className="w-full h-full border-none"
-                title="Resume Preview"
-            />
+        <div className="h-full w-full bg-[var(--panel)]">
+            <object
+                data={url}
+                type="application/pdf"
+                className="w-full h-full"
+            >
+                {/* Fallback for browsers that can't render PDF inline */}
+                <div className="flex flex-col items-center justify-center h-full text-muted gap-3">
+                    <p className="text-sm">PDF preview not supported in this browser.</p>
+                    <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors"
+                    >
+                        <ExternalLink size={14} />
+                        Open in new tab
+                    </a>
+                </div>
+            </object>
         </div>
     );
 }

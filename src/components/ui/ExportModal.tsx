@@ -47,7 +47,7 @@ export function ExportModal({ candidates, isOpen, onClose }: ExportModalProps) {
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Shortlist");
-        XLSX.writeFile(wb, `hirescreen_report_${new Date().toISOString().split("T")[0]}.xlsx`);
+        XLSX.writeFile(wb, `candidrank_report_${new Date().toISOString().split("T")[0]}.xlsx`);
 
         toast.success("Excel report downloaded!");
         onClose();
@@ -95,7 +95,7 @@ export function ExportModal({ candidates, isOpen, onClose }: ExportModalProps) {
             const url = URL.createObjectURL(content);
             const link = document.createElement("a");
             link.href = url;
-            link.download = `hirescreen_folder_${new Date().toISOString().split("T")[0]}.zip`;
+            link.download = `candidrank_folder_${new Date().toISOString().split("T")[0]}.zip`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -117,7 +117,7 @@ export function ExportModal({ candidates, isOpen, onClose }: ExportModalProps) {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `hirescreen_shortlist_${new Date().toISOString().split("T")[0]}.csv`;
+        link.download = `candidrank_shortlist_${new Date().toISOString().split("T")[0]}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

@@ -63,6 +63,7 @@ interface JobContextType {
     activeTab: string;
     setActiveTab: (tab: string) => void;
     closeResumeTab: (id: string) => void;
+    openResumeTabs: string[];
 
     // Filtered views
     filteredDocuments: Document[];
@@ -71,6 +72,10 @@ interface JobContextType {
     // Filters
     filters: JobFilters;
     setFilters: (filters: JobFilters) => void;
+
+    // Evidence bookmarks
+    evidenceBookmarks: Record<string, string[]>;
+    toggleBookmark: (candidateId: string, evidenceKey: string) => void;
 }
 
 const JobContext = createContext<JobContextType | null>(null);
@@ -323,13 +328,32 @@ export function JobProvider({
 
     // We need activeTab handling for the Center Panel
     const [activeTab, setActiveTab] = useState<string>("ranked"); // "ranked" | "compare" | "pdf-{id}"
+    const [openResumeTabs, setOpenResumeTabs] = useState<string[]>([]);
 
-    // Updated viewResume that switches tab
+    // Evidence bookmarks (per-job, stored in sessionStorage)
+    const [evidenceBookmarks, setEvidenceBookmarks] = useState<Record<string, string[]>>(
+        () => loadSession<Record<string, string[]>>(job.id, "bookmarks", {})
+    );
+    useEffect(() => { saveSession(job.id, "bookmarks", evidenceBookmarks); }, [job.id, evidenceBookmarks]);
+
+    const toggleBookmark = useCallback((candidateId: string, evidenceKey: string) => {
+        setEvidenceBookmarks(prev => {
+            const current = prev[candidateId] || [];
+            const next = current.includes(evidenceKey)
+                ? current.filter(k => k !== evidenceKey)
+                : [...current, evidenceKey];
+            return { ...prev, [candidateId]: next };
+        });
+    }, []);
+
+    // Updated viewResume that opens a tab and switches to it
     const viewResumeTab = useCallback(async (id: string) => {
+        setOpenResumeTabs(prev => prev.includes(id) ? prev : [...prev, id]);
         setActiveTab(`pdf-${id}`);
     }, []);
 
     const closeResumeTab = useCallback((id: string) => {
+        setOpenResumeTabs(prev => prev.filter(t => t !== id));
         setActiveTab(prev => prev === `pdf-${id}` ? "ranked" : prev);
     }, []);
 
@@ -361,10 +385,13 @@ export function JobProvider({
             activeTab,
             setActiveTab,
             closeResumeTab,
+            openResumeTabs,
             filteredDocuments,
             filteredRankedCandidates,
             filters,
-            setFilters
+            setFilters,
+            evidenceBookmarks,
+            toggleBookmark
         }}>
             {children}
         </JobContext.Provider>

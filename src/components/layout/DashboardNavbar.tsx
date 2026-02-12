@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut, User, ChevronRight, LayoutDashboard, Briefcase } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { BRAND_NAME, BRAND_LOGO_LETTER } from "@/config/brand";
 
 export function DashboardNavbar() {
   const router = useRouter();
@@ -25,9 +26,9 @@ export function DashboardNavbar() {
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2.5 group">
           <div className="w-8 h-8 rounded bg-accent flex items-center justify-center text-white font-bold text-sm">
-            H
+            {BRAND_LOGO_LETTER}
           </div>
-          <span className="font-display text-lg text-ink tracking-tight">HireScreen</span>
+          <span className="font-display text-lg text-ink tracking-tight">{BRAND_NAME}</span>
         </Link>
 
         {/* Center — breadcrumb or tabs */}
@@ -52,8 +53,8 @@ export function DashboardNavbar() {
               <Link
                 href="/dashboard"
                 className={`px-3 py-1.5 font-medium rounded transition-colors ${pathname === "/dashboard"
-                    ? "text-ink bg-paper"
-                    : "text-muted hover:text-ink"
+                  ? "text-ink bg-paper"
+                  : "text-muted hover:text-ink"
                   }`}
               >
                 Overview
@@ -61,8 +62,8 @@ export function DashboardNavbar() {
               <Link
                 href="/dashboard/settings"
                 className={`px-3 py-1.5 font-medium rounded transition-colors ${pathname === "/dashboard/settings"
-                    ? "text-ink bg-paper"
-                    : "text-muted hover:text-ink"
+                  ? "text-ink bg-paper"
+                  : "text-muted hover:text-ink"
                   }`}
               >
                 Settings

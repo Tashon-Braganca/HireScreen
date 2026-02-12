@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { BRAND_META } from "@/config/brand";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HireScreen | AI-Powered Resume Intelligence",
-  description: "Transform your hiring process with AI-powered resume screening. Find exceptional talent in seconds, not hours.",
+  title: BRAND_META.title,
+  description: BRAND_META.description,
+  openGraph: BRAND_META.openGraph,
+  twitter: BRAND_META.twitter,
   icons: {
     icon: "/favicon.svg",
   },

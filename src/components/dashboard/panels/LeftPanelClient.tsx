@@ -2,6 +2,7 @@
 
 import { useJobContext } from "@/components/dashboard/JobContext";
 import { ResumeList, UploadedFile } from "@/components/ui/ResumeList";
+import { FiltersPanel } from "@/components/dashboard/FiltersPanel";
 
 export function LeftPanelClient() {
     const {
@@ -12,9 +13,9 @@ export function LeftPanelClient() {
         shortlistedIds,
         viewResume,
         toggleShortlist,
+        filters,
+        setFilters,
     } = useJobContext();
-
-
 
     // Map to UI format
     const fileList: UploadedFile[] = [
@@ -28,8 +29,8 @@ export function LeftPanelClient() {
     ];
 
     return (
-        <div className="flex flex-col h-full overflow-hidden gap-aa">
-            {/* <FiltersPanel /> commented out until implemented */}
+        <div className="flex flex-col h-full overflow-hidden">
+            <FiltersPanel filters={filters} onFilterChange={setFilters} />
             <ResumeList
                 files={fileList}
                 onUpload={handleUpload}

@@ -110,9 +110,11 @@ function CandidateCard({
                         <span
                             className={cn(
                                 "px-2 py-0.5 rounded text-[11px] font-semibold border flex-shrink-0",
-                                candidate.score >= 70
-                                    ? "border-ink/20 bg-ink/5 text-ink"
-                                    : "border-border bg-paper text-muted"
+                                candidate.score >= 85
+                                    ? "border-accent/30 bg-accent-light text-accent"
+                                    : candidate.score >= 70
+                                        ? "border-ink/20 bg-ink/5 text-ink"
+                                        : "border-border bg-paper text-muted"
                             )}
                         >
                             {candidate.score}% {getScoreTier(candidate.score)}
@@ -360,14 +362,15 @@ export function RankedResultsPanel({
                     {[...Array(4)].map((_, i) => (
                         <div
                             key={i}
-                            className="rounded border border-border p-4 animate-pulse"
+                            className="rounded border border-border p-4 animate-shimmer"
+                            style={{ animationDelay: `${i * 100}ms` }}
                         >
                             <div className="flex items-center gap-3">
-                                <div className="w-7 h-7 rounded bg-border" />
+                                <div className="w-7 h-7 rounded bg-border/40" />
                                 <div className="flex-1 space-y-2">
-                                    <div className="h-3 bg-border rounded w-1/3" />
-                                    <div className="h-1 bg-border/60 rounded w-full" />
-                                    <div className="h-2 bg-border/40 rounded w-2/3" />
+                                    <div className="h-3 bg-border/40 rounded w-1/3" />
+                                    <div className="h-1 bg-border/30 rounded w-full" />
+                                    <div className="h-2 bg-border/20 rounded w-2/3" />
                                 </div>
                             </div>
                         </div>
@@ -422,6 +425,25 @@ export function RankedResultsPanel({
                             );
                         })}
                     </AnimatePresence>
+                </div>
+            )}
+
+            {/* Sticky Compare Bar */}
+            {compareIds.size > 0 && (
+                <div className="px-4 py-2.5 border-t border-border bg-panel flex items-center justify-between flex-shrink-0">
+                    <span className="text-xs text-muted">
+                        {compareIds.size} candidate{compareIds.size !== 1 ? "s" : ""} selected
+                    </span>
+                    <button
+                        onClick={() => {
+                            // Navigate to compare tab — handled by parent context
+                            const event = new CustomEvent('openCompareTab');
+                            window.dispatchEvent(event);
+                        }}
+                        className="px-3 py-1.5 bg-accent text-white text-xs font-semibold rounded hover:bg-accent-hover transition-colors"
+                    >
+                        Compare →
+                    </button>
                 </div>
             )}
         </div>

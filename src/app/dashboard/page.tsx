@@ -7,10 +7,10 @@ import {
   Briefcase,
   Users,
   ArrowRight,
-  CheckCircle2,
-  Circle,
   Clock,
   BarChart3,
+  Activity,
+  Zap,
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -18,6 +18,7 @@ export default async function DashboardPage() {
 
   const queryPercentage = (stats.queriesThisMonth / stats.queryLimit) * 100;
   const hasJobs = jobs.length > 0;
+  const mostRecentJob = hasJobs ? jobs[0] : null;
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 py-8">
@@ -52,7 +53,7 @@ export default async function DashboardPage() {
           </div>
 
           <Link href="/dashboard/new">
-            <button className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-semibold rounded hover:bg-accent-light transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-semibold rounded hover:bg-accent-hover transition-colors">
               <Plus size={16} />
               New Job
             </button>
@@ -101,13 +102,14 @@ export default async function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {jobs.map((job, i) => (
+                  {jobs.map((job) => (
                     <tr
                       key={job.id}
-                      className={`group border-b border-border/50 last:border-0 hover:bg-paper transition-colors ${i % 2 === 1 ? "bg-paper/40" : ""
-                        }`}
+                      className="group border-b border-border/50 last:border-0 hover:bg-accent-light/30 transition-colors relative"
                     >
-                      <td className="px-4 py-3">
+                      {/* Left accent bar on hover */}
+                      <td className="px-4 py-3 relative">
+                        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-accent opacity-0 group-hover:opacity-100 transition-opacity rounded-r" />
                         <Link
                           href={`/dashboard/jobs/${job.id}`}
                           className="font-semibold text-ink hover:text-accent transition-colors"
@@ -119,6 +121,15 @@ export default async function DashboardPage() {
                             {job.description}
                           </p>
                         )}
+                        {/* Quick actions on hover */}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1 pr-2">
+                          <Link
+                            href={`/dashboard/jobs/${job.id}`}
+                            className="px-2 py-1 text-[10px] font-semibold text-accent bg-accent-light rounded hover:bg-accent/10 transition-colors"
+                          >
+                            Open
+                          </Link>
+                        </div>
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell">
                         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#15803D]">
@@ -172,7 +183,7 @@ export default async function DashboardPage() {
               </p>
               <div className="flex items-center gap-3">
                 <Link href="/dashboard/new">
-                  <button className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white text-sm font-semibold rounded hover:bg-accent-light transition-colors">
+                  <button className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white text-sm font-semibold rounded hover:bg-accent-hover transition-colors">
                     <Plus size={16} />
                     Create Job
                   </button>
@@ -182,103 +193,16 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* Right rail — Getting Started */}
+        {/* Right rail — Usage + Recent Activity */}
         <div className="space-y-5">
+          {/* Usage & Plan */}
           <div className="panel p-5">
-            <h3 className="font-display text-base text-ink mb-4">
-              Getting Started
-            </h3>
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 mt-0.5">
-                  {hasJobs ? (
-                    <CheckCircle2 size={18} className="text-accent" />
-                  ) : (
-                    <Circle size={18} className="text-border" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">
-                    Create a job
-                  </p>
-                  <p className="text-xs text-muted mt-0.5">
-                    Define the role title and type for AI context.
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 mt-0.5">
-                  {stats.totalCandidates > 0 ? (
-                    <CheckCircle2 size={18} className="text-accent" />
-                  ) : (
-                    <Circle size={18} className="text-border" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">
-                    Upload resumes
-                  </p>
-                  <p className="text-xs text-muted mt-0.5">
-                    Drop candidate PDFs into your job workspace.
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 mt-0.5">
-                  {stats.queriesThisMonth > 0 ? (
-                    <CheckCircle2 size={18} className="text-accent" />
-                  ) : (
-                    <Circle size={18} className="text-border" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">
-                    Rank candidates
-                  </p>
-                  <p className="text-xs text-muted mt-0.5">
-                    Ask &quot;Who has 5+ yrs React?&quot; to see ranked results
-                    with citations.
-                  </p>
-                </div>
-              </div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-base text-ink">Usage</h3>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-accent-light text-accent border border-accent/20">
+                Free
+              </span>
             </div>
-          </div>
-
-          {/* Quick tips */}
-          <div className="panel p-5">
-            <h3 className="font-display text-base text-ink mb-3">Tips</h3>
-            <div className="space-y-2.5">
-              <div className="flex items-start gap-2.5 text-xs text-muted">
-                <CheckCircle2
-                  size={14}
-                  className="text-accent mt-0.5 flex-shrink-0"
-                />
-                <p>
-                  Be specific about years of experience for better accuracy.
-                </p>
-              </div>
-              <div className="flex items-start gap-2.5 text-xs text-muted">
-                <CheckCircle2
-                  size={14}
-                  className="text-accent mt-0.5 flex-shrink-0"
-                />
-                <p>Use the Ask panel to compare candidates side-by-side.</p>
-              </div>
-              <div className="flex items-start gap-2.5 text-xs text-muted">
-                <CheckCircle2
-                  size={14}
-                  className="text-accent mt-0.5 flex-shrink-0"
-                />
-                <p>Export results to PDF to share with hiring managers.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Usage detail */}
-          <div className="panel p-5">
-            <h3 className="font-display text-base text-ink mb-3">
-              Usage This Month
-            </h3>
             <div className="space-y-3">
               <div>
                 <div className="flex justify-between text-xs mb-1">
@@ -297,12 +221,81 @@ export default async function DashboardPage() {
                 </div>
               </div>
               <div className="flex justify-between text-xs">
+                <span className="text-muted">Active jobs</span>
+                <span className="font-semibold text-ink">
+                  {stats.totalJobs}
+                </span>
+              </div>
+              <div className="flex justify-between text-xs">
                 <span className="text-muted">Total candidates</span>
                 <span className="font-semibold text-ink">
                   {stats.totalCandidates}
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="panel p-5">
+            <h3 className="font-display text-base text-ink mb-3">
+              Recent Activity
+            </h3>
+            {mostRecentJob ? (
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded bg-accent-light flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Briefcase size={13} className="text-accent" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-ink">
+                      {mostRecentJob.title}
+                    </p>
+                    <p className="text-xs text-muted">
+                      Last opened ·{" "}
+                      {new Date(mostRecentJob.created_at).toLocaleDateString(
+                        "en-US",
+                        { month: "short", day: "numeric" }
+                      )}
+                    </p>
+                  </div>
+                </div>
+                {stats.totalCandidates > 0 && (
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded bg-[var(--success-bg)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Users size={13} className="text-[var(--success)]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-ink">
+                        {stats.totalCandidates} resumes uploaded
+                      </p>
+                      <p className="text-xs text-muted">Across all jobs</p>
+                    </div>
+                  </div>
+                )}
+                {stats.queriesThisMonth > 0 && (
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded bg-[#F5F3FF] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Activity size={13} className="text-[#7C3AED]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-ink">
+                        {stats.queriesThisMonth} queries this month
+                      </p>
+                      <p className="text-xs text-muted">AI screening active</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center text-center py-6">
+                <div className="w-10 h-10 rounded-lg border border-border flex items-center justify-center text-muted mb-3">
+                  <Zap size={16} />
+                </div>
+                <p className="text-xs text-muted">
+                  Activity will show here once you start screening.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
