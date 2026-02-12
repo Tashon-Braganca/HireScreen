@@ -13,8 +13,6 @@ export function LeftPanelClient() {
         shortlistedIds,
         viewResume,
         toggleShortlist,
-        filters,
-        setFilters,
     } = useJobContext();
 
     // Map to UI format
@@ -30,7 +28,7 @@ export function LeftPanelClient() {
 
     return (
         <div className="flex flex-col h-full overflow-hidden">
-            <FiltersPanel filters={filters} onFilterChange={setFilters} />
+            <FiltersPanel />
             <ResumeList
                 files={fileList}
                 onUpload={handleUpload}

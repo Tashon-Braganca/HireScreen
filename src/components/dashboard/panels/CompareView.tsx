@@ -8,7 +8,7 @@ import { Bookmark, FileText, StickyNote, BarChart3, Layers, X } from "lucide-rea
 type CompareSubTab = "summary" | "criteria" | "evidence" | "notes";
 
 export function CompareView() {
-    const { compareIds, rankedCandidates, clearCompare, evidenceBookmarks, toggleBookmark, documents } = useJobContext();
+    const { compareIds, rankedCandidates, clearCompare, evidenceBookmarks, toggleBookmark } = useJobContext();
     const [subTab, setSubTab] = useState<CompareSubTab>("summary");
 
     const selectedCandidates = rankedCandidates.filter(c => compareIds.has(c.documentId));

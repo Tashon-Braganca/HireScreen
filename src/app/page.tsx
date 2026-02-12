@@ -1,10 +1,10 @@
 import React from "react";
 import Link from "next/link";
 import {
-    Search, FileText, Zap, Upload, MessageSquare, BarChart3,
+    Zap, Upload, MessageSquare, BarChart3,
     CheckCircle, ArrowRight, Shield, Clock
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 import { createClient } from "@/lib/supabase/server";
 import { BRAND_NAME, BRAND_LOGO_LETTER } from "@/config/brand";
 import { HeroMockup } from "@/components/landing/HeroMockup";
