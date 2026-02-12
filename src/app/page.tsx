@@ -2,13 +2,13 @@ import React from "react";
 import Link from "next/link";
 import {
     Search, FileText, Zap, Upload, MessageSquare, BarChart3,
-    CheckCircle, ArrowRight, Shield, Clock, Plus
+    CheckCircle, ArrowRight, Shield, Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 
 /* ─── Navbar ─── */
-const Navbar = ({ user }: { user: any }) => (
+const Navbar = ({ user }: { user: { id: string } | null }) => (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--bg)]/80 backdrop-blur-md border-b border-[var(--border)]">
         <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
             <div className="font-bold text-lg text-[var(--text)] tracking-tight flex items-center gap-2">
@@ -40,7 +40,7 @@ const Navbar = ({ user }: { user: any }) => (
 );
 
 /* ─── Hero ─── */
-const Hero = ({ user }: { user: any }) => (
+const Hero = ({ user }: { user: { id: string } | null }) => (
     <section className="pt-32 pb-20 px-6 max-w-[1440px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8 max-w-2xl">

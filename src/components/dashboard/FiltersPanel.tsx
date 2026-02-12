@@ -16,14 +16,14 @@ import { X } from "lucide-react";
 export function FiltersPanel() {
     const { filters, setFilters } = useJobContext();
 
-    const updateFilter = (key: keyof JobFilters, value: any) => {
+    const updateFilter = (key: keyof JobFilters, value: string | string[]) => {
         setFilters({ ...filters, [key]: value });
     };
 
     const toggleSkill = (skill: string) => {
         const current = filters.skills;
         if (current.includes(skill)) {
-            updateFilter("skills", current.filter(s => s !== skill));
+            updateFilter("skills", current.filter((s: string) => s !== skill));
         } else {
             updateFilter("skills", [...current, skill]);
         }
@@ -103,7 +103,7 @@ export function FiltersPanel() {
                                 className="h-8 text-sm"
                             />
                             <div className="flex flex-wrap gap-1.5">
-                                {filters.skills.map(skill => (
+                                {filters.skills.map((skill: string) => (
                                     <Badge key={skill} variant="secondary" className="text-xs font-normal gap-1 hover:bg-muted/20">
                                         {skill}
                                         <X size={10} className="cursor-pointer" onClick={() => toggleSkill(skill)} />

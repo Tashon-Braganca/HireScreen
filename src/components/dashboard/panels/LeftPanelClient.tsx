@@ -1,15 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
 import { useJobContext } from "@/components/dashboard/JobContext";
 import { ResumeList, UploadedFile } from "@/components/ui/ResumeList";
-import { FiltersPanel } from "@/components/dashboard/FiltersPanel";
-import { Document } from "@/types";
 
 export function LeftPanelClient() {
     const {
-        setDocuments,
-        documents, // Keep documents if needed for upload/delete actions, but view uses filtered
         filteredDocuments,
         uploadingFiles,
         handleUpload,

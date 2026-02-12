@@ -30,7 +30,7 @@ interface ResumeListProps {
   isUploading?: boolean;
   shortlistedIds?: Set<string>;
   onToggleShortlist?: (id: string) => void;
-  onViewResume?: (id: string) => void;
+  onViewResume: (id: string) => void;
 }
 
 export function ResumeList({

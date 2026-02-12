@@ -2,10 +2,10 @@
 
 import React from "react";
 import { useJobContext } from "../JobContext";
-import { Loader2 } from "lucide-react";
+
 
 export function CompareView() {
-    const { compareIds, rankedCandidates, documents } = useJobContext();
+    const { compareIds, rankedCandidates } = useJobContext();
 
     const selectedCandidates = rankedCandidates.filter(c => compareIds.has(c.documentId));
 

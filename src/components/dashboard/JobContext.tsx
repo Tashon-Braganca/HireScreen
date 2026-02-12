@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from "react";
 import { Job, Document, RankedCandidate } from "@/types";
 import { UploadedFile } from "@/components/ui/ResumeList";
-import { uploadResume, deleteDocument, getDocuments, getResumeUrl } from "@/app/actions/documents";
+import { uploadResume, deleteDocument, getDocuments } from "@/app/actions/documents";
 import { chatWithJob } from "@/app/actions/chat";
 import { rankCandidates } from "@/app/actions/rank";
 import { toast } from "sonner";
@@ -67,6 +67,10 @@ interface JobContextType {
     // Filtered views
     filteredDocuments: Document[];
     filteredRankedCandidates: RankedCandidate[];
+
+    // Filters
+    filters: JobFilters;
+    setFilters: (filters: JobFilters) => void;
 }
 
 const JobContext = createContext<JobContextType | null>(null);
@@ -187,6 +191,8 @@ export function JobProvider({
         return rankedCandidates.filter(c => allowedIds.has(c.documentId));
     }, [rankedCandidates, filteredDocuments]);
 
+    // Note: filteredRankedCandidates is used in the context value below
+
     // --- Effects ---
     useEffect(() => { saveSession(job.id, "ranked", rankedCandidates); }, [job.id, rankedCandidates]);
     useEffect(() => { saveSession(job.id, "msgs", messages); }, [job.id, messages]);
@@ -226,7 +232,7 @@ export function JobProvider({
         }));
         setUploadingFiles(prev => [...prev, ...newUploads]);
 
-        const results = await Promise.allSettled(files.map(async (file, i) => {
+        await Promise.allSettled(files.map(async (file, i) => {
             const formData = new FormData();
             formData.append("file", file);
             const res = await uploadResume(formData, job.id);
@@ -287,7 +293,7 @@ export function JobProvider({
             timestamp: new Date()
         };
         setMessages(prev => [...prev, aiMsg]);
-    }, [job.id, handleRankQuery]);
+    }, [job.id, handleRankQuery, filteredDocuments]);
 
     const toggleCompare = useCallback((id: string) => {
         setCompareIds(prev => {
@@ -313,17 +319,7 @@ export function JobProvider({
         });
     }, []);
 
-    const viewResume = useCallback(async (id: string) => {
-        const doc = documents.find(d => d.id === id);
-        if (!doc) { toast.error("Document not found"); return; }
-        // For MVP, window.open. Plan says "Inline PDF viewer... in the CENTER panel as a new tab".
-        // IMPLEMENTATION: We are refactoring heavily.
-        // For now, let's keep window.open fallback, but the plan says "View resume... opens in-center tab viewer".
-        // So we need a "activeResumeId" state in Context?
-        // "Resume viewer = center tab (code-editor tabs)".
-        // So I need `activeTab`: "ranked" | "compare" | "resume-{id}".
-        // I will add `activeTab` to context.
-    }, [documents]);
+
 
     // We need activeTab handling for the Center Panel
     const [activeTab, setActiveTab] = useState<string>("ranked"); // "ranked" | "compare" | "pdf-{id}"
@@ -365,6 +361,8 @@ export function JobProvider({
             activeTab,
             setActiveTab,
             closeResumeTab,
+            filteredDocuments,
+            filteredRankedCandidates,
             filters,
             setFilters
         }}>
