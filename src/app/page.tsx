@@ -13,7 +13,7 @@ import { HeroMockup } from "@/components/landing/HeroMockup";
 const Navbar = ({ user }: { user: { id: string } | null }) => (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--bg)]/80 backdrop-blur-md border-b border-[var(--border)]">
         <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
-            <div className="font-bold text-lg text-[var(--text)] tracking-tight flex items-center gap-2">
+            <div className="font-bold text-lg text-[var(--text)] flex items-center gap-2">
                 <div className="w-8 h-8 rounded bg-[var(--accent)] flex items-center justify-center text-[var(--accent-foreground)] font-bold text-sm">{BRAND_LOGO_LETTER}</div>
                 {BRAND_NAME}
             </div>

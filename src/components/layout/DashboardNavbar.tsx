@@ -28,7 +28,7 @@ export function DashboardNavbar() {
           <div className="w-8 h-8 rounded bg-accent flex items-center justify-center text-white font-bold text-sm">
             {BRAND_LOGO_LETTER}
           </div>
-          <span className="font-display text-lg text-ink tracking-tight">{BRAND_NAME}</span>
+          <span className="font-display text-lg text-ink">{BRAND_NAME}</span>
         </Link>
 
         {/* Center — breadcrumb or tabs */}
