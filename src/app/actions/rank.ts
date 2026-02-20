@@ -51,7 +51,7 @@ export async function rankCandidates(
         const { data: chunks, error: searchError } = await supabase.rpc(
             "match_document_chunks",
             {
-                query_embedding: queryEmbedding,
+                query_embedding: `[${queryEmbedding.join(',')}]`,
                 match_threshold: 0.25,
                 match_count: 60,
                 filter_job_id: jobId,

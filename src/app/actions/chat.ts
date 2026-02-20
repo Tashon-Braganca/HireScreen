@@ -30,7 +30,7 @@ export async function chatWithJob(question: string, jobId: string, filterDocumen
     // 2. Search for relevant chunks — threshold 0 to catch EVERYTHING
     console.log(`[CHAT] Searching chunks for job ${jobId} with threshold 0 (catch all)...`);
     const { data: chunks, error: searchError } = await supabase.rpc("match_document_chunks", {
-      query_embedding: queryEmbedding,
+      query_embedding: `[${queryEmbedding.join(',')}]`,
       match_threshold: 0, // Zero threshold to see ALL similarities
       match_count: 20,
       filter_job_id: jobId,
