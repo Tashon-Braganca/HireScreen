@@ -1,4 +1,4 @@
-import { BRAND_NAME, BRAND_DOMAIN } from "@/config/brand";
+import { BRAND_NAME } from "@/config/brand";
 
 export const metadata = {
   title: `Privacy Policy | ${BRAND_NAME}`,

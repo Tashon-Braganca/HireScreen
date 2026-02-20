@@ -11,7 +11,7 @@ export async function sendWelcomeEmail(email: string, name: string): Promise<{ s
   const firstName = name?.split(" ")[0] || "there";
 
   try {
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: "CandidRank <hello@candidrank.cc>",
       to: email,
       subject: "Your CandidRank account is ready 🎯",
