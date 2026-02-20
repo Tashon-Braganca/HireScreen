@@ -113,8 +113,20 @@ export interface RankedCandidate {
   name: string;
   score: number;
   matchReasons: MatchReason[];
+  redFlags: MatchReason[];
   documentId: string;
   filename: string;
 }
 
 export type ExportFormat = 'csv' | 'clipboard';
+
+export interface ImportedCandidate {
+  id: string;
+  job_id: string;
+  user_id: string;
+  name: string;
+  email: string;
+  resume_url: string | null;
+  notes: string | null;
+  created_at: string;
+}

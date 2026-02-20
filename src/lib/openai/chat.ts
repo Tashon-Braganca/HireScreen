@@ -2,7 +2,6 @@ import OpenAI from 'openai';
 import { getSystemPrompt, buildUserPrompt } from './prompts';
 import type { JobType } from '@/types';
 
-// Lazy initialization to avoid build-time API key checks
 let openaiInstance: OpenAI | null = null;
 
 function getOpenAI(): OpenAI {
@@ -25,20 +24,26 @@ export async function generateAnswer(
   contexts: ChatContext[],
   jobType: JobType = 'job'
 ): Promise<{ answer: string; tokensUsed: number }> {
-  const systemPrompt = getSystemPrompt(jobType);
-  const userMessage = buildUserPrompt(question, contexts);
+  try {
+    const systemPrompt = getSystemPrompt(jobType);
+    const userMessage = buildUserPrompt(question, contexts);
 
-  const response = await getOpenAI().chat.completions.create({
-    model: 'gpt-5-nano',
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userMessage },
-    ],
-    max_completion_tokens: 2000,
-  });
+    const response = await getOpenAI().chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage },
+      ],
+      max_completion_tokens: 2000,
+    }, {
+      signal: AbortSignal.timeout(15000),
+    });
 
-  return {
-    answer: response.choices[0].message.content || 'Unable to generate answer.',
-    tokensUsed: response.usage?.total_tokens || 0,
-  };
+    return {
+      answer: response.choices[0].message.content || 'Unable to generate answer.',
+      tokensUsed: response.usage?.total_tokens || 0,
+    };
+  } catch {
+    return { answer: "Query failed. Please try again.", tokensUsed: 0 };
+  }
 }

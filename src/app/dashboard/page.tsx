@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { getJobs } from "@/app/actions/jobs";
-import { getDashboardStats } from "@/app/actions/stats";
+import { getDashboardStats, shouldShowLimitWarning } from "@/app/actions/stats";
 import {
   Plus,
   Briefcase,
@@ -11,17 +11,27 @@ import {
   BarChart3,
   Activity,
   Zap,
+  AlertTriangle,
 } from "lucide-react";
+import { LimitWarningBanner } from "@/components/ui/LimitWarningBanner";
 
 export default async function DashboardPage() {
   const [jobs, stats] = await Promise.all([getJobs(), getDashboardStats()]);
 
-  const queryPercentage = (stats.queriesThisMonth / stats.queryLimit) * 100;
+  const queryLimit = typeof stats.queryLimit === 'number' ? stats.queryLimit : 999;
+  const queryPercentage = (stats.queriesThisMonth / queryLimit) * 100;
   const hasJobs = jobs.length > 0;
   const mostRecentJob = hasJobs ? jobs[0] : null;
+  
+  const limitWarning = shouldShowLimitWarning(stats.queriesThisMonth, queryLimit);
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 py-8">
+      {/* Limit warning banner */}
+      {limitWarning.show && !stats.isPro && (
+        <LimitWarningBanner message={limitWarning.message!} />
+      )}
+
       {/* Header row */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -40,7 +50,7 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-1.5">
               <BarChart3 size={14} />
               <span className="font-medium">
-                {stats.queriesThisMonth}/{stats.queryLimit}
+                {stats.queriesThisMonth}/{typeof stats.queryLimit === 'number' ? stats.queryLimit : '∞'}
               </span>
               <span className="text-xs">queries</span>
             </div>
@@ -66,7 +76,7 @@ export default async function DashboardPage() {
         <div className="flex items-center gap-1.5 flex-1">
           <BarChart3 size={14} />
           <span className="font-medium">
-            {stats.queriesThisMonth}/{stats.queryLimit} queries
+            {stats.queriesThisMonth}/{typeof stats.queryLimit === 'number' ? stats.queryLimit : '∞'} queries
           </span>
         </div>
         <div className="w-20 h-1.5 bg-border rounded-full overflow-hidden">
@@ -199,8 +209,8 @@ export default async function DashboardPage() {
           <div className="panel p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display text-base text-ink">Usage</h3>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-accent-light text-accent border border-accent/20">
-                Free
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${stats.isPro ? 'bg-accent-light text-accent border border-accent/20' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+                {stats.isPro ? 'Pro' : 'Free'}
               </span>
             </div>
             <div className="space-y-3">
@@ -208,22 +218,24 @@ export default async function DashboardPage() {
                 <div className="flex justify-between text-xs mb-1">
                   <span className="text-muted">Queries</span>
                   <span className="font-semibold text-ink">
-                    {stats.queriesThisMonth} / {stats.queryLimit}
+                    {stats.queriesThisMonth} / {typeof stats.queryLimit === 'number' ? stats.queryLimit : '∞'}
                   </span>
                 </div>
-                <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-accent rounded-full transition-all duration-500"
-                    style={{
-                      width: `${Math.min(100, queryPercentage)}%`,
-                    }}
-                  />
-                </div>
+                {typeof stats.queryLimit === 'number' && (
+                  <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${queryPercentage >= 80 ? 'bg-amber-500' : 'bg-accent'}`}
+                      style={{
+                        width: `${Math.min(100, queryPercentage)}%`,
+                      }}
+                    />
+                  </div>
+                )}
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-muted">Active jobs</span>
                 <span className="font-semibold text-ink">
-                  {stats.totalJobs}
+                  {stats.totalJobs}{!stats.isPro && ` / ${FREE_TIER_LIMITS.maxJobs}`}
                 </span>
               </div>
               <div className="flex justify-between text-xs">
@@ -302,3 +314,9 @@ export default async function DashboardPage() {
     </div>
   );
 }
+
+const FREE_TIER_LIMITS = {
+  maxJobs: 1,
+  maxResumesPerJob: 5,
+  maxQueriesPerMonth: 10,
+};

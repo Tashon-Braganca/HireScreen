@@ -6,6 +6,7 @@ import { CenterPanelTabs } from "./CenterPanelTabs";
 import { RankedResultsPanel } from "@/components/ui/RankedResultsPanel";
 import { CompareView } from "./CompareView";
 import { ResumeViewer } from "./ResumeViewer";
+import { ImportPanel } from "./ImportPanel";
 
 export function CenterPanel() {
     const { activeTab, filteredRankedCandidates, shortlistedIds, toggleShortlist, compareIds, toggleCompare, viewResume, handleRankQuery, isRanking, activeQuery, job, documents } = useJobContext();
@@ -32,6 +33,9 @@ export function CenterPanel() {
                 )}
                 {activeTab === "compare" && (
                     <CompareView />
+                )}
+                {activeTab === "import" && (
+                    <ImportPanel />
                 )}
                 {activeTab.startsWith("pdf-") && (
                     <div className="h-full w-full">

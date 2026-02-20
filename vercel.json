@@ -1,6 +1,19 @@
 {
+  "framework": "nextjs",
   "functions": {
     "src/app/api/jobs/[id]/upload/route.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "src/app/api/jobs/[id]/query/route.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "src/app/api/jobs/[id]/rank/route.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "src/app/api/rank/**/*.ts": {
       "memory": 1024,
       "maxDuration": 60
     }

@@ -17,6 +17,10 @@ Each candidate object must have:
   - "reason": string — A specific, concise reason they match (e.g. "7 years React experience")
   - "page": number or null — The page number where this evidence is found
   - "filename": string — The source document filename
+- "redFlags": array of objects (max 2), each with:
+  - "reason": string — A gap, missing skill, or concern
+  - "page": number or null — The page number where this concern is evident
+  - "filename": string — The source document filename
 - "documentId": string — The document_id provided in the context
 - "filename": string — The source document filename
 
@@ -25,7 +29,11 @@ Rules:
 2. Provide 3-5 match reasons per candidate, each citing specific evidence from the resume
 3. Be strict with scoring — a 90%+ score means nearly perfect match
 4. Never return an empty candidates array if resume excerpts were provided
-5. Never invent information not present in the resume text`;
+5. Never invent information not present in the resume text
+6. Extract and include in matchReasons any GitHub URLs or portfolio links found in the resume text. Format as: { reason: 'GitHub: [url]', page: X, filename: 'resume.pdf' }
+7. For bias reduction: base ALL scores purely on technical skills and demonstrated experience. Do NOT consider names, graduation years, or educational institution prestige as ranking factors.
+8. If two candidates have the same score, the tiebreaker is: recency of experience (more recent = higher rank).
+9. Add a 'redFlags' array to each candidate (same structure as matchReasons) listing gaps, missing skills, or concerns. Maximum 2 red flags per candidate.`;
 }
 
 export function buildRankingUserPrompt(

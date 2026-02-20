@@ -17,7 +17,7 @@ function getOpenAI(): OpenAI {
 export async function rankCandidates(
     query: string,
     jobId: string
-): Promise<{ success: boolean; candidates?: RankedCandidate[]; error?: string }> {
+): Promise<{ success: boolean; candidates?: RankedCandidate[]; error?: string; warning?: string }> {
     const supabase = await createClient();
     const {
         data: { user },
@@ -28,69 +28,104 @@ export async function rankCandidates(
     }
 
     try {
-        // 1. Embed the query
-        console.log(`[RANK] Generating embedding for: "${query}"`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[RANK] Generating embedding for: "${query}"`);
+        }
         const queryEmbedding = await createEmbedding(query);
-        console.log(`[RANK] Query embedding dimension: ${queryEmbedding.length}`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[RANK] Query embedding dimension: ${queryEmbedding.length}`);
+        }
 
-        // 2. Search for relevant chunks (broader search for ranking)
-        console.log(`[RANK] Searching chunks for job ${jobId} with threshold 0.25...`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[RANK] Searching chunks for job ${jobId} with threshold 0.25...`);
+        }
         const { data: chunks, error: searchError } = await supabase.rpc(
             "match_document_chunks",
             {
                 query_embedding: queryEmbedding,
-                match_threshold: 0, // No threshold - get everything
-                match_count: 150, // Fetch plenty of chunks
+                match_threshold: 0.25,
+                match_count: 60,
                 filter_job_id: jobId,
             }
         );
 
         if (searchError) {
-            console.error("[RANK] Search RPC error:", searchError);
+            if (process.env.NODE_ENV === 'development') {
+                console.error("[RANK] Search RPC error:", searchError);
+            }
             return { success: false, error: `Search failed: ${searchError.message}` };
         }
 
-        console.log(`[RANK] Found ${chunks?.length || 0} matching chunks`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[RANK] Found ${chunks?.length || 0} matching chunks`);
+        }
 
         if (!chunks || chunks.length === 0) {
-            // Debug: Check if any chunks exist for this job at all
-            const { data: debugChunks, error: debugError } = await supabase
-                .from("document_chunks")
-                .select("id, document_id, chunk_index")
-                .eq("job_id", jobId)
-                .limit(5);
-
-            console.log(`[RANK] DEBUG: Total chunks in job: ${debugChunks?.length || 0}`, debugError || '');
-
-            if (debugChunks && debugChunks.length > 0) {
-                // Check if embeddings are null
-                const { data: embCheck } = await supabase
+            if (process.env.NODE_ENV === 'development') {
+                const { data: debugChunks, error: debugError } = await supabase
                     .from("document_chunks")
-                    .select("id, embedding")
+                    .select("id, document_id, chunk_index")
                     .eq("job_id", jobId)
-                    .limit(1);
+                    .limit(5);
 
-                const hasEmbedding = embCheck && embCheck.length > 0 && embCheck[0].embedding !== null;
-                console.log(`[RANK] DEBUG: Chunks have embeddings: ${hasEmbedding}`);
+                console.log(`[RANK] DEBUG: Total chunks in job: ${debugChunks?.length || 0}`, debugError || '');
 
-                if (!hasEmbedding) {
-                    return { success: false, error: "Chunks exist but have no embeddings. Try re-uploading." };
+                if (debugChunks && debugChunks.length > 0) {
+                    const { data: embCheck } = await supabase
+                        .from("document_chunks")
+                        .select("id, embedding")
+                        .eq("job_id", jobId)
+                        .limit(1);
+
+                    const hasEmbedding = embCheck && embCheck.length > 0 && embCheck[0].embedding !== null;
+                    console.log(`[RANK] DEBUG: Chunks have embeddings: ${hasEmbedding}`);
+
+                    if (!hasEmbedding) {
+                        return { success: false, error: "Chunks exist but have no embeddings. Try re-uploading." };
+                    }
+                } else {
+                    console.log("[RANK] DEBUG: No chunks found for this job at all");
                 }
-            } else {
-                console.log("[RANK] DEBUG: No chunks found for this job at all");
             }
 
             return { success: true, candidates: [] };
         }
 
-        // Log top similarities
-        const topSimilarities = chunks.slice(0, 3).map((c: { similarity: number; filename: string }) =>
-            `${c.filename}: ${c.similarity.toFixed(3)}`
-        );
-        console.log(`[RANK] Top 3 similarities: ${topSimilarities.join(', ')}`);
+        // Deduplicate by document_id - keep top 3 highest-similarity chunks per document
+        const chunksByDoc = new Map<string, Array<{ chunk: typeof chunks[0]; similarity: number }>>();
+        for (const chunk of chunks) {
+            const docId = chunk.document_id;
+            if (!chunksByDoc.has(docId)) {
+                chunksByDoc.set(docId, []);
+            }
+            chunksByDoc.get(docId)!.push({ chunk, similarity: chunk.similarity });
+        }
 
-        // 3. Format contexts with document IDs for the ranking prompt
-        const contexts = chunks.map(
+        const deduplicatedChunks: typeof chunks = [];
+        for (const [, docChunks] of chunksByDoc) {
+            docChunks.sort((a, b) => b.similarity - a.similarity);
+            const topChunks = docChunks.slice(0, 3).map(dc => dc.chunk);
+            deduplicatedChunks.push(...topChunks);
+        }
+
+        if (process.env.NODE_ENV === 'development') {
+            const topSimilarities = deduplicatedChunks.slice(0, 3).map((c: { similarity: number; filename: string }) =>
+                `${c.filename}: ${c.similarity.toFixed(3)}`
+            );
+            console.log(`[RANK] Top 3 similarities after dedup: ${topSimilarities.join(', ')}`);
+        }
+
+        // Pre-check: if chunks.length > 0 but all unique document_ids < 2, return warning
+        const uniqueDocIds = new Set(deduplicatedChunks.map((c: { document_id: string }) => c.document_id));
+        if (deduplicatedChunks.length > 0 && uniqueDocIds.size < 2) {
+            return { 
+                success: true, 
+                candidates: [], 
+                warning: "Only 1 resume found. Upload more resumes to compare." 
+            };
+        }
+
+        const contexts = deduplicatedChunks.map(
             (chunk: {
                 content: string;
                 filename?: string;
@@ -104,7 +139,6 @@ export async function rankCandidates(
             })
         );
 
-        // 4. Get job details for type-specific prompting
         const { data: job } = await supabase
             .from("jobs")
             .select("type")
@@ -113,7 +147,9 @@ export async function rankCandidates(
 
         const systemPrompt = getRankingSystemPrompt(job?.type || "job");
         const userMessage = buildRankingUserPrompt(query, contexts);
-        console.log(`[RANK] Calling GPT-4o-mini with ${contexts.length} contexts...`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[RANK] Calling GPT-4o-mini with ${contexts.length} contexts...`);
+        }
         const response = await getOpenAI().chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
@@ -130,10 +166,11 @@ export async function rankCandidates(
             return { success: false, error: "No response from AI" };
         }
 
-        // 6. Parse and validate
         const parsed = JSON.parse(content);
         const rawCandidates = parsed.candidates || [];
-        console.log(`[RANK] GPT returned ${rawCandidates.length} candidates`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[RANK] GPT returned ${rawCandidates.length} candidates`);
+        }
 
         const candidates: RankedCandidate[] = rawCandidates.map(
             (
@@ -141,6 +178,11 @@ export async function rankCandidates(
                     name?: string;
                     score?: number;
                     matchReasons?: Array<{
+                        reason?: string;
+                        page?: number | null;
+                        filename?: string;
+                    }>;
+                    redFlags?: Array<{
                         reason?: string;
                         page?: number | null;
                         filename?: string;
@@ -158,12 +200,16 @@ export async function rankCandidates(
                     page: r.page || null,
                     filename: r.filename || "",
                 })),
+                redFlags: (c.redFlags || []).map((r) => ({
+                    reason: r.reason || "",
+                    page: r.page || null,
+                    filename: r.filename || "",
+                })),
                 documentId: c.documentId || "",
                 filename: c.filename || "",
             })
         );
 
-        // 7. Save query for history
         await supabase.from("queries").insert({
             job_id: jobId,
             user_id: user.id,
@@ -172,12 +218,16 @@ export async function rankCandidates(
             tokens_used: response.usage?.total_tokens || 0,
         });
 
-        console.log(`[RANK] ✅ Done: ${candidates.length} candidates ranked`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[RANK] ✅ Done: ${candidates.length} candidates ranked`);
+        }
         return { success: true, candidates };
     } catch (error: unknown) {
         const errorMessage =
             error instanceof Error ? error.message : "An unknown error occurred";
-        console.error("[RANK] ❌ Error:", error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("[RANK] ❌ Error:", error);
+        }
         return { success: false, error: errorMessage };
     }
 }

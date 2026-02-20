@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { BRAND_META } from "@/config/brand";
+import { PostHogProvider } from "@/lib/analytics/posthog";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
+        <PostHogProvider>
+          {children}
+        </PostHogProvider>
       </body>
     </html>
   );

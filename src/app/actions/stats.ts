@@ -2,13 +2,41 @@
 
 import { createClient } from "@/lib/supabase/server";
 
+export const FREE_TIER_LIMITS = {
+    maxJobs: 1,
+    maxResumesPerJob: 5,
+    maxQueriesPerMonth: 10,
+};
+
+export const PRO_TIER_LIMITS = {
+    maxJobs: Infinity,
+    maxResumesPerJob: Infinity,
+    maxQueriesPerMonth: Infinity,
+};
+
 export async function getDashboardStats() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return { totalJobs: 0, totalCandidates: 0, queriesThisMonth: 0, queryLimit: 20 };
+    if (!user) return { 
+        totalJobs: 0, 
+        totalCandidates: 0, 
+        queriesThisMonth: 0, 
+        queryLimit: FREE_TIER_LIMITS.maxQueriesPerMonth,
+        isPro: false,
+        jobsUsed: 0,
+        jobsLimit: FREE_TIER_LIMITS.maxJobs,
+    };
 
-    // 1. Get total jobs and candidate count sum
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("subscription_status")
+        .eq("id", user.id)
+        .single();
+
+    const isPro = profile?.subscription_status === "pro";
+    const limits = isPro ? PRO_TIER_LIMITS : FREE_TIER_LIMITS;
+
     const { data: jobs } = await supabase
         .from("jobs")
         .select("resume_count")
@@ -17,7 +45,6 @@ export async function getDashboardStats() {
     const totalJobs = jobs?.length || 0;
     const totalCandidates = jobs?.reduce((acc, job) => acc + (job.resume_count || 0), 0) || 0;
 
-    // 2. Get queries this month
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
@@ -32,6 +59,35 @@ export async function getDashboardStats() {
         totalJobs,
         totalCandidates,
         queriesThisMonth: queries || 0,
-        queryLimit: 20, // Free tier limit
+        queryLimit: limits.maxQueriesPerMonth === Infinity ? "unlimited" : limits.maxQueriesPerMonth,
+        isPro,
+        jobsUsed: totalJobs,
+        jobsLimit: limits.maxJobs === Infinity ? "unlimited" : limits.maxJobs,
     };
+}
+
+export function shouldShowLimitWarning(queriesThisMonth: number, queryLimit: number): { show: boolean; percentage: number; message?: string } {
+    if (queryLimit === Infinity || typeof queryLimit !== 'number') {
+        return { show: false, percentage: 0 };
+    }
+    
+    const percentage = (queriesThisMonth / queryLimit) * 100;
+    
+    if (percentage >= 80 && percentage < 100) {
+        return { 
+            show: true, 
+            percentage, 
+            message: `You've used ${queriesThisMonth}/${queryLimit} free queries. Upgrade to Pro for unlimited access.` 
+        };
+    }
+    
+    if (percentage >= 100) {
+        return { 
+            show: true, 
+            percentage: 100, 
+            message: `You've reached your free query limit. Upgrade to Pro for unlimited access.` 
+        };
+    }
+    
+    return { show: false, percentage };
 }

@@ -4,14 +4,15 @@ export interface TextChunk {
   pageNumber: number | null;
 }
 
-const CHUNK_SIZE = 500; // tokens (roughly 4 chars per token)
+const CHUNK_SIZE = 500;
 const CHUNK_OVERLAP = 100;
+const MIN_CHUNK_LENGTH = 50;
 
 export function chunkText(text: string, pageBreaks?: number[]): TextChunk[] {
   const chunks: TextChunk[] = [];
   const words = text.split(/\s+/);
   const charsPerToken = 4;
-  const wordsPerChunk = Math.floor((CHUNK_SIZE * charsPerToken) / 5); // avg 5 chars per word
+  const wordsPerChunk = Math.floor((CHUNK_SIZE * charsPerToken) / 5);
   const overlapWords = Math.floor((CHUNK_OVERLAP * charsPerToken) / 5);
 
   let currentIndex = 0;
@@ -22,8 +23,7 @@ export function chunkText(text: string, pageBreaks?: number[]): TextChunk[] {
     const chunkWords = words.slice(currentIndex, endIndex);
     const content = chunkWords.join(' ').trim();
 
-    if (content.length > 0) {
-      // Estimate page number based on character position
+    if (content.length >= MIN_CHUNK_LENGTH) {
       let pageNumber: number | null = null;
       if (pageBreaks && pageBreaks.length > 0) {
         const charPosition = words.slice(0, currentIndex).join(' ').length;
@@ -41,7 +41,34 @@ export function chunkText(text: string, pageBreaks?: number[]): TextChunk[] {
     }
 
     currentIndex = endIndex - overlapWords;
-    if (currentIndex >= words.length - overlapWords) break;
+    
+    if (endIndex >= words.length) {
+      break;
+    }
+  }
+
+  // Add any remaining words as a final chunk
+  const lastProcessedIndex = Math.max(0, words.length - wordsPerChunk + overlapWords);
+  if (lastProcessedIndex < words.length) {
+    const remainingWords = words.slice(lastProcessedIndex);
+    const remainingContent = remainingWords.join(' ').trim();
+    
+    if (remainingContent.length >= MIN_CHUNK_LENGTH && 
+        (chunks.length === 0 || chunks[chunks.length - 1].content !== remainingContent)) {
+      let pageNumber: number | null = null;
+      if (pageBreaks && pageBreaks.length > 0) {
+        const charPosition = words.slice(0, lastProcessedIndex).join(' ').length;
+        pageNumber = pageBreaks.findIndex((breakPos) => charPosition < breakPos);
+        if (pageNumber === -1) pageNumber = pageBreaks.length;
+        pageNumber = Math.max(1, pageNumber);
+      }
+
+      chunks.push({
+        content: remainingContent,
+        chunkIndex,
+        pageNumber,
+      });
+    }
   }
 
   return chunks;

@@ -7,6 +7,7 @@ import { uploadResume, deleteDocument, getDocuments } from "@/app/actions/docume
 import { chatWithJob } from "@/app/actions/chat";
 import { rankCandidates } from "@/app/actions/rank";
 import { toast } from "sonner";
+import { trackResumeUploaded, trackQuerySubmitted, trackRankingRun } from "@/lib/analytics/posthog";
 
 // --- Types ---
 
@@ -228,7 +229,7 @@ export function JobProvider({
         }
     }, [documents, job.id]);
 
-    const handleUpload = useCallback(async (files: File[]) => {
+const handleUpload = useCallback(async (files: File[]) => {
         const newUploads: UploadedFile[] = files.map((f, i) => ({
             id: `uploading-${Date.now()}-${i}`,
             name: f.name,
@@ -256,7 +257,8 @@ export function JobProvider({
         const uploadIds = new Set(newUploads.map(u => u.id));
         setUploadingFiles(prev => prev.filter(f => !uploadIds.has(f.id)));
 
-        // Refetch to sync
+        trackResumeUploaded(job.id, files.length);
+
         try {
             const fresh = await getDocuments(job.id);
             setDocuments(fresh as Document[]);
@@ -264,17 +266,21 @@ export function JobProvider({
 
     }, [job.id]);
 
-    const handleRankQuery = useCallback(async (query: string) => {
+const handleRankQuery = useCallback(async (query: string) => {
         setIsRanking(true);
         setActiveQuery(query);
         setRecentQueries(prev => [query, ...prev.filter(q => q !== query)].slice(0, 10));
+
+        trackQuerySubmitted(job.id, query.length);
 
         const res = await rankCandidates(query, job.id);
         setIsRanking(false);
 
         if (res.success && res.candidates) {
             setRankedCandidates(res.candidates);
+            trackRankingRun(job.id, res.candidates.length);
             if (res.candidates.length === 0) toast.info("No matches found.");
+            if (res.warning) toast.warning(res.warning);
         } else {
             toast.error(res.error || "Ranking failed");
             setRankedCandidates([]);
