@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { getJobs } from "@/app/actions/jobs";
 import { getDashboardStats, shouldShowLimitWarning } from "@/app/actions/stats";
+import { FREE_TIER_LIMITS } from "@/config/limits";
 import {
   Plus,
   Briefcase,
@@ -313,9 +314,3 @@ export default async function DashboardPage() {
     </div>
   );
 }
-
-const FREE_TIER_LIMITS = {
-  maxJobs: 1,
-  maxResumesPerJob: 5,
-  maxQueriesPerMonth: 10,
-};

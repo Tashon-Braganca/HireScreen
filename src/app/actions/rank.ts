@@ -102,7 +102,8 @@ export async function rankCandidates(
         }
 
         const deduplicatedChunks: typeof chunks = [];
-        for (const [, docChunks] of chunksByDoc) {
+        const docChunksArray = Array.from(chunksByDoc.values());
+        for (const docChunks of docChunksArray) {
             docChunks.sort((a, b) => b.similarity - a.similarity);
             const topChunks = docChunks.slice(0, 3).map(dc => dc.chunk);
             deduplicatedChunks.push(...topChunks);
