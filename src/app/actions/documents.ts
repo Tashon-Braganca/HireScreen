@@ -7,6 +7,12 @@ import { createEmbeddings } from "@/lib/openai/embeddings";
 import { extractContactInfo } from "@/lib/pdf/extract-contact";
 import type { Document } from "@/types";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+function sanitizeFilename(filename: string): string {
+  return filename.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+}
+
 export async function uploadResume(
   formData: FormData,
   jobId: string
@@ -25,6 +31,19 @@ export async function uploadResume(
   if (!file) {
     console.error("[UPLOAD] No file in FormData");
     return { success: false, error: "No file provided" };
+  }
+
+  if (file.type !== "application/pdf") {
+    return { success: false, error: "Invalid file type. Only PDF files are allowed." };
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    return { success: false, error: "File size exceeds 10MB limit." };
+  }
+
+  const sanitizedName = sanitizeFilename(file.name);
+  if (sanitizedName !== file.name) {
+    console.log(`[UPLOAD] Sanitized filename: ${file.name} → ${sanitizedName}`);
   }
 
   console.log(`[UPLOAD] Starting: ${file.name} (${file.size} bytes) for job ${jobId}`);
@@ -192,14 +211,13 @@ export async function uploadResume(
     if (doc) {
       await supabase
         .from("documents")
-        .update({ status: "failed" })
+        .update({ status: "failed", error_message: errorMessage })
         .eq("id", doc.id);
     }
-    // Return the failed document so UI can show it with error status
     return {
       success: false,
-      error: errorMessage,
-      document: { ...doc, status: "failed" } as Document,
+      error: `Processing failed: ${errorMessage}`,
+      document: { ...doc, status: "failed", error_message: errorMessage } as Document,
     };
   }
 }
@@ -281,13 +299,11 @@ export async function deleteDocument(
       throw error;
     }
 
-    // Decrement resume count
     const { error: rpcError } = await supabase.rpc("decrement_resume_count", { job_id_input: jobId });
     if (rpcError) {
       console.error("[DELETE] decrement_resume_count RPC error:", rpcError);
     }
 
-    // Cleanup Storage
     const { data: doc } = await supabase.from("documents").select("file_path").eq("id", docId).single();
     if (doc?.file_path) {
       const { error: storageError } = await supabase.storage.from("resumes").remove([doc.file_path]);
@@ -304,6 +320,81 @@ export async function deleteDocument(
     const errorMessage =
       error instanceof Error ? error.message : "Delete failed";
     console.error(`[DELETE] ❌ FAILED: ${docId} — ${errorMessage}`);
+    return { success: false, error: errorMessage };
+  }
+}
+
+export async function deleteResume(
+  documentId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const { data: doc, error: fetchError } = await supabase
+    .from("documents")
+    .select("id, user_id, job_id, file_path")
+    .eq("id", documentId)
+    .single();
+
+  if (fetchError || !doc) {
+    return { success: false, error: "Document not found" };
+  }
+
+  if (doc.user_id !== user.id) {
+    return { success: false, error: "You don't have permission to delete this document" };
+  }
+
+  try {
+    console.log(`[DELETE_RESUME] Deleting document ${documentId}`);
+
+    const { error: chunksError } = await supabase
+      .from("document_chunks")
+      .delete()
+      .eq("document_id", documentId);
+
+    if (chunksError) {
+      console.error("[DELETE_RESUME] Failed to delete chunks:", chunksError);
+    }
+
+    const { error: docError } = await supabase
+      .from("documents")
+      .delete()
+      .eq("id", documentId);
+
+    if (docError) {
+      console.error("[DELETE_RESUME] Failed to delete document:", docError);
+      throw docError;
+    }
+
+    const { error: rpcError } = await supabase.rpc("decrement_resume_count", {
+      job_id_input: doc.job_id,
+    });
+    if (rpcError) {
+      console.error("[DELETE_RESUME] decrement_resume_count RPC error:", rpcError);
+    }
+
+    if (doc.file_path) {
+      const { error: storageError } = await supabase
+        .storage
+        .from("resumes")
+        .remove([doc.file_path]);
+      if (storageError) {
+        console.warn("[DELETE_RESUME] Failed to remove file from storage:", storageError);
+      }
+    }
+
+    console.log(`[DELETE_RESUME] ✅ Document ${documentId} deleted`);
+    return { success: true };
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Delete failed";
+    console.error(`[DELETE_RESUME] ❌ FAILED: ${documentId} — ${errorMessage}`);
     return { success: false, error: errorMessage };
   }
 }

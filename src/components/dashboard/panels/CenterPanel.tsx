@@ -7,6 +7,8 @@ import { RankedResultsPanel } from "@/components/ui/RankedResultsPanel";
 import { CompareView } from "./CompareView";
 import { ResumeViewer } from "./ResumeViewer";
 import { ImportPanel } from "./ImportPanel";
+import { HistoryPanel } from "./HistoryPanel";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 export function CenterPanel() {
     const { activeTab, filteredRankedCandidates, shortlistedIds, toggleShortlist, compareIds, toggleCompare, viewResume, handleRankQuery, isRanking, activeQuery, job, documents } = useJobContext();
@@ -15,33 +17,38 @@ export function CenterPanel() {
         <div className="flex flex-col h-full overflow-hidden bg-bg">
             <CenterPanelTabs />
             <div className="flex-1 overflow-hidden relative">
-                {activeTab === "ranked" && (
-                    <RankedResultsPanel
-                        candidates={filteredRankedCandidates}
-                        selectedIds={shortlistedIds}
-                        onToggleSelect={toggleShortlist}
-                        compareIds={compareIds || new Set()}
-                        onToggleCompare={toggleCompare}
-                        onViewResume={viewResume}
-                        onExport={() => { console.log("Export not implemented in Context yet"); }}
-                        onQueryClick={handleRankQuery}
-                        isLoading={isRanking}
-                        activeQuery={activeQuery}
-                        jobTitle={job.title}
-                        documents={documents}
-                    />
-                )}
-                {activeTab === "compare" && (
-                    <CompareView />
-                )}
-                {activeTab === "import" && (
-                    <ImportPanel />
-                )}
-                {activeTab.startsWith("pdf-") && (
-                    <div className="h-full w-full">
-                        <ResumeViewer documentId={activeTab.replace("pdf-", "")} />
-                    </div>
-                )}
+                <ErrorBoundary>
+                    {activeTab === "ranked" && (
+                        <RankedResultsPanel
+                            candidates={filteredRankedCandidates}
+                            selectedIds={shortlistedIds}
+                            onToggleSelect={toggleShortlist}
+                            compareIds={compareIds || new Set()}
+                            onToggleCompare={toggleCompare}
+                            onViewResume={viewResume}
+                            onExport={() => { console.log("Export not implemented in Context yet"); }}
+                            onQueryClick={handleRankQuery}
+                            isLoading={isRanking}
+                            activeQuery={activeQuery}
+                            jobTitle={job.title}
+                            documents={documents}
+                        />
+                    )}
+                    {activeTab === "compare" && (
+                        <CompareView />
+                    )}
+                    {activeTab === "import" && (
+                        <ImportPanel />
+                    )}
+                    {activeTab === "history" && (
+                        <HistoryPanel />
+                    )}
+                    {activeTab.startsWith("pdf-") && (
+                        <div className="h-full w-full">
+                            <ResumeViewer documentId={activeTab.replace("pdf-", "")} />
+                        </div>
+                    )}
+                </ErrorBoundary>
             </div>
         </div>
     );

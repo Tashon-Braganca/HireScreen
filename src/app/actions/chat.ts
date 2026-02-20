@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createEmbedding } from "@/lib/openai/embeddings";
 import { generateAnswer } from "@/lib/openai/chat";
+import { checkUserRateLimit } from "@/lib/ratelimit";
 
 export async function chatWithJob(question: string, jobId: string, filterDocumentIds?: string[]) {
   const supabase = await createClient();
@@ -10,6 +11,14 @@ export async function chatWithJob(question: string, jobId: string, filterDocumen
 
   if (!user) {
     return { success: false, error: "Unauthorized" };
+  }
+
+  const rateLimit = checkUserRateLimit(user.id);
+  if (!rateLimit.allowed) {
+    return {
+      success: false,
+      error: `Too many requests. Please wait ${rateLimit.resetInSeconds} seconds.`,
+    };
   }
 
   try {

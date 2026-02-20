@@ -1,8 +1,13 @@
 import { BRAND_NAME } from "@/config/brand";
+import { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: `Privacy Policy | ${BRAND_NAME}`,
   description: "Privacy Policy for CandidRank - AI Resume Screening for Technical Hiring",
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function PrivacyPage() {

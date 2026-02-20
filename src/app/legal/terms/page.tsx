@@ -1,8 +1,13 @@
 import { BRAND_NAME, BRAND_DOMAIN } from "@/config/brand";
+import { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: `Terms of Service | ${BRAND_NAME}`,
   description: "Terms of Service for CandidRank - AI Resume Screening for Technical Hiring",
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function TermsPage() {

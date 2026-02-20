@@ -41,6 +41,7 @@ export interface Document {
   candidate_email: string | null;
   candidate_phone: string | null;
   status: 'processing' | 'ready' | 'failed';
+  error_message?: string | null;
   created_at: string;
 }
 

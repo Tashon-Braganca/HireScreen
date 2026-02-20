@@ -3,7 +3,7 @@
 import React from "react";
 import { useJobContext } from "../JobContext";
 import { cn } from "@/lib/utils";
-import { X, FileText, Upload } from "lucide-react";
+import { X, FileText, Upload, Clock } from "lucide-react";
 
 export function CenterPanelTabs() {
     const { activeTab, setActiveTab, closeResumeTab, openResumeTabs, documents } = useJobContext();
@@ -40,6 +40,19 @@ export function CenterPanelTabs() {
                 )}
             >
                 Compare
+            </button>
+
+            <button
+                onClick={() => setActiveTab("history")}
+                className={cn(
+                    "px-3 py-1.5 text-xs font-medium rounded-t border-t border-l border-r border-transparent transition-colors flex-shrink-0 flex items-center gap-1.5",
+                    activeTab === "history"
+                        ? "bg-bg text-ink border-border"
+                        : "text-muted hover:text-ink hover:bg-paper/50"
+                )}
+            >
+                <Clock size={11} />
+                History
             </button>
 
             <button

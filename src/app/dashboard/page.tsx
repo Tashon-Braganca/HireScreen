@@ -7,13 +7,12 @@ import {
   Plus,
   Briefcase,
   Users,
-  ArrowRight,
-  Clock,
   BarChart3,
   Activity,
   Zap,
 } from "lucide-react";
 import { LimitWarningBanner } from "@/components/ui/LimitWarningBanner";
+import { JobList } from "@/components/ui/JobList";
 
 export default async function DashboardPage() {
   const [jobs, stats] = await Promise.all([getJobs(), getDashboardStats()]);
@@ -27,12 +26,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 py-8">
-      {/* Limit warning banner */}
       {limitWarning.show && !stats.isPro && (
         <LimitWarningBanner message={limitWarning.message!} />
       )}
 
-      {/* Header row */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-display text-2xl text-ink">
@@ -45,7 +42,6 @@ export default async function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          {/* Usage meter — compact */}
           <div className="hidden sm:flex items-center gap-3 text-sm text-muted border border-border rounded px-3 py-2 bg-panel">
             <div className="flex items-center gap-1.5">
               <BarChart3 size={14} />
@@ -71,7 +67,6 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Usage bar — mobile */}
       <div className="sm:hidden mb-6 flex items-center gap-3 text-sm text-muted border border-border rounded px-3 py-2 bg-panel">
         <div className="flex items-center gap-1.5 flex-1">
           <BarChart3 size={14} />
@@ -87,99 +82,11 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Main grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left main — Jobs table */}
         <div className="lg:col-span-2">
           {hasJobs ? (
-            <div className="panel overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left">
-                    <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">
-                      Title
-                    </th>
-                    <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider hidden md:table-cell">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider text-center">
-                      Resumes
-                    </th>
-                    <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider hidden sm:table-cell">
-                      Created
-                    </th>
-                    <th className="px-4 py-3 w-10" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {jobs.map((job) => (
-                    <tr
-                      key={job.id}
-                      className="group border-b border-border/50 last:border-0 hover:bg-accent-light/30 transition-colors relative"
-                    >
-                      {/* Left accent bar on hover */}
-                      <td className="px-4 py-3 relative">
-                        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-accent opacity-0 group-hover:opacity-100 transition-opacity rounded-r" />
-                        <Link
-                          href={`/dashboard/jobs/${job.id}`}
-                          className="font-semibold text-ink hover:text-accent transition-colors"
-                        >
-                          {job.title}
-                        </Link>
-                        {job.description && (
-                          <p className="text-xs text-muted mt-0.5 line-clamp-1 max-w-[280px]">
-                            {job.description}
-                          </p>
-                        )}
-                        {/* Quick actions on hover */}
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1 pr-2">
-                          <Link
-                            href={`/dashboard/jobs/${job.id}`}
-                            className="px-2 py-1 text-[10px] font-semibold text-accent bg-accent-light rounded hover:bg-accent/10 transition-colors"
-                          >
-                            Open
-                          </Link>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#15803D]">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
-                          Active
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="inline-flex items-center gap-1 text-xs text-muted">
-                          <Users size={12} />
-                          {job.resume_count || 0}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 hidden sm:table-cell">
-                        <span className="text-xs text-muted flex items-center gap-1">
-                          <Clock size={12} />
-                          {new Date(job.created_at).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                            }
-                          )}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <Link href={`/dashboard/jobs/${job.id}`}>
-                          <ArrowRight
-                            size={16}
-                            className="text-border group-hover:text-accent transition-colors"
-                          />
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <JobList jobs={jobs} />
           ) : (
-            /* Empty state */
             <div className="panel flex flex-col items-center justify-center py-20 text-center">
               <div className="w-14 h-14 rounded-lg border border-border flex items-center justify-center text-muted mb-5">
                 <Briefcase size={24} />
@@ -203,9 +110,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* Right rail — Usage + Recent Activity */}
         <div className="space-y-5">
-          {/* Usage & Plan */}
           <div className="panel p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display text-base text-ink">Usage</h3>
@@ -247,7 +152,6 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* Recent Activity */}
           <div className="panel p-5">
             <h3 className="font-display text-base text-ink mb-3">
               Recent Activity

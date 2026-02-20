@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Search, Clock, AlertCircle } from "lucide-react";
+import { Send, Search, Clock, AlertCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -180,11 +180,18 @@ export function ChatInterface({
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="p-2 bg-accent text-white rounded hover:bg-accent-light disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="p-2 bg-accent text-white rounded hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
           >
-            <Send size={12} />
+            {isLoading ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <Send size={12} />
+            )}
           </button>
         </form>
+        {isLoading && (
+          <p className="text-[10px] text-accent mt-1.5 ml-1">Processing...</p>
+        )}
       </div>
 
       {/* Suggested chips */}

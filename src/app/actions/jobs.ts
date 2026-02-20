@@ -64,3 +64,39 @@ export async function getJob(id: string) {
   if (error) return null;
   return data as Job;
 }
+
+export async function deleteJob(jobId: string): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const { data: job, error: fetchError } = await supabase
+    .from("jobs")
+    .select("id, user_id")
+    .eq("id", jobId)
+    .single();
+
+  if (fetchError || !job) {
+    return { success: false, error: "Job not found" };
+  }
+
+  if (job.user_id !== user.id) {
+    return { success: false, error: "You don't have permission to delete this job" };
+  }
+
+  const { error } = await supabase
+    .from("jobs")
+    .delete()
+    .eq("id", jobId);
+
+  if (error) {
+    console.error("[DELETE_JOB] Error:", error);
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}

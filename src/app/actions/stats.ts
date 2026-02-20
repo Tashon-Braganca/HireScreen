@@ -3,6 +3,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { FREE_TIER_LIMITS, PRO_TIER_LIMITS } from "@/config/limits";
 
+export interface QueryHistoryItem {
+  id: string;
+  question: string;
+  answer: string;
+  created_at: string;
+}
+
 export async function getDashboardStats() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -79,4 +86,26 @@ export async function shouldShowLimitWarning(queriesThisMonth: number, queryLimi
     }
     
     return { show: false, percentage };
+}
+
+export async function getJobQueryHistory(jobId: string): Promise<QueryHistoryItem[]> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return [];
+
+    const { data, error } = await supabase
+        .from("queries")
+        .select("id, question, answer, created_at")
+        .eq("job_id", jobId)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+    if (error) {
+        console.error("[GET_QUERY_HISTORY] Error:", error);
+        return [];
+    }
+
+    return (data || []) as QueryHistoryItem[];
 }

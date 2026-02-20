@@ -77,6 +77,10 @@ interface JobContextType {
     // Evidence bookmarks
     evidenceBookmarks: Record<string, string[]>;
     toggleBookmark: (candidateId: string, evidenceKey: string) => void;
+
+    // Query input (for re-running from history)
+    queryInput: string;
+    setQueryInput: (query: string) => void;
 }
 
 const JobContext = createContext<JobContextType | null>(null);
@@ -144,6 +148,7 @@ export function JobProvider({
 
     const [isRanking, setIsRanking] = useState(false);
     const [isChatLoading, setIsChatLoading] = useState(false);
+    const [queryInput, setQueryInput] = useState<string>("");
 
     const deletingIds = useRef<Set<string>>(new Set());
 
@@ -397,7 +402,9 @@ const handleRankQuery = useCallback(async (query: string) => {
             filters,
             setFilters,
             evidenceBookmarks,
-            toggleBookmark
+            toggleBookmark,
+            queryInput,
+            setQueryInput
         }}>
             {children}
         </JobContext.Provider>

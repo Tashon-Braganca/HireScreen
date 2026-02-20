@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createEmbedding } from "@/lib/openai/embeddings";
 import { getRankingSystemPrompt, buildRankingUserPrompt } from "@/lib/openai/ranking-prompt";
+import { checkUserRateLimit } from "@/lib/ratelimit";
 import type { RankedCandidate } from "@/types";
 import OpenAI from "openai";
 
@@ -25,6 +26,14 @@ export async function rankCandidates(
 
     if (!user) {
         return { success: false, error: "Unauthorized" };
+    }
+
+    const rateLimit = checkUserRateLimit(user.id);
+    if (!rateLimit.allowed) {
+        return {
+            success: false,
+            error: `Too many requests. Please wait ${rateLimit.resetInSeconds} seconds.`,
+        };
     }
 
     try {
