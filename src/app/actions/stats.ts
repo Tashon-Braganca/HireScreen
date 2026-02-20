@@ -66,7 +66,7 @@ export async function getDashboardStats() {
     };
 }
 
-export function shouldShowLimitWarning(queriesThisMonth: number, queryLimit: number): { show: boolean; percentage: number; message?: string } {
+export async function shouldShowLimitWarning(queriesThisMonth: number, queryLimit: number): Promise<{ show: boolean; percentage: number; message?: string }> {
     if (queryLimit === Infinity || typeof queryLimit !== 'number') {
         return { show: false, percentage: 0 };
     }

@@ -11,7 +11,6 @@ import {
   BarChart3,
   Activity,
   Zap,
-  AlertTriangle,
 } from "lucide-react";
 import { LimitWarningBanner } from "@/components/ui/LimitWarningBanner";
 
@@ -23,7 +22,7 @@ export default async function DashboardPage() {
   const hasJobs = jobs.length > 0;
   const mostRecentJob = hasJobs ? jobs[0] : null;
   
-  const limitWarning = shouldShowLimitWarning(stats.queriesThisMonth, queryLimit);
+  const limitWarning = await shouldShowLimitWarning(stats.queriesThisMonth, queryLimit);
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 py-8">
