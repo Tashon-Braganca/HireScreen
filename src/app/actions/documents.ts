@@ -142,26 +142,29 @@ export async function uploadResume(
     console.log(`[UPLOAD] Got ${flatEmbeddings.length} embeddings, first dimension: ${flatEmbeddings[0]?.length || 'N/A'}`);
 
     // 5. Insert Chunks (Batch Insert)
+    // IMPORTANT: pgvector requires embeddings as string "[0.1, 0.2, ...]" not JS array
     const chunksToInsert = chunks.map((chunk, index) => ({
       document_id: doc.id,
       job_id: jobId,
       chunk_index: chunk.chunkIndex,
       content: chunk.content,
-      embedding: flatEmbeddings[index],
+      embedding: `[${flatEmbeddings[index].join(',')}]`,
     }));
 
     console.log(`[UPLOAD] Inserting ${chunksToInsert.length} chunks into document_chunks...`);
+    console.log(`[UPLOAD] Sample embedding format (first 5 values): [${flatEmbeddings[0].slice(0, 5).join(',')}...]`);
 
-    const { error: chunkError } = await supabase
+    const { error: chunkError, data: insertedChunks } = await supabase
       .from("document_chunks")
-      .insert(chunksToInsert);
+      .insert(chunksToInsert)
+      .select("id");
 
     if (chunkError) {
-      console.error("[UPLOAD] Chunk insert error:", chunkError);
-      throw new Error(chunkError.message);
+      console.error("[UPLOAD] Chunk insert error:", JSON.stringify(chunkError, null, 2));
+      throw new Error(`Chunk insert failed: ${chunkError.message}`);
     }
 
-    console.log(`[UPLOAD] Chunks inserted successfully`);
+    console.log(`[UPLOAD] Chunks inserted successfully: ${insertedChunks?.length || 0} rows`);
 
     // 6. Mark as Ready
     const { error: updateError } = await supabase
