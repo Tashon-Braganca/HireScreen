@@ -12,14 +12,20 @@ export async function GET(request: Request) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (!error) {
             const { data: { user } } = await supabase.auth.getUser();
+            console.log('[AUTH] User after OAuth:', user?.email, 'created_at:', user?.created_at);
             
             if (user?.email) {
                 const createdAt = new Date(user.created_at).getTime();
-                const isNewUser = Date.now() - createdAt < 120000;
+                const now = Date.now();
+                const ageMs = now - createdAt;
+                const isNewUser = ageMs < 120000;
+                console.log('[AUTH] Account age (ms):', ageMs, 'isNewUser:', isNewUser);
+                
                 if (isNewUser) {
                     const name = user.user_metadata?.full_name 
                               || user.user_metadata?.name 
                               || '';
+                    console.log('[AUTH] Calling sendWelcomeEmail for:', user.email, 'name:', name);
                     await sendWelcomeEmail(user.email, name);
                 }
             }
