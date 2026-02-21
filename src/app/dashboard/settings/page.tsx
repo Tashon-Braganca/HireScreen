@@ -12,6 +12,7 @@ export default function SettingsPage() {
   const handleUpgrade = async () => {
     setIsLoading(true);
     try {
+      console.log('[SETTINGS] Starting upgrade...');
       const response = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -19,11 +20,17 @@ export default function SettingsPage() {
       });
 
       const data = await response.json();
+      console.log('[SETTINGS] Checkout response:', data);
+
+      if (!response.ok) {
+        alert(data.error || "Failed to create checkout session.");
+        return;
+      }
 
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
-        alert("Failed to create checkout session. Please try again.");
+        alert("No checkout URL returned. Please try again.");
       }
     } catch (error) {
       console.error("Upgrade error:", error);
