@@ -158,19 +158,8 @@ export async function createCheckout({
   email: string | undefined; 
   userId: string; 
 }): Promise<string> {
-  console.log('[PADDLE] Creating checkout for priceId:', priceId);
-  console.log('[PADDLE] User:', userId, 'Email:', email);
   
-  const requestBody = {
-    items: [{ price_id: priceId, quantity: 1 }],
-    customer: email ? { email } : undefined,
-    custom_data: { user_id: userId },
-    checkout: { 
-      url: 'https://candidrank.cc/dashboard?upgraded=true' 
-    },
-  };
-  
-  console.log('[PADDLE] Request body:', JSON.stringify(requestBody, null, 2));
+  console.log('[PADDLE] Creating pay link for priceId:', priceId);
   
   const response = await fetch('https://api.paddle.com/transactions', {
     method: 'POST',
@@ -178,37 +167,35 @@ export async function createCheckout({
       'Authorization': `Bearer ${process.env.PADDLE_API_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(requestBody),
+    body: JSON.stringify({
+      items: [{ 
+        price_id: priceId, 
+        quantity: 1 
+      }],
+      customer: email ? { email } : undefined,
+      custom_data: { user_id: userId },
+      checkout: { 
+        url: 'https://candidrank.cc/dashboard?upgraded=true' 
+      },
+      status: 'ready',
+    }),
   });
 
-  console.log('[PADDLE] Response status:', response.status);
-
-  const responseText = await response.text();
-  console.log('[PADDLE] Response body:', responseText);
-
+  const data = await response.json();
+  
   if (!response.ok) {
-    console.error('[PADDLE] Checkout failed:', response.status, responseText);
-    throw new Error(`Paddle error (${response.status}): ${responseText}`);
+    console.error('[PADDLE] API error:', JSON.stringify(data));
+    throw new Error(`Paddle error: ${data?.error?.detail || response.statusText}`);
   }
 
-  let data;
-  try {
-    data = JSON.parse(responseText);
-  } catch {
-    throw new Error('Invalid JSON response from Paddle');
+  console.log('[PADDLE] Transaction status:', data?.data?.status);
+  
+  const checkoutUrl = data?.data?.checkout?.url;
+  if (!checkoutUrl) {
+    throw new Error('No checkout URL returned from Paddle');
   }
   
-  const transactionId = data?.data?.id;
-  console.log('[PADDLE] Transaction ID:', transactionId);
-  
-  if (!transactionId) {
-    console.error('[PADDLE] No transaction ID in response:', JSON.stringify(data, null, 2));
-    throw new Error('No transaction ID in Paddle response');
-  }
-
-  const checkoutUrl = `https://checkout.paddle.com/checkout/custom/${transactionId}`;
   console.log('[PADDLE] Checkout URL:', checkoutUrl);
-  
   return checkoutUrl;
 }
 
