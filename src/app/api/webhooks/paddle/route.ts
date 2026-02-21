@@ -18,15 +18,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
-  let event: { event_type: string; data: { id: string; custom_data?: { user_id?: string }; subscription_id?: string } };
+  let event: { 
+    event_type: string; 
+    data: { 
+      id: string; 
+      custom_data?: { user_id?: string }; 
+      subscription_id?: string;
+      status?: string;
+    } 
+  };
   try {
     event = JSON.parse(payload);
   } catch {
     console.error("[PADDLE_WEBHOOK] Failed to parse payload");
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
-
-  NextResponse.json({ received: true });
 
   const supabase = await createClient();
   const eventType = event.event_type;
@@ -44,13 +50,59 @@ export async function POST(request: NextRequest) {
           .update({
             subscription_status: "pro",
             subscription_id: subscriptionId,
+            queries_used: 0,
           })
           .eq("id", userId);
 
         if (error) {
           console.error("[PADDLE_WEBHOOK] Failed to update profile to pro:", error);
         } else {
-          console.log(`[PADDLE_WEBHOOK] User ${userId} upgraded to pro`);
+          console.log(`[PADDLE_WEBHOOK] User ${userId} upgraded to pro (queries reset)`);
+        }
+      }
+    }
+
+    if (eventType === "subscription.updated") {
+      const subscriptionId = event.data.id;
+      const status = event.data.status;
+
+      if (status === "active") {
+        const { data: profile, error: fetchError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("subscription_id", subscriptionId)
+          .single();
+
+        if (!fetchError && profile) {
+          const { error } = await supabase
+            .from("profiles")
+            .update({ subscription_status: "pro" })
+            .eq("id", profile.id);
+
+          if (error) {
+            console.error("[PADDLE_WEBHOOK] Failed to update profile to pro:", error);
+          } else {
+            console.log(`[PADDLE_WEBHOOK] User ${profile.id} subscription updated to pro`);
+          }
+        }
+      } else if (status === "canceled" || status === "paused") {
+        const { data: profile, error: fetchError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("subscription_id", subscriptionId)
+          .single();
+
+        if (!fetchError && profile) {
+          const { error } = await supabase
+            .from("profiles")
+            .update({ subscription_status: "free" })
+            .eq("id", profile.id);
+
+          if (error) {
+            console.error("[PADDLE_WEBHOOK] Failed to update profile to free:", error);
+          } else {
+            console.log(`[PADDLE_WEBHOOK] User ${profile.id} subscription downgraded to free`);
+          }
         }
       }
     }

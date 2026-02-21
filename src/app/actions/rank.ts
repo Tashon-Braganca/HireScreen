@@ -15,6 +15,19 @@ function getOpenAI(): OpenAI {
     return openaiInstance;
 }
 
+async function callWithFallback<T>(primaryFn: () => Promise<T>): Promise<T> {
+    try {
+        return await primaryFn();
+    } catch (error: unknown) {
+        const status = (error as { status?: number })?.status;
+        if (status === 429 || status === 404) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return await primaryFn();
+        }
+        throw error;
+    }
+}
+
 export async function rankCandidates(
     query: string,
     jobId: string
@@ -160,16 +173,18 @@ export async function rankCandidates(
         if (process.env.NODE_ENV === 'development') {
             console.log(`[RANK] Calling GPT-4o-mini with ${contexts.length} contexts...`);
         }
-        const response = await getOpenAI().chat.completions.create({
-            model: "gpt-4o-mini",
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userMessage },
-            ],
-            temperature: 0.2,
-            max_completion_tokens: 2000,
-            response_format: { type: "json_object" },
-        });
+        const response = await callWithFallback(() =>
+            getOpenAI().chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userMessage },
+                ],
+                temperature: 0.2,
+                max_completion_tokens: 2000,
+                response_format: { type: "json_object" },
+            })
+        );
 
         const content = response.choices[0].message.content;
         if (!content) {

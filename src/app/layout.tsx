@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import "./globals.css";
+
+const PostHogProvider = dynamic(
+  () => import("@/lib/analytics/posthog").then((m) => ({ default: m.PostHogProvider })),
+  { ssr: false }
+);
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://candidrank.cc"),
@@ -46,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased" suppressHydrationWarning>
-        {children}
+        <PostHogProvider>{children}</PostHogProvider>
       </body>
     </html>
   );

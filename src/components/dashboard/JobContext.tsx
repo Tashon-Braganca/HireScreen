@@ -299,7 +299,7 @@ const handleRankQuery = useCallback(async (query: string) => {
 
         if (RANK_KEYWORDS.test(content)) handleRankQuery(content);
 
-        const res = await chatWithJob(content, job.id, filteredDocuments.map(d => d.id));
+        const res = await chatWithJob(content, job.id);
         setIsChatLoading(false);
 
         const aiMsg: Message = {
@@ -309,7 +309,7 @@ const handleRankQuery = useCallback(async (query: string) => {
             timestamp: new Date()
         };
         setMessages(prev => [...prev, aiMsg]);
-    }, [job.id, handleRankQuery, filteredDocuments]);
+    }, [job.id, handleRankQuery]);
 
     const toggleCompare = useCallback((id: string) => {
         setCompareIds(prev => {
