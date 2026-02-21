@@ -138,6 +138,13 @@ export default function TermsPage() {
             </p>
           </section>
 
+          <section>
+            <h2 className="font-display text-xl text-ink mb-3">12. Refund Policy</h2>
+            <p className="text-muted">
+              CandidRank offers a 7-day refund policy for Pro subscriptions. If you are not satisfied within 7 days of your first payment, contact us at support@candidrank.cc for a full refund. Refunds are not available after 7 days or for partial months. Cancellations take effect at the end of the current billing period.
+            </p>
+          </section>
+
           <div className="mt-8 pt-6 border-t border-border">
             <p className="text-xs text-muted">
               Last updated: January 2026
