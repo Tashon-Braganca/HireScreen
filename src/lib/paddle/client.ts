@@ -149,21 +149,50 @@ export function verifyPaddleWebhookSignature(
   }
 }
 
-export async function createCheckout(options: {
-  email?: string;
-  userId: string;
-  priceId: string;
-  redirectUrl?: string;
+export async function createCheckout({ 
+  priceId, 
+  email, 
+  userId 
+}: { 
+  priceId: string; 
+  email: string | undefined; 
+  userId: string; 
 }): Promise<string> {
-  const client = getPaddleServerClient();
-  return client.createCheckout({
-    priceId: options.priceId,
-    email: options.email,
-    userId: options.userId,
-    customData: {
-      redirect_url: options.redirectUrl || `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?success=true`,
+  const response = await fetch('https://api.paddle.com/transactions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.PADDLE_API_KEY}`,
+      'Content-Type': 'application/json',
     },
+    body: JSON.stringify({
+      items: [{ price_id: priceId, quantity: 1 }],
+      customer: { email },
+      custom_data: { user_id: userId },
+      checkout: { 
+        url: 'https://candidrank.cc/dashboard?upgraded=true' 
+      },
+    }),
   });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Paddle checkout error:', { 
+      status: response.status, 
+      statusText: response.statusText, 
+      body: error,
+      priceId 
+    });
+    throw new Error(`Failed to create checkout session: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  
+  const checkoutUrl = data?.data?.checkout?.url;
+  if (!checkoutUrl) {
+    throw new Error('No checkout URL in Paddle response');
+  }
+  
+  return checkoutUrl;
 }
 
 export async function getSubscription(subscriptionId: string): Promise<PaddleSubscription | null> {
