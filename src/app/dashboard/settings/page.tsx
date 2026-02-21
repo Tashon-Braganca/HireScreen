@@ -1,58 +1,70 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BentoCard, BentoHeader } from "@/components/ui/BentoCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Bell, Shield, CreditCard, Zap, Check, Loader2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 const PRO_PRICE_ID = process.env.NEXT_PUBLIC_PADDLE_PRO_PRICE_ID;
 
+interface UserInfo {
+  id: string;
+  email: string;
+}
+
 export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<UserInfo | null>(null);
 
-  const handleUpgrade = async () => {
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUser({ id: user.id, email: user.email || '' });
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleUpgrade = () => {
     console.log('[UPGRADE] Button clicked');
     console.log('[UPGRADE] Price ID:', PRO_PRICE_ID);
+    console.log('[UPGRADE] User:', user);
     
     if (!PRO_PRICE_ID) {
       alert('Billing is not configured. Please contact support.');
-      console.error('[UPGRADE] No NEXT_PUBLIC_PADDLE_PRO_PRICE_ID set');
       return;
     }
 
+    if (typeof window === 'undefined' || !window.Paddle) {
+      alert('Payment system loading. Please wait a moment and try again.');
+      console.error('[UPGRADE] Paddle not loaded');
+      return;
+    }
+
+    setIsLoading(true);
+    
     try {
-      setIsLoading(true);
-      console.log('[UPGRADE] Starting checkout for price:', PRO_PRICE_ID);
-      
-      const response = await fetch('/api/billing/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId: PRO_PRICE_ID }),
+      console.log('[UPGRADE] Opening Paddle checkout...');
+      window.Paddle.Checkout.open({
+        items: [{
+          priceId: PRO_PRICE_ID,
+          quantity: 1,
+        }],
+        customer: user?.email ? { email: user.email } : undefined,
+        customData: user?.id ? { userId: user.id } : undefined,
+        settings: {
+          successUrl: 'https://candidrank.cc/dashboard?upgraded=true',
+        },
       });
-
-      const data = await response.json();
-      console.log('[UPGRADE] Response status:', response.status);
-      console.log('[UPGRADE] Response data:', data);
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout');
-      }
-
-      const { checkoutUrl } = data;
-      console.log('[UPGRADE] Got checkout URL:', checkoutUrl);
-
-      if (!checkoutUrl) {
-        throw new Error('No checkout URL returned');
-      }
-
-      console.log('[UPGRADE] Redirecting to:', checkoutUrl);
-      window.location.href = checkoutUrl;
     } catch (err) {
       console.error('[UPGRADE] Error:', err);
-      alert('Failed to open checkout: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      alert('Failed to open checkout. Please try again.');
     } finally {
-      setIsLoading(false);
+      setTimeout(() => setIsLoading(false), 1000);
     }
   };
 
@@ -91,7 +103,7 @@ export default function SettingsPage() {
           </div>
           <div className="space-y-2 md:col-span-2">
             <label className="text-sm font-medium text-slate-700">Email Address</label>
-            <Input placeholder="jane@example.com" type="email" />
+            <Input placeholder="jane@example.com" type="email" value={user?.email || ''} readOnly />
           </div>
         </div>
       </BentoCard>
@@ -136,7 +148,7 @@ export default function SettingsPage() {
             {isLoading ? (
               <>
                 <Loader2 size={16} className="mr-2 animate-spin" />
-                Processing...
+                Opening...
               </>
             ) : (
               "Upgrade to Pro"

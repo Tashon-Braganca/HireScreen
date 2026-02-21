@@ -131,3 +131,19 @@ export interface ImportedCandidate {
   notes: string | null;
   created_at: string;
 }
+
+declare global {
+  interface Window {
+    Paddle: {
+      Initialize: (config: { token: string }) => void;
+      Checkout: {
+        open: (config: {
+          items: Array<{ priceId: string; quantity: number }>;
+          customer?: { email?: string };
+          customData?: Record<string, string>;
+          settings?: { successUrl?: string };
+        }) => void;
+      };
+    };
+  }
+}
