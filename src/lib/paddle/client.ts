@@ -198,13 +198,16 @@ export async function createCheckout({
     throw new Error('Invalid JSON response from Paddle');
   }
   
-  const checkoutUrl = data?.data?.checkout?.url;
-  console.log('[PADDLE] Checkout URL:', checkoutUrl);
+  const transactionId = data?.data?.id;
+  console.log('[PADDLE] Transaction ID:', transactionId);
   
-  if (!checkoutUrl) {
-    console.error('[PADDLE] No checkout URL in response:', JSON.stringify(data, null, 2));
-    throw new Error('No checkout URL in Paddle response');
+  if (!transactionId) {
+    console.error('[PADDLE] No transaction ID in response:', JSON.stringify(data, null, 2));
+    throw new Error('No transaction ID in Paddle response');
   }
+
+  const checkoutUrl = `https://checkout.paddle.com/checkout/custom/${transactionId}`;
+  console.log('[PADDLE] Checkout URL:', checkoutUrl);
   
   return checkoutUrl;
 }
