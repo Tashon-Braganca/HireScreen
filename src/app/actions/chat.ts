@@ -5,7 +5,7 @@ import { createEmbedding } from "@/lib/openai/embeddings";
 import { generateAnswer } from "@/lib/openai/chat";
 import { checkUserRateLimit } from "@/lib/ratelimit";
 
-export async function chatWithJob(question: string, jobId: string, _filterDocumentIds?: string[]) {
+export async function chatWithJob(question: string, jobId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
