@@ -158,37 +158,51 @@ export async function createCheckout({
   email: string | undefined; 
   userId: string; 
 }): Promise<string> {
+  console.log('[PADDLE] Creating checkout for priceId:', priceId);
+  console.log('[PADDLE] User:', userId, 'Email:', email);
+  
+  const requestBody = {
+    items: [{ price_id: priceId, quantity: 1 }],
+    customer: email ? { email } : undefined,
+    custom_data: { user_id: userId },
+    checkout: { 
+      url: 'https://candidrank.cc/dashboard?upgraded=true' 
+    },
+  };
+  
+  console.log('[PADDLE] Request body:', JSON.stringify(requestBody, null, 2));
+  
   const response = await fetch('https://api.paddle.com/transactions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${process.env.PADDLE_API_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      items: [{ price_id: priceId, quantity: 1 }],
-      customer: { email },
-      custom_data: { user_id: userId },
-      checkout: { 
-        url: 'https://candidrank.cc/dashboard?upgraded=true' 
-      },
-    }),
+    body: JSON.stringify(requestBody),
   });
 
+  console.log('[PADDLE] Response status:', response.status);
+
+  const responseText = await response.text();
+  console.log('[PADDLE] Response body:', responseText);
+
   if (!response.ok) {
-    const error = await response.text();
-    console.error('Paddle checkout error:', { 
-      status: response.status, 
-      statusText: response.statusText, 
-      body: error,
-      priceId 
-    });
-    throw new Error(`Failed to create checkout session: ${response.status} ${response.statusText}`);
+    console.error('[PADDLE] Checkout failed:', response.status, responseText);
+    throw new Error(`Paddle error (${response.status}): ${responseText}`);
   }
 
-  const data = await response.json();
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch {
+    throw new Error('Invalid JSON response from Paddle');
+  }
   
   const checkoutUrl = data?.data?.checkout?.url;
+  console.log('[PADDLE] Checkout URL:', checkoutUrl);
+  
   if (!checkoutUrl) {
+    console.error('[PADDLE] No checkout URL in response:', JSON.stringify(data, null, 2));
     throw new Error('No checkout URL in Paddle response');
   }
   

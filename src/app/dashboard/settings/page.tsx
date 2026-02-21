@@ -6,35 +6,51 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Bell, Shield, CreditCard, Zap, Check, Loader2 } from "lucide-react";
 
+const PRO_PRICE_ID = process.env.NEXT_PUBLIC_PADDLE_PRO_PRICE_ID;
+
 export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleUpgrade = async () => {
-    setIsLoading(true);
+    console.log('[UPGRADE] Button clicked');
+    console.log('[UPGRADE] Price ID:', PRO_PRICE_ID);
+    
+    if (!PRO_PRICE_ID) {
+      alert('Billing is not configured. Please contact support.');
+      console.error('[UPGRADE] No NEXT_PUBLIC_PADDLE_PRO_PRICE_ID set');
+      return;
+    }
+
     try {
-      console.log('[SETTINGS] Starting upgrade...');
-      const response = await fetch("/api/billing/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: "pro" }),
+      setIsLoading(true);
+      console.log('[UPGRADE] Starting checkout for price:', PRO_PRICE_ID);
+      
+      const response = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId: PRO_PRICE_ID }),
       });
 
       const data = await response.json();
-      console.log('[SETTINGS] Checkout response:', data);
+      console.log('[UPGRADE] Response status:', response.status);
+      console.log('[UPGRADE] Response data:', data);
 
       if (!response.ok) {
-        alert(data.error || "Failed to create checkout session.");
-        return;
+        throw new Error(data.error || 'Failed to create checkout');
       }
 
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        alert("No checkout URL returned. Please try again.");
+      const { checkoutUrl } = data;
+      console.log('[UPGRADE] Got checkout URL:', checkoutUrl);
+
+      if (!checkoutUrl) {
+        throw new Error('No checkout URL returned');
       }
-    } catch (error) {
-      console.error("Upgrade error:", error);
-      alert("Something went wrong. Please try again.");
+
+      console.log('[UPGRADE] Redirecting to:', checkoutUrl);
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      console.error('[UPGRADE] Error:', err);
+      alert('Failed to open checkout: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setIsLoading(false);
     }
