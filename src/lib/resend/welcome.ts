@@ -1,44 +1,55 @@
-import { Resend } from "resend";
+import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function sendWelcomeEmail(email: string, name: string): Promise<{ success: boolean; error?: string }> {
+export async function sendWelcomeEmail(
+  email: string, 
+  name: string
+): Promise<void> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[RESEND] RESEND_API_KEY not set, skipping welcome email");
-    return { success: false, error: "RESEND_API_KEY not configured" };
+    console.warn('[RESEND] No API key — skipping welcome email');
+    return;
   }
 
-  const firstName = name?.split(" ")[0] || "there";
+  const firstName = name?.split(' ')[0] || 'there';
 
   try {
-    const { error } = await resend.emails.send({
-      from: "CandidRank <hello@candidrank.cc>",
+    const result = await resend.emails.send({
+      from: 'CandidRank <onboarding@resend.dev>',
       to: email,
-      subject: "Your CandidRank account is ready 🎯",
-      text: `Hi ${firstName},
-
-Welcome to CandidRank — AI resume screening built for technical hiring.
-
-Here's how to get started in 3 minutes:
-1. Create a job (e.g., 'Senior Backend Engineer')
-2. Upload up to 5 resumes as PDFs
-3. Ask: 'Who has the strongest Node.js and system design experience?'
-
-That's it. You'll get ranked candidates with cited proof from their resumes.
-
-Questions? Reply to this email.
-
-— Tashon, Founder of CandidRank`,
+      subject: 'Your CandidRank account is ready',
+      html: `
+        <div style="font-family:sans-serif;max-width:520px;margin:0 auto;
+                    padding:32px 24px;color:#111;background:#fff;">
+          <h2 style="font-size:20px;margin:0 0 12px;">
+            Welcome to CandidRank, ${firstName}.
+          </h2>
+          <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 20px;">
+            AI resume screening built for technical hiring. 
+            Get started in 3 steps:
+          </p>
+          <ol style="color:#333;font-size:14px;line-height:2.2;
+                     padding-left:20px;margin:0 0 24px;">
+            <li>Create a job — e.g. <em>"Senior Backend Engineer"</em></li>
+            <li>Upload PDF resumes for that role</li>
+            <li>Ask: <em>"Who has the strongest Node.js experience?"</em></li>
+          </ol>
+          <a href="https://candidrank.cc/dashboard"
+             style="display:inline-block;padding:11px 22px;
+                    background:#2563EB;color:#fff;border-radius:7px;
+                    text-decoration:none;font-size:14px;font-weight:600;">
+            Open Dashboard →
+          </a>
+          <p style="margin-top:32px;font-size:13px;color:#999;
+                    border-top:1px solid #eee;padding-top:16px;">
+            Questions? Reply to this email directly.<br/>
+            — Tashon, Founder of CandidRank
+          </p>
+        </div>
+      `,
     });
-
-    if (error) {
-      console.error("[RESEND] Error sending welcome email:", error);
-      return { success: false, error: error.message };
-    }
-
-    return { success: true };
+    console.log('[RESEND] Welcome email sent:', result);
   } catch (err) {
-    console.error("[RESEND] Exception sending welcome email:", err);
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" };
+    console.error('[RESEND] Failed to send welcome email:', err);
   }
 }

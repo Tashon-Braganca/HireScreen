@@ -13,6 +13,19 @@ function getOpenAI(): OpenAI {
   return openaiInstance;
 }
 
+async function callWithFallback<T>(primaryFn: () => Promise<T>): Promise<T> {
+  try {
+    return await primaryFn();
+  } catch (error: unknown) {
+    const status = (error as { status?: number })?.status;
+    if (status === 429 || status === 404) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return await primaryFn();
+    }
+    throw error;
+  }
+}
+
 interface ChatContext {
   content: string;
   filename: string;
@@ -24,26 +37,36 @@ export async function generateAnswer(
   contexts: ChatContext[],
   jobType: JobType = 'job'
 ): Promise<{ answer: string; tokensUsed: number }> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 25000);
+
   try {
     const systemPrompt = getSystemPrompt(jobType);
     const userMessage = buildUserPrompt(question, contexts);
 
-    const response = await getOpenAI().chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMessage },
-      ],
-      max_completion_tokens: 2000,
-    }, {
-      signal: AbortSignal.timeout(15000),
-    });
+    const response = await callWithFallback(() =>
+      getOpenAI().chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage },
+        ],
+        max_completion_tokens: 600,
+      }, {
+        signal: controller.signal,
+      })
+    );
 
     return {
-      answer: response.choices[0].message.content || 'Unable to generate answer.',
+      answer: response.choices[0].message.content || 'No answer generated.',
       tokensUsed: response.usage?.total_tokens || 0,
     };
-  } catch {
+  } catch (err: unknown) {
+    if ((err as Error).name === 'AbortError') {
+      return { answer: 'Request timed out. Please try a simpler question.', tokensUsed: 0 };
+    }
     return { answer: "Query failed. Please try again.", tokensUsed: 0 };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }

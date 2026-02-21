@@ -24,6 +24,23 @@ Each candidate object must have:
 - "documentId": string — The document_id provided in the context
 - "filename": string — The source document filename
 
+CRITICAL RULE — NAME EXTRACTION:
+Look through the ENTIRE first 800 characters of each resume for a human name in 'First Last' format. A human name:
+- Contains only letters, spaces, hyphens
+- Is NOT a number like '11981094'
+- Is NOT a filename
+- Usually appears in the first few lines as a header
+If truly no name found, use the filename without .pdf extension.
+NEVER use numeric IDs as candidate names.
+
+CRITICAL RULE — MATCH REASONS:
+Each reason in matchReasons MUST be a meaningful sentence describing a skill, achievement, or experience found in the resume.
+NEVER include: document IDs, chunk numbers, page references like 'p1', filenames, or raw metadata strings.
+A valid reason looks like: '7 years of Python and machine learning experience at Google'
+An invalid reason looks like: '11981094 p1' — NEVER do this.
+
+If you cannot find 3 meaningful reasons for a candidate, write 'Insufficient technical detail in resume' as a reason rather than outputting metadata.
+
 Rules:
 1. Rank ALL candidates from highest to lowest score — include every candidate provided, even low-scorers
 2. Provide 3-5 match reasons per candidate, each citing specific evidence from the resume

@@ -5,7 +5,6 @@ import { Send, Search, Clock, AlertCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
-/** Lightweight markdown renderer for findings */
 function SimpleMarkdown({ content }: { content: string }) {
   const lines = content.split("\n");
   const elements: React.ReactNode[] = [];
@@ -118,7 +117,6 @@ export function ChatInterface({
     }
   }, [messages, isLoading]);
 
-  // Debounce ref
   const lastSubmitRef = useRef<number>(0);
 
   const handleSubmit = useCallback(
@@ -136,21 +134,27 @@ export function ChatInterface({
     [input, isLoading, onSendMessage]
   );
 
-  // Quick-ask chips
-  const quickChips = [
-    "Who has the most experience?",
-    "Compare top 3 candidates",
-    "Who is the best fit?",
+  const isTechnical = jobTitle?.toLowerCase().match(
+    /engineer|dev|ml|ai|data|backend|frontend|fullstack|python|java/
+  );
+
+  const quickChips = isTechnical ? [
+    "Who has the strongest system design experience?",
+    "Which candidate has shipped production code?",
+    "Who has the most relevant tech stack experience?",
+    `Best fit for ${jobTitle}?`,
+  ] : [
+    "Who has the most relevant experience?",
+    "Compare the top 3 candidates",
+    "Who would ramp up fastest?",
     `Best match for ${jobTitle || "this role"}?`,
   ];
 
-  // Separate user and assistant messages to render as findings
   const findings = messages.filter((m) => m.role === "assistant" && m.id !== "1");
   const hasFindings = findings.length > 0;
 
   return (
     <div className="panel h-full flex flex-col min-h-0 overflow-hidden">
-      {/* Header */}
       <div className="px-4 py-3 border-b border-border flex items-center gap-2.5 flex-shrink-0">
         <div className="w-7 h-7 rounded bg-accent flex items-center justify-center text-white">
           <Search size={14} />
@@ -163,7 +167,6 @@ export function ChatInterface({
         </div>
       </div>
 
-      {/* Input Area — top position (evidence-first) */}
       <div className="p-3 border-b border-border flex-shrink-0">
         <form
           onSubmit={handleSubmit}
@@ -194,7 +197,6 @@ export function ChatInterface({
         )}
       </div>
 
-      {/* Suggested chips */}
       <div className="p-3 border-b border-border/50 flex-shrink-0">
         <p className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-2">
           Suggested
@@ -213,7 +215,6 @@ export function ChatInterface({
         </div>
       </div>
 
-      {/* Findings Area */}
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0"
@@ -228,7 +229,6 @@ export function ChatInterface({
         )}
 
         <AnimatePresence initial={false}>
-          {/* Render findings (assistant messages) with their corresponding user query */}
           {messages
             .filter((m) => m.id !== "1")
             .map((msg) => {
@@ -246,7 +246,6 @@ export function ChatInterface({
                 );
               }
 
-              // Check if it's an error
               const isError =
                 msg.content.includes("error") ||
                 msg.content.includes("failed") ||
@@ -292,7 +291,6 @@ export function ChatInterface({
         </AnimatePresence>
       </div>
 
-      {/* Recent Queries */}
       {recentQueries.length > 0 && (
         <div className="px-3 py-2 border-t border-border flex-shrink-0">
           <p className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5 flex items-center gap-1">

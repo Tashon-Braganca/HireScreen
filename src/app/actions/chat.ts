@@ -22,20 +22,20 @@ export async function chatWithJob(question: string, jobId: string, filterDocumen
   }
 
   try {
-    // 1. Embed the question
     console.log(`[CHAT] Generating embedding for: "${question}"`);
     const queryEmbedding = await createEmbedding(question);
     console.log(`[CHAT] Query embedding dimension: ${queryEmbedding.length}`);
 
-    // 2. Search for relevant chunks — threshold 0 to catch EVERYTHING
-    console.log(`[CHAT] Searching chunks for job ${jobId} with threshold 0 (catch all)...`);
-    const { data: chunks, error: searchError } = await supabase.rpc("match_document_chunks", {
-      query_embedding: `[${queryEmbedding.join(',')}]`,
-      match_threshold: 0, // Zero threshold to see ALL similarities
-      match_count: 20,
-      filter_job_id: jobId,
-      filter_document_ids: filterDocumentIds || null
-    });
+    console.log(`[CHAT] Searching chunks for job ${jobId}...`);
+    const { data: chunks, error: searchError } = await supabase.rpc(
+      "match_document_chunks",
+      {
+        query_embedding: queryEmbedding,
+        filter_job_id: jobId,
+        match_threshold: 0.0,
+        match_count: 8,
+      }
+    );
 
     if (searchError) {
       console.error("[CHAT] Search RPC error:", searchError);
@@ -44,7 +44,6 @@ export async function chatWithJob(question: string, jobId: string, filterDocumen
 
     console.log(`[CHAT] Found ${chunks?.length || 0} matching chunks`);
 
-    // Debug: Check if ANY chunks exist for this job
     if (!chunks || chunks.length === 0) {
       const { data: debugChunks, error: debugError } = await supabase
         .from("document_chunks")
@@ -56,7 +55,6 @@ export async function chatWithJob(question: string, jobId: string, filterDocumen
       if (debugChunks && debugChunks.length > 0) {
         console.log(`[CHAT] DEBUG: Sample chunk content (first 100 chars): "${debugChunks[0].content?.substring(0, 100)}"`);
 
-        // Check if embeddings exist
         const { data: embCheck } = await supabase
           .from("document_chunks")
           .select("id, embedding")
@@ -83,22 +81,20 @@ export async function chatWithJob(question: string, jobId: string, filterDocumen
       };
     }
 
-    // Log top match similarity
     if (chunks.length > 0) {
       console.log(`[CHAT] Top match similarity: ${chunks[0].similarity}, filename: ${chunks[0].filename}`);
     }
 
-    // 3. Format Context for OpenAI
-    const contexts = chunks.map((chunk: { content: string; filename?: string; page_number?: number }) => ({
+    const topChunks = chunks.slice(0, 8);
+
+    const contexts = topChunks.map((chunk: { content: string; filename?: string; page_number?: number }) => ({
       content: chunk.content,
       filename: chunk.filename || "Unknown Document",
       page: chunk.page_number ?? null
     }));
 
-    // 4. Generate Answer
     const { answer, tokensUsed } = await generateAnswer(question, contexts);
 
-    // 5. Save Query
     await supabase.from("queries").insert({
       job_id: jobId,
       user_id: user.id,
@@ -107,17 +103,17 @@ export async function chatWithJob(question: string, jobId: string, filterDocumen
       tokens_used: tokensUsed
     });
 
-    console.log(`[CHAT] ✅ Answer generated (${tokensUsed} tokens)`);
+    console.log(`[CHAT] Answer generated (${tokensUsed} tokens)`);
 
     return {
       success: true,
       answer,
-      sources: chunks.map((c: { filename: string; content: string }) => ({ filename: c.filename, snippet: c.content }))
+      sources: topChunks.map((c: { filename: string; content: string }) => ({ filename: c.filename, snippet: c.content }))
     };
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-    console.error("[CHAT] ❌ Error:", error);
+    console.error("[CHAT] Error:", error);
     return { success: false, error: errorMessage };
   }
 }
