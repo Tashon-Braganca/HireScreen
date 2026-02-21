@@ -182,7 +182,7 @@ const Pricing = () => (
                 {/* Pro */}
                 <div className="bg-[var(--text)] rounded-xl border border-[var(--text)] p-8 text-[var(--bg)] relative overflow-hidden">
                     <h3 className="font-bold text-lg mb-1">Pro</h3>
-                    <div className="text-4xl font-bold mb-6">$29<span className="text-base font-normal opacity-70">/mo</span></div>
+                    <div className="text-4xl font-bold mb-6">$49<span className="text-base font-normal opacity-70">/mo</span></div>
                     <ul className="space-y-4 mb-8">
                         {["Unlimited jobs", "Unlimited queries", "Unlimited uploads", "PDF export", "Priority support"].map((f, i) => (
                             <li key={i} className="flex items-center gap-3 text-sm">

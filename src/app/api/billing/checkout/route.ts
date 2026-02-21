@@ -14,10 +14,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { priceId } = body;
+    let { priceId } = body;
 
     if (!priceId) {
       return NextResponse.json({ error: "Price ID is required" }, { status: 400 });
+    }
+
+    if (priceId === "pro") {
+      priceId = process.env.PADDLE_PRO_PRICE_ID;
+      if (!priceId) {
+        return NextResponse.json({ error: "Pro plan not configured" }, { status: 500 });
+      }
     }
 
     const { data: profile } = await supabase
