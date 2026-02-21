@@ -6,6 +6,8 @@ export async function sendWelcomeEmail(
   email: string, 
   name: string
 ): Promise<void> {
+  console.log('[RESEND] Attempting to send welcome email to:', email);
+
   if (!process.env.RESEND_API_KEY) {
     console.warn('[RESEND] No API key — skipping welcome email');
     return;
@@ -15,7 +17,7 @@ export async function sendWelcomeEmail(
 
   try {
     const result = await resend.emails.send({
-      from: 'CandidRank <onboarding@resend.dev>',
+      from: 'CandidRank <onboarding@candidrank.cc>',
       to: email,
       subject: 'Your CandidRank account is ready',
       html: `
@@ -48,7 +50,7 @@ export async function sendWelcomeEmail(
         </div>
       `,
     });
-    console.log('[RESEND] Welcome email sent:', result);
+    console.log('[RESEND] Send result:', JSON.stringify(result));
   } catch (err) {
     console.error('[RESEND] Failed to send welcome email:', err);
   }
