@@ -177,7 +177,6 @@ export async function createCheckout({
       checkout: { 
         url: 'https://candidrank.cc/dashboard?upgraded=true' 
       },
-      status: 'ready',
     }),
   });
 
@@ -188,13 +187,14 @@ export async function createCheckout({
     throw new Error(`Paddle error: ${data?.error?.detail || response.statusText}`);
   }
 
-  console.log('[PADDLE] Transaction status:', data?.data?.status);
+  console.log('[PADDLE] Transaction created:', data?.data?.id);
   
-  const checkoutUrl = data?.data?.checkout?.url;
-  if (!checkoutUrl) {
-    throw new Error('No checkout URL returned from Paddle');
+  const transactionId = data?.data?.id;
+  if (!transactionId) {
+    throw new Error('No transaction ID returned from Paddle');
   }
-  
+
+  const checkoutUrl = `https://buy.paddle.com/checkout/${transactionId}`;
   console.log('[PADDLE] Checkout URL:', checkoutUrl);
   return checkoutUrl;
 }
