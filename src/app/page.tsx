@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import {
     Zap, Upload, MessageSquare, BarChart3,
-    CheckCircle, ArrowRight, Shield, Clock
+    CheckCircle, ArrowRight
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
@@ -197,23 +197,6 @@ const Pricing = () => (
             </div>
         </div>
     </section>
-);
-
-/* ─── Footer ─── */
-const Footer = () => (
-    <footer className="py-12 px-6 border-t border-[var(--border)] bg-[var(--bg)]">
-        <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 font-bold text-[var(--text)]">
-                <div className="w-6 h-6 rounded bg-[var(--text)] flex items-center justify-center text-[var(--bg)] text-xs font-bold">{BRAND_LOGO_LETTER}</div>
-                {BRAND_NAME}
-            </div>
-            <div className="flex items-center gap-6 text-sm text-[var(--muted)]">
-                <div className="flex items-center gap-1.5"><Shield size={13} /> SOC 2 Ready</div>
-                <div className="flex items-center gap-1.5"><Clock size={13} /> 99.9% Uptime</div>
-            </div>
-            <p className="text-sm text-[var(--muted)]">&copy; {new Date().getFullYear()} {BRAND_NAME}.</p>
-        </div>
-    </footer>
 );
 
 /* ─── Server Component ─── */
