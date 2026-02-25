@@ -23,6 +23,9 @@ export default function TermsPage() {
             <p className="text-muted">
               By accessing or using {BRAND_NAME} (&quot;Service&quot;), operated at {BRAND_DOMAIN}, you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the Service.
             </p>
+            <p className="text-muted mt-3">
+              These Terms and Conditions are provided by CandidRank.
+            </p>
           </section>
 
           <section>
@@ -88,7 +91,7 @@ export default function TermsPage() {
               <li>Allow automatic renewal unless cancelled before the billing period ends</li>
             </ul>
             <p className="text-muted mt-3">
-              Refunds are provided at our discretion. Contact support@candidrank.cc for refund requests.
+              Refund handling follows our Refund Policy at /legal/refund-policy.
             </p>
           </section>
 
@@ -141,13 +144,13 @@ export default function TermsPage() {
           <section>
             <h2 className="font-display text-xl text-ink mb-3">12. Refund Policy</h2>
             <p className="text-muted">
-              CandidRank offers a 7-day refund policy for Pro subscriptions. If you are not satisfied within 7 days of your first payment, contact us at support@candidrank.cc for a full refund. Refunds are not available after 7 days or for partial months. Cancellations take effect at the end of the current billing period.
+              CandidRank provides a 14-day refund window for eligible charges, as described in our dedicated Refund Policy page at /legal/refund-policy.
             </p>
           </section>
 
           <div className="mt-8 pt-6 border-t border-border">
             <p className="text-xs text-muted">
-              Last updated: January 2026
+              Last updated: February 2026
             </p>
           </div>
         </div>

@@ -228,7 +228,27 @@ export default async function Home() {
             <ProblemSection />
             <HowItWorks />
             <Pricing />
-            <Footer />
+            <footer className="w-full border-t border-border/30 py-8 mt-16">
+                <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-xs text-muted">
+                        © 2026 CandidRank. All rights reserved.
+                    </p>
+                    <nav className="flex items-center gap-6">
+                        <a href="/legal" className="text-xs text-muted hover:text-ink transition-colors">
+                            Legal
+                        </a>
+                        <a href="/legal/terms" className="text-xs text-muted hover:text-ink transition-colors">
+                            Terms of Service
+                        </a>
+                        <a href="/legal/privacy" className="text-xs text-muted hover:text-ink transition-colors">
+                            Privacy Policy
+                        </a>
+                        <a href="/legal/refund-policy" className="text-xs text-muted hover:text-ink transition-colors">
+                            Refund Policy
+                        </a>
+                    </nav>
+                </div>
+            </footer>
         </main>
     );
 }
