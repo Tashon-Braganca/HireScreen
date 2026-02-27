@@ -220,7 +220,7 @@ export default async function Home() {
                         <a href="/legal" className="text-xs text-muted hover:text-ink transition-colors">
                             Legal
                         </a>
-                        <a href="/legal/terms" className="text-xs text-muted hover:text-ink transition-colors">
+                        <a href="/terms" className="text-xs text-muted hover:text-ink transition-colors">
                             Terms of Service
                         </a>
                         <a href="/legal/privacy" className="text-xs text-muted hover:text-ink transition-colors">
