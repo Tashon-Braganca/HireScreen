@@ -144,7 +144,7 @@ export default function TermsPage() {
           <section>
             <h2 className="font-display text-xl text-ink mb-3">12. Refund Policy</h2>
             <p className="text-muted">
-              CandidRank provides a 14-day refund window for eligible charges, as described in our dedicated Refund Policy page at /legal/refund-policy.
+              Any customer may request a full refund within 14 days of their purchase. See our full Refund Policy at /legal/refund-policy.
             </p>
           </section>
 

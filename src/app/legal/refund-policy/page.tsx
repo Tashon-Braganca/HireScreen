@@ -19,30 +19,23 @@ export default function RefundPolicyPage() {
 
         <div className="prose prose-sm max-w-none space-y-6 text-muted">
           <section>
-            <h2 className="font-display text-lg text-ink mb-3">1. 14-Day Refund Window</h2>
+            <h2 className="font-display text-lg text-ink mb-3">14-Day Refund Window</h2>
             <p>
-              {BRAND_NAME} provides a 14-day refund window for eligible Paddle charges. If you request a refund within 14 days of the charge date, we will process the refund.
+              Any customer may request a full refund within 14 days of the original purchase date. No conditions apply.
             </p>
           </section>
 
           <section>
-            <h2 className="font-display text-lg text-ink mb-3">2. How to Request a Refund</h2>
+            <h2 className="font-display text-lg text-ink mb-3">How to Request</h2>
             <p>
-              To request a refund, email <a href="mailto:support@candidrank.cc" className="text-accent underline">support@candidrank.cc</a> with your billing email and Paddle transaction details.
+              Email <a href="mailto:support@candidrank.cc" className="text-accent underline">support@candidrank.cc</a> with your billing email and we will process your refund.
             </p>
           </section>
 
           <section>
-            <h2 className="font-display text-lg text-ink mb-3">3. Processing Timeline</h2>
+            <h2 className="font-display text-lg text-ink mb-3">Processing</h2>
             <p>
-              Approved refunds are submitted promptly, and final timing depends on your payment provider and bank.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="font-display text-lg text-ink mb-3">4. Billing Provider</h2>
-            <p>
-              Payments are processed by Paddle, our merchant of record. Paddle may apply its own operational controls for billing and refund processing.
+              Refunds are processed by Paddle, our merchant of record, and typically appear within 5–10 business days depending on your bank.
             </p>
           </section>
         </div>
