@@ -1,197 +1,148 @@
 "use client";
 
 import React, { useState } from "react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { deleteJob } from "@/app/actions/jobs";
-import {
-  Users,
-  Clock,
-  ArrowRight,
-  MoreVertical,
-  Trash2,
-  Loader2,
-} from "lucide-react";
+import { FileText, Calendar, MoreVertical, Trash2, Loader2, ArrowRight } from "lucide-react";
 import { Job } from "@/types";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface JobListProps {
   jobs: Job[];
 }
 
 export function JobList({ jobs: initialJobs }: JobListProps) {
+  const router = useRouter();
   const [jobs, setJobs] = useState(initialJobs);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
-  const handleDelete = async (jobId: string) => {
+  const handleDelete = async (jobId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!window.confirm("Delete this job? This cannot be undone.")) return;
+
     setDeletingId(jobId);
-    setOpenMenuId(null);
     try {
       const result = await deleteJob(jobId);
       if (result.success) {
         setJobs((prev) => prev.filter((j) => j.id !== jobId));
       } else {
-        console.error("Failed to delete job:", result.error);
         alert(result.error || "Failed to delete job");
       }
-    } catch (error) {
-      console.error("Delete error:", error);
+    } catch {
       alert("Failed to delete job");
     } finally {
       setDeletingId(null);
-      setConfirmDeleteId(null);
     }
   };
 
   return (
-    <div className="panel overflow-hidden">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border text-left">
-            <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">
-              Title
-            </th>
-            <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider hidden md:table-cell">
-              Status
-            </th>
-            <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider text-center">
-              Resumes
-            </th>
-            <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider hidden sm:table-cell">
-              Created
-            </th>
-            <th className="px-4 py-3 w-10" />
-          </tr>
-        </thead>
-        <tbody>
-          {jobs.map((job) => (
-            <tr
-              key={job.id}
-              className="group border-b border-border/50 last:border-0 hover:bg-accent-light/30 transition-colors relative"
+    <div className="flex flex-col gap-4">
+      {jobs.map((job, index) => {
+        const isActive = job.status === "active";
+        const isArchived = job.status === "archived";
+
+        return (
+          <motion.div
+            key={job.id}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45, delay: index * 0.06 }}
+          >
+            <motion.div
+              whileHover={{ scale: 1.005, y: -2 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              className="group relative block w-full bg-[var(--bg-panel)] border border-[var(--border-sub)] rounded-[10px] p-5 hover:bg-[var(--bg-raised)] hover:border-[var(--border-vis)] hover:shadow-[0_0_24px_rgba(140,196,166,0.06),0_4px_16px_rgba(0,0,0,0.15)] transition-[background-color,border-color,box-shadow] duration-300 cursor-pointer"
+              role="button"
+              tabIndex={0}
+              onClick={() => router.push(`/dashboard/jobs/${job.id}`)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  router.push(`/dashboard/jobs/${job.id}`);
+                }
+              }}
             >
-              <td className="px-4 py-3 relative">
-                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-accent opacity-0 group-hover:opacity-100 transition-opacity rounded-r" />
-                <Link
-                  href={`/dashboard/jobs/${job.id}`}
-                  className="font-semibold text-ink hover:text-accent transition-colors"
-                >
-                  {job.title}
-                </Link>
-                {job.description && (
-                  <p className="text-xs text-muted mt-0.5 line-clamp-1 max-w-[280px]">
-                    {job.description}
-                  </p>
-                )}
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1 pr-2">
-                  <Link
-                    href={`/dashboard/jobs/${job.id}`}
-                    className="px-2 py-1 text-[10px] font-semibold text-accent bg-accent-light rounded hover:bg-accent/10 transition-colors"
-                  >
-                    Open
-                  </Link>
-                </div>
-              </td>
-              <td className="px-4 py-3 hidden md:table-cell">
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#15803D]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
-                  Active
-                </span>
-              </td>
-              <td className="px-4 py-3 text-center">
-                <span className="inline-flex items-center gap-1 text-xs text-muted">
-                  <Users size={12} />
-                  {job.resume_count || 0}
-                </span>
-              </td>
-              <td className="px-4 py-3 hidden sm:table-cell">
-                <span className="text-xs text-muted flex items-center gap-1">
-                  <Clock size={12} />
-                  {new Date(job.created_at).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </span>
-              </td>
-              <td className="px-4 py-3">
-                <div className="flex items-center gap-1">
-                  <Link href={`/dashboard/jobs/${job.id}`}>
-                    <ArrowRight
-                      size={16}
-                      className="text-border group-hover:text-accent transition-colors"
+              <div className="relative z-10 flex justify-between items-start">
+                <div className="flex-1 right-padding-guard">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`w-2 h-2 rounded-full ${isActive ? "bg-[var(--accent-sage)] animate-pulse-soft" : isArchived ? "bg-[var(--text-dim)]" : "bg-[var(--accent-amber)]"
+                        }`}
                     />
-                  </Link>
-                  <div className="relative">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenMenuId(openMenuId === job.id ? null : job.id);
-                      }}
-                      className="p-1 rounded hover:bg-paper transition-colors"
-                    >
-                      <MoreVertical size={14} className="text-muted" />
-                    </button>
-                    {openMenuId === job.id && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-40"
-                          onClick={() => setOpenMenuId(null)}
-                        />
-                        <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-border rounded-lg shadow-lg py-1 min-w-[120px]">
-                          <button
-                            onClick={() => {
-                              setConfirmDeleteId(job.id);
-                              setOpenMenuId(null);
-                            }}
-                            disabled={deletingId === job.id}
-                            className="w-full px-3 py-2 text-left text-xs text-[#B91C1C] hover:bg-[#FEF2F2] flex items-center gap-2"
-                          >
-                            {deletingId === job.id ? (
-                              <Loader2 size={12} className="animate-spin" />
-                            ) : (
-                              <Trash2 size={12} />
-                            )}
-                            Delete Job
-                          </button>
-                        </div>
-                      </>
-                    )}
+                    <span className="font-sans font-normal text-[11px] uppercase tracking-[0.1em] text-[var(--text-dim)]">
+                      {job.status || "active"}
+                    </span>
+                  </div>
+
+                  <h3 className="font-semibold text-[17px] text-[var(--text-ink)] mt-1 mb-2 tracking-[-0.01em]">
+                    {job.title}
+                  </h3>
+
+                  <div className="flex items-center gap-4 font-normal text-[11px] text-[var(--text-dim)]">
+                    <span className="flex items-center gap-1.5">
+                      <FileText size={12} className="text-[var(--text-dim)]" />
+                      {job.resume_count || 0} resumes
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Calendar size={12} className="text-[var(--text-dim)]" />
+                      {new Date(job.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric"
+                      })}
+                    </span>
                   </div>
                 </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
 
-      {confirmDeleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4">
-            <h3 className="text-lg font-semibold text-ink mb-2">Delete Job?</h3>
-            <p className="text-sm text-muted mb-4">
-              This cannot be undone. All resumes and queries associated with this job will be deleted.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setConfirmDeleteId(null)}
-                className="px-4 py-2 text-sm font-medium text-muted hover:text-ink transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(confirmDeleteId)}
-                disabled={deletingId === confirmDeleteId}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#B91C1C] rounded hover:bg-[#991B1B] disabled:opacity-50 transition-colors"
-              >
-                {deletingId === confirmDeleteId ? (
-                  <Loader2 size={14} className="animate-spin" />
-                ) : (
-                  "Delete"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                <div className="flex items-center gap-4 pl-4 relative">
+                  <span className="font-sans font-normal text-[13px] text-[var(--text-body)] group-hover:text-[var(--accent-sage)] flex items-center gap-1 transition-all duration-300">
+                    Open
+                    <ArrowRight size={14} className="transform group-hover:translate-x-[4px] transition-transform duration-300 ease-out" />
+                  </span>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="p-1 rounded-md text-[var(--text-dim)] hover:bg-[var(--bg-canvas)] hover:text-[var(--text-ink)] transition-colors relative z-20"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      onClick={(event) => event.stopPropagation()}
+                      className="bg-[var(--bg-raised)] border-[var(--border-vis)] min-w-[140px] p-1 rounded-lg"
+                    >
+                      <DropdownMenuItem
+                        disabled={deletingId === job.id}
+                        onClick={(e) => handleDelete(job.id, e)}
+                        className="text-red-400 focus:bg-[var(--bg-canvas)] focus:text-red-300 cursor-pointer rounded-md font-sans text-[13px] flex items-center gap-2 px-3 py-2"
+                      >
+                        {deletingId === job.id ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={14} />
+                        )}
+                        Delete Job
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }

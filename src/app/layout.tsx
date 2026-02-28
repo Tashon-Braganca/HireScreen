@@ -1,6 +1,33 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import "./globals.css";
+import { Cormorant_Garamond, Source_Serif_4, Outfit, Fira_Code } from "next/font/google";
+
+const fontDisplay = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-display",
+});
+
+const fontBody = Source_Serif_4({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-body",
+});
+
+const fontUi = Outfit({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-ui",
+});
+
+const fontMono = Fira_Code({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
+});
 
 const PostHogProvider = dynamic(
   () => import("@/lib/analytics/posthog").then((m) => ({ default: m.PostHogProvider })),
@@ -50,8 +77,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased" suppressHydrationWarning>
+    <html lang="en" className={`${fontDisplay.variable} ${fontBody.variable} ${fontUi.variable} ${fontMono.variable}`}>
+      <body className={`${fontUi.className} antialiased`} suppressHydrationWarning>
         <PostHogProvider>{children}</PostHogProvider>
       </body>
     </html>

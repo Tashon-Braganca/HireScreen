@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { sendWelcomeEmail } from "@/lib/resend/welcome";
+import { ensureUserProfile } from "@/lib/supabase/profile";
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
@@ -33,6 +34,13 @@ export async function GET(request: Request) {
     // At this point session is established — get user and send welcome email
     const { data: { user } } = await supabase.auth.getUser();
     console.log('[AUTH] User:', user?.email, 'created_at:', user?.created_at);
+
+    if (user) {
+        const profileResult = await ensureUserProfile(supabase, user);
+        if (!profileResult.success) {
+            console.error("[AUTH] Failed to ensure profile:", profileResult.error);
+        }
+    }
 
     if (user?.email) {
         const createdAt = new Date(user.created_at).getTime();

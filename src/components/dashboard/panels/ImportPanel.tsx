@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useRef } from "react";
 import { useJobContext } from "@/components/dashboard/JobContext";
@@ -141,7 +141,7 @@ export function ImportPanel() {
   return (
     <div className="flex flex-col h-full overflow-hidden bg-bg">
       <div className="p-4 border-b border-border">
-        <h2 className="font-display text-base text-ink mb-1">Import Candidates</h2>
+        <h2 className="font-sans text-base text-ink mb-1">Import Candidates</h2>
         <p className="text-xs text-muted">
           Export from Greenhouse, Lever, or Workday as CSV and import here.
         </p>

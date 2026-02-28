@@ -1,70 +1,34 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { BentoCard, BentoHeader } from "@/components/ui/BentoCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { User, Bell, Shield, CreditCard, Zap, Check, Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-
-const PRO_PRICE_ID = process.env.NEXT_PUBLIC_PADDLE_PRO_PRICE_ID;
-
-interface UserInfo {
-  id: string;
-  email: string;
-}
+import { Bell, Shield, CreditCard, Zap, Check, Loader2, User } from "lucide-react";
 
 export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState<UserInfo | null>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUser({ id: user.id, email: user.email || '' });
-      }
-    };
-    fetchUser();
-  }, []);
-
-  const handleUpgrade = () => {
-    console.log('[UPGRADE] Button clicked');
-    console.log('[UPGRADE] Price ID:', PRO_PRICE_ID);
-    console.log('[UPGRADE] User:', user);
-    
-    if (!PRO_PRICE_ID) {
-      alert('Billing is not configured. Please contact support.');
-      return;
-    }
-
-    if (typeof window === 'undefined' || !window.Paddle) {
-      alert('Payment system loading. Please wait a moment and try again.');
-      console.error('[UPGRADE] Paddle not loaded');
-      return;
-    }
-
+  const handleUpgrade = async () => {
+    console.log("[UPGRADE] Button clicked");
     setIsLoading(true);
-    
+
     try {
-      console.log('[UPGRADE] Opening Paddle checkout...');
-      window.Paddle.Checkout.open({
-        items: [{
-          priceId: PRO_PRICE_ID,
-          quantity: 1,
-        }],
-        customer: user?.email ? { email: user.email } : undefined,
-        customData: user?.id ? { userId: user.id } : undefined,
-        settings: {
-          successUrl: 'https://candidrank.cc/dashboard?upgraded=true',
-        },
-      });
+      const res = await fetch("/api/billing/checkout", { method: "POST" });
+      const data = (await res.json()) as { checkoutUrl?: string; error?: string };
+
+      if (!res.ok || !data.checkoutUrl) {
+        console.error("[UPGRADE] Checkout error:", data.error);
+        alert(data.error ?? "Failed to open checkout. Please try again.");
+        return;
+      }
+
+      window.open(data.checkoutUrl, "_blank");
     } catch (err) {
-      console.error('[UPGRADE] Error:', err);
-      alert('Failed to open checkout. Please try again.');
+      console.error("[UPGRADE] Network error:", err);
+      alert("Failed to open checkout. Please try again.");
     } finally {
-      setTimeout(() => setIsLoading(false), 1000);
+      setIsLoading(false);
     }
   };
 
@@ -103,7 +67,7 @@ export default function SettingsPage() {
           </div>
           <div className="space-y-2 md:col-span-2">
             <label className="text-sm font-medium text-slate-700">Email Address</label>
-            <Input placeholder="jane@example.com" type="email" value={user?.email || ''} readOnly />
+            <Input placeholder="jane@example.com" type="email" />
           </div>
         </div>
       </BentoCard>

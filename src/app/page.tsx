@@ -1,100 +1,12 @@
-import React from "react";
-import Link from "next/link";
-import {
-    Zap, Upload, MessageSquare, BarChart3,
-    CheckCircle, ArrowRight
-} from "lucide-react";
-
 import { createClient } from "@/lib/supabase/server";
-import { BRAND_NAME, BRAND_LOGO_LETTER } from "@/config/brand";
-import { HeroMockup } from "@/components/landing/HeroMockup";
+import DesignBPage from "@/components/landing/DesignBPage";
 
-/* ─── Navbar ─── */
-const Navbar = ({ user }: { user: { id: string } | null }) => (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--bg)]/80 backdrop-blur-md border-b border-[var(--border)]">
-        <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
-            <div className="font-bold text-lg text-[var(--text)] flex items-center gap-2">
-                <div className="w-8 h-8 rounded bg-[var(--accent)] flex items-center justify-center text-[var(--accent-foreground)] font-bold text-sm">{BRAND_LOGO_LETTER}</div>
-                {BRAND_NAME}
-            </div>
-            <div className="hidden md:flex gap-8 text-sm font-medium text-[var(--muted)]">
-                <a href="#how-it-works" className="hover:text-[var(--text)] transition-colors">How It Works</a>
-                <a href="#pricing" className="hover:text-[var(--text)] transition-colors">Pricing</a>
-            </div>
-            <div className="flex items-center gap-4">
-                {user ? (
-                    <Link href="/dashboard" className="bg-[var(--accent)] text-[var(--accent-foreground)] px-4 py-2 rounded-md text-sm font-medium hover:bg-[var(--accent-hover)] transition-colors">
-                        Go to Dashboard
-                    </Link>
-                ) : (
-                    <>
-                        <Link href="/login" className="text-sm font-medium text-[var(--muted)] hover:text-[var(--text)]">
-                            Log in
-                        </Link>
-                        <Link href="/login" className="bg-[var(--text)] text-[var(--bg)] px-4 py-2 rounded-md text-sm font-medium hover:bg-[var(--text)]/90 transition-colors">
-                            Get Started
-                        </Link>
-                    </>
-                )}
-            </div>
-        </div>
-    </nav>
-);
+export default async function LandingPage() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-/* ─── Hero ─── */
-const Hero = ({ user }: { user: { id: string } | null }) => (
-    <section className="pt-32 pb-20 px-6 max-w-[1440px] mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8 max-w-2xl">
-                <div
-                    className="inline-flex items-center gap-2 px-3 py-1 bg-[var(--accent-light)] border border-[var(--accent)]/20 rounded-full text-xs font-semibold text-[var(--accent)] uppercase tracking-wide animate-stagger-in"
-                    style={{ animationDelay: "0ms" }}
-                >
-                    <Zap size={12} />
-                    AI-Powered Resume Screening
-                </div>
-
-                <h1
-                    className="text-5xl lg:text-6xl font-bold text-[var(--text)] leading-[1.1] animate-stagger-in"
-                    style={{ animationDelay: "100ms" }}
-                >
-                    Stop reading resumes. <br />
-                    Start asking questions.
-                </h1>
-
-                <p
-                    className="text-lg text-[var(--muted)] max-w-lg leading-relaxed animate-stagger-in"
-                    style={{ animationDelay: "200ms" }}
-                >
-                    Upload resumes. Ask &quot;Who has 5+ years React + startup experience?&quot; Get ranked candidates with cited proof — in seconds.
-                </p>
-
-                <div
-                    className="flex gap-4 animate-stagger-in"
-                    style={{ animationDelay: "300ms" }}
-                >
-                    <Link href={user ? "/dashboard" : "/login"} className="bg-[var(--accent)] text-[var(--accent-foreground)] px-6 py-3.5 rounded-lg font-semibold hover:bg-[var(--accent-hover)] transition-all flex items-center gap-2">
-                        {user ? "Go to Dashboard" : "Start Free Trial"}
-                        <ArrowRight size={18} />
-                    </Link>
-                </div>
-
-                <div
-                    className="flex items-center gap-6 text-sm text-[var(--muted)] animate-stagger-in"
-                    style={{ animationDelay: "400ms" }}
-                >
-                    <div className="flex items-center gap-1.5"><CheckCircle size={14} className="text-[var(--success)]" /> No credit card</div>
-                    <div className="flex items-center gap-1.5"><CheckCircle size={14} className="text-[var(--success)]" /> 20 free queries</div>
-                </div>
-            </div>
-
-            {/* Mockup Card — Animated */}
-            <div className="hidden lg:block relative animate-stagger-in" style={{ animationDelay: "300ms" }}>
-                <div className="absolute inset-0 bg-[var(--panel)] -z-10 rounded-3xl border border-[var(--border)]" />
-                <HeroMockup />
-            </div>
-        </div>
-    </section>
+    return <DesignBPage user={user} />;
+}
 );
 
 /* ─── Problem Section ─── */
@@ -200,11 +112,14 @@ const Pricing = () => (
 );
 
 /* ─── Server Component ─── */
+=======
+>>>>>>> fix/final-build-fix
 export default async function Home() {
     const supabase = createClient();
     const { data: { user } } = await (await supabase).auth.getUser();
 
     return (
+<<<<<<< HEAD
         <main className="min-h-screen bg-[var(--bg)] bg-noise selection:bg-[var(--accent-light)] selection:text-[var(--text)]">
             <Navbar user={user} />
             <Hero user={user} />
@@ -233,5 +148,8 @@ export default async function Home() {
                 </div>
             </footer>
         </main>
+=======
+        <DesignBPage user={user} />
+>>>>>>> fix/final-build-fix
     );
 }

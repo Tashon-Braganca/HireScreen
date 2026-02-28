@@ -1,0 +1,40 @@
+﻿
+> candidrank@0.1.0 build
+> next build
+
+  Ôû▓ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ Ô£ô Compiled successfully
+   Linting and checking validity of types ...
+npm : Failed to compile.
+At line:1 char:1
++ npm run build > build_output.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Failed to compile.:S 
+   tring) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+./src/components/dashboard/workspace/ResultsPanel.tsx:62:63
+Type error: Property 'score' does not exist on type 'QuerySource'.
+
+[0m [90m 60 |[39m                             
+[33m<[39m[33mdiv[39m className[33m=[39m[32m"flex 
+flex-col"[39m[33m>[39m[0m
+[0m [90m 61 |[39m                                 
+{sources[33m.[39mmap((source[33m,[39m index) [33m=>[39m 
+{[0m
+[0m[31m[1m>[22m[39m[90m 62 |[39m                           
+          [36mconst[39m scoreColor [33m=[39m 
+source[33m.[39mscore [33m>=[39m [35m85[39m[0m
+[0m [90m    |[39m                                              
+                 [31m[1m^[22m[39m[0m
+[0m [90m 63 |[39m                                         
+[33m?[39m [32m"text-[var(--accent-sage)]"[39m[0m
+[0m [90m 64 |[39m                                         
+[33m:[39m source[33m.[39mscore [33m>=[39m [35m70[39m[0m
+[0m [90m 65 |[39m                                             
+[33m?[39m [32m"text-[var(--accent-amber)]"[39m[0m
+Next.js build worker exited with code: 1 and signal: null

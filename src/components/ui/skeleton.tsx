@@ -14,45 +14,83 @@ export function Skeleton({ className }: { className?: string }) {
 
 export function DashboardSkeleton() {
     return (
-        <div className="max-w-[1200px] mx-auto px-6 py-8 space-y-6">
+        <div className="max-w-[1200px] mx-auto px-6 py-8 space-y-8" aria-hidden="true">
             {/* Header */}
-            <div className="flex items-end justify-between">
-                <div className="space-y-2">
-                    <Skeleton className="h-8 w-48" />
-                    <Skeleton className="h-4 w-64" />
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-3">
+                    <Skeleton className="h-9 w-40 sm:w-52" />
+                    <Skeleton className="h-4 w-52 sm:w-64" />
                 </div>
-                <Skeleton className="h-10 w-28 rounded-md" />
+                <div className="flex items-center gap-3">
+                    <Skeleton className="hidden sm:block h-10 w-56 rounded-lg" />
+                    <Skeleton className="h-10 w-28 rounded-lg" />
+                </div>
             </div>
 
             {/* Main grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left — Table skeleton */}
-                <div className="lg:col-span-2 panel p-0 overflow-hidden">
-                    <div className="px-4 py-3 border-b border-border">
-                        <Skeleton className="h-4 w-full" />
-                    </div>
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="flex items-center gap-4 px-4 py-3 border-b border-border/30">
-                            <Skeleton className="h-4 w-1/3" />
-                            <Skeleton className="h-4 w-16" />
-                            <Skeleton className="h-4 w-12" />
-                            <Skeleton className="h-4 w-20" />
+                {/* Left — Job list block */}
+                <div className="lg:col-span-2 bg-[var(--bg-panel)] border border-[var(--border-sub)] rounded-xl p-4 sm:p-5 space-y-3">
+                    {[0, 1, 2, 3, 4].map((index) => (
+                        <div
+                            key={index}
+                            className="bg-[var(--bg-canvas)]/35 border border-[var(--border-sub)] rounded-lg p-4 animate-stagger-in"
+                            style={{ animationDelay: `${index * 70}ms` }}
+                        >
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0 flex-1 space-y-2.5">
+                                    <Skeleton className="h-4 w-[55%] sm:w-[42%]" />
+                                    <Skeleton className="h-3 w-[82%]" />
+                                </div>
+                                <Skeleton className="h-6 w-14 rounded-full" />
+                            </div>
+                            <div className="mt-3 flex items-center gap-2">
+                                <Skeleton className="h-2.5 w-2.5 rounded-full" />
+                                <Skeleton className="h-3 w-20" />
+                            </div>
                         </div>
                     ))}
                 </div>
 
                 {/* Right — Cards skeleton */}
-                <div className="space-y-5">
-                    <div className="panel p-5 space-y-3">
-                        <Skeleton className="h-5 w-16" />
-                        <Skeleton className="h-1.5 w-full rounded-full" />
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-4 w-28" />
+                <div className="space-y-4">
+                    <div className="bg-[var(--bg-panel)] border border-[var(--border-sub)] rounded-xl p-5 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <Skeleton className="h-5 w-16" />
+                            <Skeleton className="h-5 w-10 rounded-md" />
+                        </div>
+                        <div className="space-y-2.5">
+                            <div className="flex items-center justify-between gap-3">
+                                <Skeleton className="h-3.5 w-20" />
+                                <Skeleton className="h-3.5 w-24" />
+                            </div>
+                            <div className="h-1.5 rounded-full bg-[var(--bg-raised)] overflow-hidden">
+                                <div className="h-full w-[64%] animate-shimmer" />
+                            </div>
+                        </div>
+                        <div className="border-t border-[var(--border-sub)] pt-3 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Skeleton className="h-3.5 w-24" />
+                                <Skeleton className="h-3.5 w-6" />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <Skeleton className="h-3.5 w-28" />
+                                <Skeleton className="h-3.5 w-10" />
+                            </div>
+                        </div>
                     </div>
-                    <div className="panel p-5 space-y-3">
-                        <Skeleton className="h-5 w-28" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
+
+                    <div className="bg-[var(--bg-panel)] border border-[var(--border-sub)] rounded-xl p-5 space-y-3">
+                        <Skeleton className="h-5 w-32" />
+                        {[0, 1].map((index) => (
+                            <div key={index} className="flex items-start gap-3 py-2">
+                                <Skeleton className="h-7 w-7 rounded-lg" />
+                                <div className="flex-1 space-y-2">
+                                    <Skeleton className="h-3.5 w-[80%]" />
+                                    <Skeleton className="h-3 w-[55%]" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

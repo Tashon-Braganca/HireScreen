@@ -1,10 +1,9 @@
 import React from "react";
-import { DashboardNavbar } from "@/components/layout/DashboardNavbar";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { Metadata } from "next";
-import Script from "next/script";
+import { TopNav } from "@/components/layout/TopNav";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   robots: {
@@ -21,31 +20,39 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/login");
   }
 
+  // Fetch profile
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("email, full_name, avatar_url, subscription_status, queries_used")
+    .eq("id", user.id)
+    .single();
+
   return (
     <>
-      <Script
-        id="paddle-js"
-        src="https://cdn.paddle.com/paddle/v2/paddle.js"
-        strategy="lazyOnload"
-      />
-      <div className="min-h-screen bg-paper text-ink font-sans relative flex flex-col">
-        <div className="relative z-10 flex flex-col h-screen overflow-hidden">
-          <DashboardNavbar />
-          <main className="flex-1 w-full overflow-hidden">
-            {children}
-          </main>
-          <footer className="flex-shrink-0 py-3 px-6 border-t border-border bg-panel">
-            <div className="max-w-[1440px] mx-auto flex items-center justify-between text-xs text-muted">
-              <span>© 2026 CandidRank</span>
-              <div className="flex items-center gap-4">
-                <Link href="/legal" className="hover:text-ink transition-colors">Legal</Link>
-                <Link href="/legal/terms" className="hover:text-ink transition-colors">Terms of Service</Link>
-                <Link href="/legal/privacy" className="hover:text-ink transition-colors">Privacy Policy</Link>
-                <Link href="/legal/refund-policy" className="hover:text-ink transition-colors">Refund Policy</Link>
-              </div>
+      <div className="flex flex-col bg-[var(--bg-canvas)] min-h-screen text-[var(--text-body)] antialiased relative">
+        <TopNav profile={profile || { email: user.email || "", full_name: null, avatar_url: null, subscription_status: null }} />
+
+        <main className="flex-1 overflow-y-auto relative">
+          {children}
+        </main>
+
+        <footer className="flex-shrink-0 py-3 px-6 border-t border-[var(--border-sub)] bg-[var(--bg-panel)]">
+          <div className="max-w-[1440px] mx-auto flex items-center justify-between text-[11px] text-[var(--text-dim)]">
+            <span>© 2026 CandidRank</span>
+            <div className="flex items-center gap-4">
+              <Link href="/legal" className="hover:text-[var(--text-ink)] transition-colors">Legal</Link>
+              <Link href="/legal/terms" className="hover:text-[var(--text-ink)] transition-colors">Terms of Service</Link>
+              <Link href="/legal/privacy" className="hover:text-[var(--text-ink)] transition-colors">Privacy Policy</Link>
             </div>
-          </footer>
-        </div>
+          </div>
+        </footer>
+      </div>
+    </>
+  );
+}
+            </div>
+          </div>
+        </footer>
       </div>
     </>
   );

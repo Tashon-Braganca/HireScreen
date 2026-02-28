@@ -160,20 +160,20 @@ export function ExportModal({ candidates, isOpen, onClose }: ExportModalProps) {
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
                         className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md"
                     >
-                        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                        <div className="bg-[var(--bg-raised)] rounded-2xl shadow-xl border border-[var(--border-default)] overflow-hidden">
                             {/* Header */}
-                            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+                            <div className="flex items-center justify-between p-5 border-b border-[var(--border-default)]">
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-800">
+                                    <h3 className="text-lg font-bold text-[var(--text-ink)]">
                                         Export Shortlist
                                     </h3>
-                                    <p className="text-xs text-slate-500 mt-0.5">
+                                    <p className="text-xs text-[var(--text-muted)] mt-0.5">
                                         {candidates.length} candidate{candidates.length !== 1 ? "s" : ""} selected
                                     </p>
                                 </div>
                                 <button
                                     onClick={onClose}
-                                    className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                                    className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-ink)] hover:bg-[var(--bg-paper)] transition-colors"
                                 >
                                     <X size={18} />
                                 </button>
@@ -183,16 +183,16 @@ export function ExportModal({ candidates, isOpen, onClose }: ExportModalProps) {
                             <div className="p-5 space-y-3">
                                 <button
                                     onClick={handleExcelDownload}
-                                    className="w-full flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/10 transition-all group text-left"
+                                    className="w-full flex items-center gap-4 p-4 rounded-xl border border-[var(--border-default)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/5 transition-all group text-left"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-100 transition-colors">
+                                    <div className="w-10 h-10 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center text-[var(--accent)] group-hover:bg-[var(--accent)]/20 transition-colors">
                                         <FileSpreadsheet size={20} />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-bold text-slate-800">
+                                        <p className="text-sm font-bold text-[var(--text-ink)]">
                                             Excel Report (.xlsx)
                                         </p>
-                                        <p className="text-xs text-slate-500">
+                                        <p className="text-xs text-[var(--text-muted)]">
                                             Formatted spreadsheet with full match details
                                         </p>
                                     </div>
@@ -201,16 +201,16 @@ export function ExportModal({ candidates, isOpen, onClose }: ExportModalProps) {
                                 <button
                                     onClick={handleZipDownload}
                                     disabled={isExporting}
-                                    className="w-full flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/10 transition-all group text-left disabled:opacity-50"
+                                    className="w-full flex items-center gap-4 p-4 rounded-xl border border-[var(--border-default)] hover:border-[var(--accent-warm)] hover:bg-[var(--accent-warm)]/5 transition-all group text-left disabled:opacity-50"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
+                                    <div className="w-10 h-10 rounded-xl bg-[var(--accent-warm)]/10 flex items-center justify-center text-[var(--accent-warm)] group-hover:bg-[var(--accent-warm)]/20 transition-colors">
                                         {isExporting ? <Loader2 size={20} className="animate-spin" /> : <Archive size={20} />}
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-sm font-bold text-slate-800">
+                                        <p className="text-sm font-bold text-[var(--text-ink)]">
                                             Export Folder (ZIP)
                                         </p>
-                                        <p className="text-xs text-slate-500">
+                                        <p className="text-xs text-[var(--text-muted)]">
                                             {isExporting ? exportProgress : "Excel report + all original PDF resumes"}
                                         </p>
                                     </div>
@@ -219,14 +219,14 @@ export function ExportModal({ candidates, isOpen, onClose }: ExportModalProps) {
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         onClick={handleCSVDownload}
-                                        className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-100 text-slate-600 transition-all"
+                                        className="flex items-center justify-center gap-2 p-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-paper)] hover:bg-[var(--bg-raised)] text-[var(--text-muted)] hover:text-[var(--text-ink)] transition-all"
                                     >
                                         <FileSpreadsheet size={16} />
                                         <span className="text-xs font-semibold">CSV</span>
                                     </button>
                                     <button
                                         onClick={handleCopyToClipboard}
-                                        className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-100 text-slate-600 transition-all"
+                                        className="flex items-center justify-center gap-2 p-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-paper)] hover:bg-[var(--bg-raised)] text-[var(--text-muted)] hover:text-[var(--text-ink)] transition-all"
                                     >
                                         {copied ? <Check size={16} /> : <Copy size={16} />}
                                         <span className="text-xs font-semibold">{copied ? "Copied" : "Copy"}</span>
@@ -236,17 +236,17 @@ export function ExportModal({ candidates, isOpen, onClose }: ExportModalProps) {
 
                             {/* Preview */}
                             <div className="px-5 pb-5">
-                                <p className="text-[10px] text-slate-400 font-medium mb-2 uppercase tracking-wider">
+                                <p className="text-[10px] text-[var(--text-muted)] font-medium mb-2 uppercase tracking-wider">
                                     Preview
                                 </p>
-                                <div className="bg-slate-50 rounded-lg p-3 max-h-40 overflow-y-auto text-xs font-mono text-slate-600 space-y-1">
+                                <div className="bg-[var(--bg-paper)] rounded-lg p-3 max-h-40 overflow-y-auto text-xs font-mono text-[var(--text-muted)] space-y-1">
                                     {candidates.slice(0, 5).map((c) => (
                                         <div key={c.documentId}>
                                             {c.rank}. {c.name} — {c.score}%
                                         </div>
                                     ))}
                                     {candidates.length > 5 && (
-                                        <div className="text-slate-400">
+                                        <div className="text-[var(--text-muted)]/60">
                                             ...and {candidates.length - 5} more
                                         </div>
                                     )}
