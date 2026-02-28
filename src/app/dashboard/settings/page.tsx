@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { BentoCard, BentoHeader } from "@/components/ui/BentoCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Bell, Shield, CreditCard, Zap, Check, Loader2 } from "lucide-react";
+import { Bell, Shield, CreditCard, Zap, Check, Loader2, User } from "lucide-react";
 
 export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);

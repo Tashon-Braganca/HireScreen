@@ -1,13 +1,12 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from "react";
-import { Job, Document, RankedCandidate } from "@/types";
-import type { EvidenceBookmark, CompareResult } from "@/types";
+import { Job, Document, RankedCandidate, EvidenceBookmark, CompareResult } from "@/types";
 import { UploadedFile } from "@/components/ui/ResumeList";
 import { uploadResume, deleteDocument, getDocuments } from "@/app/actions/documents";
 import { chatWithJob } from "@/app/actions/chat";
 import { rankCandidates } from "@/app/actions/rank";
-import { getBookmarks, addBookmark, removeBookmark } from "@/app/actions/bookmarks";
+import { getBookmarks, addBookmark } from "@/app/actions/bookmarks";
 import { compareCandidates } from "@/app/actions/compare";
 import { toast } from "sonner";
 import { trackResumeUploaded, trackQuerySubmitted, trackRankingRun } from "@/lib/analytics/posthog";

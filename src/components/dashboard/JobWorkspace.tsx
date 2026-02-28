@@ -7,7 +7,7 @@ import { LeftPanelClient } from "./panels/LeftPanelClient";
 import { CenterPanel } from "./panels/CenterPanel";
 import { RightPanel } from "./panels/RightPanel";
 import { ResizableColumns } from "@/components/ui/ResizableColumns";
-import { Upload, FileSearch } from "lucide-react";
+import { Upload } from "lucide-react";
 
 interface JobWorkspaceProps {
   job: SchemaJob;
