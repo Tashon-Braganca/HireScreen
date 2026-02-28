@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { cn } from "@/lib/utils";
 
 interface BentoCardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -26,7 +26,7 @@ export function BentoHeader({ title, subtitle, action }: { title: string; subtit
   return (
     <div className="flex items-center justify-between mb-6">
       <div>
-        <h3 className="font-display text-xl text-ink tracking-tight">{title}</h3>
+        <h3 className="font-sans text-xl text-ink tracking-tight">{title}</h3>
         {subtitle && <p className="text-sm text-muted mt-1">{subtitle}</p>}
       </div>
       {action && <div>{action}</div>}

@@ -2,10 +2,13 @@
 
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from "react";
 import { Job, Document, RankedCandidate } from "@/types";
+import type { EvidenceBookmark, CompareResult } from "@/types";
 import { UploadedFile } from "@/components/ui/ResumeList";
 import { uploadResume, deleteDocument, getDocuments } from "@/app/actions/documents";
 import { chatWithJob } from "@/app/actions/chat";
 import { rankCandidates } from "@/app/actions/rank";
+import { getBookmarks, addBookmark, removeBookmark } from "@/app/actions/bookmarks";
+import { compareCandidates } from "@/app/actions/compare";
 import { toast } from "sonner";
 import { trackResumeUploaded, trackQuerySubmitted, trackRankingRun } from "@/lib/analytics/posthog";
 
@@ -77,6 +80,11 @@ interface JobContextType {
     // Evidence bookmarks
     evidenceBookmarks: Record<string, string[]>;
     toggleBookmark: (candidateId: string, evidenceKey: string) => void;
+
+    // Compare result (LLM-powered)
+    compareResult: CompareResult | null;
+    isComparing: boolean;
+    runCompare: () => Promise<void>;
 
     // Query input (for re-running from history)
     queryInput: string;
@@ -341,13 +349,39 @@ const handleRankQuery = useCallback(async (query: string) => {
     const [activeTab, setActiveTab] = useState<string>("ranked"); // "ranked" | "compare" | "pdf-{id}"
     const [openResumeTabs, setOpenResumeTabs] = useState<string[]>([]);
 
-    // Evidence bookmarks (per-job, stored in sessionStorage)
+    // Evidence bookmarks — hybrid: sessionStorage for fast display + DB persistence
     const [evidenceBookmarks, setEvidenceBookmarks] = useState<Record<string, string[]>>(
         () => loadSession<Record<string, string[]>>(job.id, "bookmarks", {})
     );
     useEffect(() => { saveSession(job.id, "bookmarks", evidenceBookmarks); }, [job.id, evidenceBookmarks]);
 
-    const toggleBookmark = useCallback((candidateId: string, evidenceKey: string) => {
+    // Load bookmarks from DB on mount
+    useEffect(() => {
+        let active = true;
+        getBookmarks(job.id).then(res => {
+            if (!active || !res.success) return;
+            // Merge DB bookmarks into session format: Record<documentId, citationKey[]>
+            const dbMap: Record<string, string[]> = {};
+            for (const bm of res.bookmarks) {
+                const docId = bm.document_id || "global";
+                if (!dbMap[docId]) dbMap[docId] = [];
+                dbMap[docId].push(bm.citation_text);
+            }
+            setEvidenceBookmarks(prev => {
+                const merged = { ...prev };
+                for (const [docId, keys] of Object.entries(dbMap)) {
+                    const existing = new Set(merged[docId] || []);
+                    keys.forEach(k => existing.add(k));
+                    merged[docId] = Array.from(existing);
+                }
+                return merged;
+            });
+        });
+        return () => { active = false; };
+    }, [job.id]);
+
+    const toggleBookmarkAction = useCallback(async (candidateId: string, evidenceKey: string) => {
+        // Optimistic update
         setEvidenceBookmarks(prev => {
             const current = prev[candidateId] || [];
             const next = current.includes(evidenceKey)
@@ -355,7 +389,55 @@ const handleRankQuery = useCallback(async (query: string) => {
                 : [...current, evidenceKey];
             return { ...prev, [candidateId]: next };
         });
-    }, []);
+
+        // Persist to DB
+        try {
+            const isAdding = !(evidenceBookmarks[candidateId] || []).includes(evidenceKey);
+            if (isAdding) {
+                await addBookmark({
+                    jobId: job.id,
+                    documentId: candidateId,
+                    citationText: evidenceKey,
+                });
+            } else {
+                // Find and remove — we use toggleBookmark server action
+                const { toggleBookmark: serverToggle } = await import("@/app/actions/bookmarks");
+                await serverToggle({
+                    jobId: job.id,
+                    documentId: candidateId,
+                    citationText: evidenceKey,
+                });
+            }
+        } catch (err) {
+            console.error("[bookmarks] DB persist failed:", err);
+        }
+    }, [job.id, evidenceBookmarks]);
+
+    // Compare result (LLM-powered)
+    const [compareResult, setCompareResult] = useState<CompareResult | null>(null);
+    const [isComparing, setIsComparing] = useState(false);
+
+    const runCompare = useCallback(async () => {
+        const ids = Array.from(compareIds);
+        if (ids.length < 2) {
+            toast.info("Select at least 2 candidates to compare");
+            return;
+        }
+        setIsComparing(true);
+        setCompareResult(null);
+        try {
+            const res = await compareCandidates(ids, job.id);
+            if (res.success && res.result) {
+                setCompareResult(res.result);
+            } else {
+                toast.error(res.error || "Comparison failed");
+            }
+        } catch {
+            toast.error("Comparison failed. Please try again.");
+        } finally {
+            setIsComparing(false);
+        }
+    }, [compareIds, job.id]);
 
     // Updated viewResume that opens a tab and switches to it
     const viewResumeTab = useCallback(async (id: string) => {
@@ -402,7 +484,10 @@ const handleRankQuery = useCallback(async (query: string) => {
             filters,
             setFilters,
             evidenceBookmarks,
-            toggleBookmark,
+            toggleBookmark: toggleBookmarkAction,
+            compareResult,
+            isComparing,
+            runCompare,
             queryInput,
             setQueryInput
         }}>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
@@ -233,7 +233,7 @@ export function ResumeList({
                     {file.name}
                   </p>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="text-[10px] text-muted font-mono">
+                    <span className="text-[10px] text-muted font-sans">
                       {file.size < 1024 * 100
                         ? `${(file.size / 1024).toFixed(0)} KB`
                         : `${(file.size / 1024 / 1024).toFixed(1)} MB`}

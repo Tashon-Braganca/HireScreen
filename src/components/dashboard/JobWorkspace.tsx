@@ -1,132 +1,107 @@
-"use client";
+﻿"use client";
 
-import React, { useCallback } from "react";
-import { Job, Document } from "@/types";
+import React from "react";
+import type { Document as SchemaDocument, Job as SchemaJob } from "@/types";
+import { JobProvider, useJobContext } from "./JobContext";
+import { LeftPanelClient } from "./panels/LeftPanelClient";
+import { CenterPanel } from "./panels/CenterPanel";
+import { RightPanel } from "./panels/RightPanel";
 import { ResizableColumns } from "@/components/ui/ResizableColumns";
-import { JobProvider, useJobContext } from "@/components/dashboard/JobContext";
-import { LeftPanelClient } from "@/components/dashboard/panels/LeftPanelClient";
-import { CenterPanel } from "@/components/dashboard/panels/CenterPanel";
-import { RightPanel } from "@/components/dashboard/panels/RightPanel";
-import { UploadCloud } from "lucide-react";
-import { useDropzone } from "react-dropzone";
+import { Upload, FileSearch } from "lucide-react";
 
 interface JobWorkspaceProps {
-  job: Job;
-  documents: Document[];
+  job: SchemaJob;
+  documents: SchemaDocument[];
 }
 
-function EmptyState({ onUpload }: { onUpload: (files: File[]) => void }) {
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    onUpload(acceptedFiles);
-  }, [onUpload]);
+/* Empty state shown when no resumes uploaded yet */
+function EmptyState() {
+  const { handleUpload, job } = useJobContext();
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { "application/pdf": [".pdf"] },
-  });
+  const handleDrop = React.useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const files = Array.from(e.dataTransfer.files).filter(
+        (f: File) => f.type === "application/pdf"
+      );
+      if (files.length > 0) handleUpload(files);
+    },
+    [handleUpload]
+  );
+
+  const handleFileSelect = React.useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".pdf";
+    input.multiple = true;
+    input.onchange = () => {
+      const files = Array.from(input.files ?? []);
+      if (files.length > 0) handleUpload(files);
+    };
+    input.click();
+  }, [handleUpload]);
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-5 flex flex-col h-[calc(100vh-theme(spacing.14))] overflow-hidden">
-      <div className="flex items-center justify-between mb-4 flex-shrink-0">
+    <div className="flex h-full items-center justify-center bg-[var(--bg-canvas)]">
+      <div
+        className="flex max-w-md flex-col items-center gap-6 rounded-xl border-2 border-dashed border-[var(--border-default)] p-12 text-center transition-colors hover:border-[var(--accent)]"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
+      >
+        <div className="rounded-full bg-[var(--bg-raised)] p-4">
+          <Upload className="h-8 w-8 text-[var(--text-muted)]" />
+        </div>
         <div>
-          <h1 className="font-display text-xl text-ink">{/* job title */}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
-            <p className="text-xs font-medium text-muted">Active</p>
-          </div>
+          <h3 className="font-display text-xl font-semibold text-[var(--text-ink)]">
+            Upload resumes for &ldquo;{job.title}&rdquo;
+          </h3>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
+            Drop PDF files here or click to browse. CandidRank will extract and
+            index them for AI-powered screening.
+          </p>
         </div>
-      </div>
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <div
-            {...getRootProps()}
-            className={`border-2 border-dashed rounded-xl p-8 cursor-pointer transition-colors ${
-              isDragActive ? "border-accent bg-accent-bg" : "border-border hover:border-accent/50 hover:bg-paper"
-            }`}
-          >
-            <input {...getInputProps()} />
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-accent-bg flex items-center justify-center">
-                <UploadCloud size={28} className="text-accent" />
-              </div>
-              <div>
-                <h3 className="font-display text-lg text-ink mb-1">
-                  Upload resumes to get started
-                </h3>
-                <p className="text-sm text-muted">
-                  Drop PDF resumes above, then ask questions like{" "}
-                  <span className="text-accent font-medium">&ldquo;Who has the strongest React experience?&rdquo;</span>
-                </p>
-              </div>
-              <button
-                type="button"
-                className="px-4 py-2 bg-ink text-white text-sm font-semibold rounded-lg hover:bg-muted transition-colors"
-              >
-                Upload Resume
-              </button>
-            </div>
-          </div>
-        </div>
+        <button
+          onClick={handleFileSelect}
+          className="rounded-lg bg-[var(--accent)] px-6 py-2.5 text-sm font-medium text-[var(--bg-canvas)] transition-colors hover:bg-[var(--accent-light)]"
+        >
+          Choose Files
+        </button>
+        <p className="text-xs text-[var(--text-muted)]">PDF files only &middot; Max 10 MB each</p>
       </div>
     </div>
   );
 }
 
+/* Inner workspace content — rendered inside JobProvider */
 function JobWorkspaceContent() {
-  const { job, documents, uploadingFiles, handleUpload } = useJobContext();
+  const { documents, uploadingFiles } = useJobContext();
 
-  if (documents.length === 0 && uploadingFiles.length === 0) {
-    return <EmptyState onUpload={handleUpload} />;
+  const hasResumes = documents.length > 0 || uploadingFiles.length > 0;
+
+  if (!hasResumes) {
+    return <EmptyState />;
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-5 flex flex-col h-[calc(100vh-theme(spacing.14))] overflow-hidden">
-      <div className="flex items-center justify-between mb-4 flex-shrink-0">
-        <div>
-          <h1 className="font-display text-xl text-ink">
-            {job.title}
-          </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
-            <p className="text-xs font-medium text-muted">
-              Active
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <ResizableColumns
-          defaultWidths={[22, 48, 30]}
-          storageKey={`workspace-${job.id}`}
-          minWidth={220}
-          className="gap-0"
-        >
-          <div className="flex flex-col min-h-0 pr-2.5">
-            <LeftPanelClient />
-          </div>
-
-          <div className="flex flex-col min-h-0 px-2.5">
-            <CenterPanel />
-          </div>
-
-          <div className="flex flex-col min-h-0 pl-2.5">
-            <RightPanel />
-          </div>
-        </ResizableColumns>
-      </div>
+    <div className="flex h-[calc(100vh-56px)] flex-col overflow-hidden bg-[var(--bg-canvas)]">
+      <ResizableColumns
+        defaultWidths={[22, 48, 30]}
+        storageKey="job-workspace"
+        minWidth={220}
+      >
+        <LeftPanelClient />
+        <CenterPanel />
+        <RightPanel />
+      </ResizableColumns>
     </div>
   );
 }
 
-export function JobWorkspace({
-  job,
-  documents: initialDocuments,
-}: JobWorkspaceProps) {
+/* Root exported component — wraps everything in JobProvider */
+export function JobWorkspace({ job, documents: initialDocuments }: JobWorkspaceProps) {
   return (
     <JobProvider job={job} initialDocuments={initialDocuments}>
       <JobWorkspaceContent />
     </JobProvider>
   );
 }
-

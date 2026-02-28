@@ -1,13 +1,12 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createJob } from "@/app/actions/jobs";
-import { BentoCard, BentoHeader } from "@/components/ui/BentoCard";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ArrowLeft } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import * as Label from "@radix-ui/react-label";
 
 export default function NewJobPage() {
   const router = useRouter();
@@ -21,50 +20,85 @@ export default function NewJobPage() {
     const res = await createJob({
       title: formData.get("title") as string,
       description: formData.get("description") as string,
-      type: "job", // Default for now
+      type: "job",
     });
 
-    if (res.success) {
-      router.push("/dashboard");
+    if (res.success && res.jobId) {
+      router.push(`/dashboard/jobs/${res.jobId}`);
     } else {
-      alert(res.error);
+      alert(res.error || "Failed to create job");
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pb-12 pt-6 overflow-y-auto h-full">
-      <Link href="/dashboard" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 mb-6 transition-colors text-sm font-medium">
-        <ArrowLeft size={16} />
-        Back to Dashboard
-      </Link>
+    <div className="max-w-[640px] mx-auto px-6 py-10">
 
-      <BentoCard>
-        <BentoHeader title="Create New Job" subtitle="Set up a new position to start screening." />
+      {/* Header */}
+      <div className="mb-8">
+        <Link href="/dashboard" className="inline-flex items-center gap-2 text-[var(--text-dim)] hover:text-[var(--text-ink)] mb-6 transition-colors font-medium text-[13px]">
+          <ChevronLeft size={18} />
+          Back to Dashboard
+        </Link>
+        <h1 className="font-bold text-[32px] text-[var(--text-ink)] leading-tight">
+          Create New Job
+        </h1>
+        <p className="font-normal text-[14px] text-[var(--text-body)] mt-1">
+          Set up a new position to start screening.
+        </p>
+      </div>
 
+      <div className="bg-[var(--bg-panel)] border border-[var(--border-sub)] rounded-[12px] p-8 shadow-xl">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Job Title</label>
-            <Input name="title" placeholder="e.g. Senior Product Designer" required />
+
+          <div className="space-y-1.5 flex flex-col">
+            <Label.Root className="font-medium text-[12px] text-[var(--text-body)] uppercase tracking-[0.08em]">
+              JOB TITLE
+            </Label.Root>
+            <input
+              name="title"
+              placeholder="e.g. Senior Product Designer"
+              required
+              className="w-full bg-[var(--bg-canvas)] border border-[var(--border-sub)] rounded-lg px-4 py-3 font-normal text-[14px] text-[var(--text-ink)] placeholder:text-[var(--text-dim)] focus:border-[var(--border-vis)] focus:outline-none focus:ring-[3px] focus:ring-[var(--accent-dim)] transition-colors duration-200"
+            />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Description</label>
+          <div className="space-y-1.5 flex flex-col">
+            <Label.Root className="font-medium text-[12px] text-[var(--text-body)] uppercase tracking-[0.08em]">
+              JOB DESCRIPTION
+            </Label.Root>
             <textarea
               name="description"
-              className="flex min-h-[120px] w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm"
+              className="flex min-h-[140px] w-full bg-[var(--bg-canvas)] border border-[var(--border-sub)] rounded-lg px-4 py-3 font-normal text-[14px] text-[var(--text-ink)] placeholder:text-[var(--text-dim)] focus:border-[var(--border-vis)] focus:outline-none focus:ring-[3px] focus:ring-[var(--accent-dim)] transition-colors duration-200 resize-y"
               placeholder="Paste the job description here..."
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-sub)]">
             <Link href="/dashboard">
-              <Button type="button" variant="ghost">Cancel</Button>
+              <button type="button" className="px-5 py-2.5 font-semibold text-[13px] text-[var(--text-body)] hover:text-[var(--text-ink)] transition-colors duration-200">
+                Cancel
+              </button>
             </Link>
-            <Button type="submit" isLoading={loading}>Create Job</Button>
+
+            <motion.button
+              whileHover={{ scale: 1.02, boxShadow: '0 0 24px rgba(126,184,154,0.2)' }}
+              whileTap={{ scale: 0.97 }}
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2.5 bg-[var(--accent-sage)] text-[var(--bg-canvas)] font-semibold text-[13px] rounded-lg hover:bg-[#8FCBAA] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Creating...
+                </>
+              ) : "Create Job"}
+            </motion.button>
           </div>
         </form>
-      </BentoCard>
+      </div>
+
     </div>
   );
 }

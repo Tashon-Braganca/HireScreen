@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -89,7 +89,7 @@ function CandidateCard({
 
             {/* Main Row */}
             <div className="px-4 py-3 flex items-start gap-3">
-                {/* Rank Badge — monochrome */}
+                {/* Rank Badge â€” monochrome */}
                 <div
                     className={cn(
                         "w-7 h-7 rounded flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 border",
@@ -121,7 +121,7 @@ function CandidateCard({
                         </span>
                     </div>
 
-                    {/* Score bar — subtle */}
+                    {/* Score bar â€” subtle */}
                     <div className="w-full h-1 bg-border rounded-full mb-2.5 overflow-hidden">
                         <motion.div
                             initial={{ width: 0 }}
@@ -131,7 +131,7 @@ function CandidateCard({
                         />
                     </div>
 
-                    {/* Match reasons — 2-3 bullets */}
+                    {/* Match reasons â€” 2-3 bullets */}
                     <div className="space-y-1">
                         {candidate.matchReasons
                             .slice(0, expanded ? undefined : 3)
@@ -156,7 +156,7 @@ function CandidateCard({
                             .map((r, i) => (
                                 <span
                                     key={i}
-                                    className="inline-flex items-center gap-1 text-[10px] text-muted bg-paper border border-border px-1.5 py-0.5 rounded font-mono"
+                                    className="inline-flex items-center gap-1 text-[10px] text-muted bg-paper border border-border px-1.5 py-0.5 rounded font-sans"
                                 >
                                     <FileText size={9} />
                                     {r.filename
@@ -270,7 +270,7 @@ export function RankedResultsPanel({
         "Rank candidates by overall fit and list their strongest skills",
     ];
 
-    // Empty state — no query yet
+    // Empty state â€” no query yet
     if (!isLoading && candidates.length === 0 && !activeQuery) {
         return (
             <div className="panel h-full flex flex-col items-center justify-center text-center p-8">
@@ -279,7 +279,7 @@ export function RankedResultsPanel({
                         <Search size={24} />
                     </div>
                     <div>
-                        <h3 className="font-display text-lg text-ink mb-1">
+                        <h3 className="font-sans text-lg text-ink mb-1">
                             Ask a question to rank candidates
                         </h3>
                         <p className="text-sm text-muted">
@@ -436,13 +436,13 @@ export function RankedResultsPanel({
                     </span>
                     <button
                         onClick={() => {
-                            // Navigate to compare tab — handled by parent context
+                            // Navigate to compare tab â€” handled by parent context
                             const event = new CustomEvent('openCompareTab');
                             window.dispatchEvent(event);
                         }}
                         className="px-3 py-1.5 bg-accent text-white text-xs font-semibold rounded hover:bg-accent-hover transition-colors"
                     >
-                        Compare →
+                        Compare â†’
                     </button>
                 </div>
             )}

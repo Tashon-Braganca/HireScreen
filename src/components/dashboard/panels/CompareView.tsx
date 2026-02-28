@@ -3,13 +3,13 @@
 import React, { useState } from "react";
 import { useJobContext } from "../JobContext";
 import { cn } from "@/lib/utils";
-import { Bookmark, FileText, StickyNote, BarChart3, Layers, X, AlertTriangle, Github, Globe, LayoutGrid, Table } from "lucide-react";
+import { Bookmark, FileText, StickyNote, BarChart3, Layers, X, AlertTriangle, Github, Globe, LayoutGrid, Table, Loader2, Sparkles } from "lucide-react";
 
 type CompareSubTab = "summary" | "criteria" | "evidence" | "notes";
 type ViewMode = "cards" | "table";
 
 export function CompareView() {
-    const { compareIds, rankedCandidates, clearCompare, evidenceBookmarks, toggleBookmark } = useJobContext();
+    const { compareIds, rankedCandidates, clearCompare, evidenceBookmarks, toggleBookmark, compareResult, isComparing, runCompare } = useJobContext();
     const [subTab, setSubTab] = useState<CompareSubTab>("summary");
     const [viewMode, setViewMode] = useState<ViewMode>("cards");
 
@@ -93,6 +93,19 @@ export function CompareView() {
                         >
                             <X size={10} />
                             Clear
+                        </button>
+                        <button
+                            onClick={runCompare}
+                            disabled={isComparing || selectedCandidates.length < 2}
+                            className={cn(
+                                "text-[10px] font-medium px-2.5 py-1 rounded transition-colors flex items-center gap-1",
+                                isComparing
+                                    ? "bg-accent/20 text-accent cursor-wait"
+                                    : "bg-accent text-white hover:bg-accent-light"
+                            )}
+                        >
+                            {isComparing ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                            {isComparing ? "Comparing..." : "AI Compare"}
                         </button>
                     </div>
                 </div>
@@ -249,53 +262,106 @@ export function CompareView() {
 
                 {subTab === "criteria" && (
                     <div className="space-y-4">
-                        <p className="text-xs text-muted mb-3">Side-by-side strengths comparison</p>
-                        <table className="w-full text-xs">
-                            <thead>
-                                <tr className="border-b border-border">
-                                    <th className="text-left py-2 px-2 font-semibold text-muted">Criteria</th>
-                                    {selectedCandidates.map(c => (
-                                        <th key={c.documentId} className="text-center py-2 px-2 font-semibold text-ink">
-                                            {c.name.split(" ")[0]}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr className="border-b border-border/50">
-                                    <td className="py-2 px-2 text-muted">Score</td>
-                                    {selectedCandidates.map(c => (
-                                        <td key={c.documentId} className="py-2 px-2 text-center font-semibold text-ink">
-                                            {c.score}%
-                                        </td>
-                                    ))}
-                                </tr>
-                                <tr className="border-b border-border/50">
-                                    <td className="py-2 px-2 text-muted">Rank</td>
-                                    {selectedCandidates.map(c => (
-                                        <td key={c.documentId} className="py-2 px-2 text-center font-semibold text-ink">
-                                            #{c.rank}
-                                        </td>
-                                    ))}
-                                </tr>
-                                <tr className="border-b border-border/50">
-                                    <td className="py-2 px-2 text-muted">Evidence</td>
-                                    {selectedCandidates.map(c => (
-                                        <td key={c.documentId} className="py-2 px-2 text-center text-muted">
-                                            {c.matchReasons.length} points
-                                        </td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <td className="py-2 px-2 text-muted">Red Flags</td>
-                                    {selectedCandidates.map(c => (
-                                        <td key={c.documentId} className="py-2 px-2 text-center text-muted">
-                                            {c.redFlags?.length || 0}
-                                        </td>
-                                    ))}
-                                </tr>
-                            </tbody>
-                        </table>
+                        {compareResult ? (
+                            <>
+                                {compareResult.reasoning && (
+                                    <div className="text-xs text-muted bg-paper border border-border rounded-lg p-3 mb-3">
+                                        <p className="font-medium text-ink mb-1">AI Analysis</p>
+                                        {compareResult.reasoning}
+                                    </div>
+                                )}
+                                <table className="w-full text-xs">
+                                    <thead>
+                                        <tr className="border-b border-border">
+                                            <th className="text-left py-2 px-2 font-semibold text-muted">Criteria</th>
+                                            {compareResult.candidates.map(c => (
+                                                <th key={c.documentId} className="text-center py-2 px-2 font-semibold text-ink">
+                                                    {c.name.split(" ")[0]}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {compareResult.criteria.map((cr, idx) => (
+                                            <tr key={idx} className={cn("border-b border-border/50", idx % 2 === 0 ? "bg-paper" : "bg-panel")}>
+                                                <td className="py-2 px-2 text-muted font-medium">{cr.label}</td>
+                                                {compareResult.candidates.map(c => (
+                                                    <td key={c.documentId} className="py-2 px-2 text-center">
+                                                        <span className={cn("font-semibold", getScoreColor(cr.scores[c.documentId] || 0))}>
+                                                            {cr.scores[c.documentId] || "—"}
+                                                        </span>
+                                                        {cr.notes[c.documentId] && (
+                                                            <p className="text-[10px] text-muted mt-0.5">{cr.notes[c.documentId]}</p>
+                                                        )}
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        ))}
+                                        <tr className="bg-panel font-semibold">
+                                            <td className="py-2 px-2 text-ink">Overall</td>
+                                            {compareResult.candidates.map(c => (
+                                                <td key={c.documentId} className={cn("py-2 px-2 text-center", getScoreColor(c.overallScore))}>
+                                                    {c.overallScore}%
+                                                    {compareResult.winner === c.documentId && (
+                                                        <span className="ml-1 text-[10px] text-accent">★</span>
+                                                    )}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-xs text-muted mb-3">Click &quot;AI Compare&quot; for detailed criteria breakdown, or view basic stats below.</p>
+                                <table className="w-full text-xs">
+                                    <thead>
+                                        <tr className="border-b border-border">
+                                            <th className="text-left py-2 px-2 font-semibold text-muted">Criteria</th>
+                                            {selectedCandidates.map(c => (
+                                                <th key={c.documentId} className="text-center py-2 px-2 font-semibold text-ink">
+                                                    {c.name.split(" ")[0]}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr className="border-b border-border/50">
+                                            <td className="py-2 px-2 text-muted">Score</td>
+                                            {selectedCandidates.map(c => (
+                                                <td key={c.documentId} className="py-2 px-2 text-center font-semibold text-ink">
+                                                    {c.score}%
+                                                </td>
+                                            ))}
+                                        </tr>
+                                        <tr className="border-b border-border/50">
+                                            <td className="py-2 px-2 text-muted">Rank</td>
+                                            {selectedCandidates.map(c => (
+                                                <td key={c.documentId} className="py-2 px-2 text-center font-semibold text-ink">
+                                                    #{c.rank}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                        <tr className="border-b border-border/50">
+                                            <td className="py-2 px-2 text-muted">Evidence</td>
+                                            {selectedCandidates.map(c => (
+                                                <td key={c.documentId} className="py-2 px-2 text-center text-muted">
+                                                    {c.matchReasons.length} points
+                                                </td>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            <td className="py-2 px-2 text-muted">Red Flags</td>
+                                            {selectedCandidates.map(c => (
+                                                <td key={c.documentId} className="py-2 px-2 text-center text-muted">
+                                                    {c.redFlags?.length || 0}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </>
+                        )}
                     </div>
                 )}
 

@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { ensureUserProfile } from "@/lib/supabase/profile";
 import { revalidatePath } from "next/cache";
 import { Job, JobType } from "@/types";
 
@@ -12,20 +13,29 @@ export async function createJob(data: { title: string; description: string; type
     return { success: false, error: "Unauthorized" };
   }
 
-  const { error } = await supabase.from("jobs").insert({
-    user_id: user.id,
-    title: data.title,
-    description: data.description,
-    type: data.type,
-    status: "active",
-  });
+  const profileResult = await ensureUserProfile(supabase, user);
+  if (!profileResult.success) {
+    return { success: false, error: profileResult.error };
+  }
+
+  const { data: createdJob, error } = await supabase
+    .from("jobs")
+    .insert({
+      user_id: user.id,
+      title: data.title,
+      description: data.description,
+      type: data.type,
+      status: "active",
+    })
+    .select("id")
+    .single();
 
   if (error) {
     return { success: false, error: error.message };
   }
 
   revalidatePath("/dashboard");
-  return { success: true };
+  return { success: true, jobId: createdJob.id };
 }
 
 export async function getJobs() {

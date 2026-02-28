@@ -2,219 +2,132 @@ import React from "react";
 import Link from "next/link";
 import { getJobs } from "@/app/actions/jobs";
 import { getDashboardStats, shouldShowLimitWarning } from "@/app/actions/stats";
-import { FREE_TIER_LIMITS } from "@/config/limits";
-import {
-  Plus,
-  Briefcase,
-  Users,
-  BarChart3,
-  Activity,
-  Zap,
-} from "lucide-react";
+import { Briefcase, Users, BookmarkCheck } from "lucide-react";
 import { LimitWarningBanner } from "@/components/ui/LimitWarningBanner";
 import { JobList } from "@/components/ui/JobList";
+import { Progress } from "@/components/ui/progress";
+import { NewJobButton } from "@/components/dashboard/NewJobButton";
+import { DashboardStagger, StaggerItem, AnimatedStat } from "@/components/dashboard/DashboardClient";
 
 export default async function DashboardPage() {
   const [jobs, stats] = await Promise.all([getJobs(), getDashboardStats()]);
 
   const queryLimit = typeof stats.queryLimit === 'number' ? stats.queryLimit : 999;
-  const queryPercentage = (stats.queriesThisMonth / queryLimit) * 100;
+  const queryPercentage = Math.min(100, (stats.queriesThisMonth / queryLimit) * 100);
   const hasJobs = jobs.length > 0;
-  const mostRecentJob = hasJobs ? jobs[0] : null;
-  
+
   const limitWarning = await shouldShowLimitWarning(stats.queriesThisMonth, queryLimit);
 
   return (
-    <div className="max-w-[1200px] mx-auto px-6 py-8">
+    <div className="max-w-5xl mx-auto px-6 md:px-8 py-10">
       {limitWarning.show && !stats.isPro && (
         <LimitWarningBanner message={limitWarning.message!} />
       )}
 
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="font-display text-2xl text-ink">
-            Jobs
-          </h1>
-          <p className="text-sm text-muted mt-1">
-            {hasJobs
-              ? `${jobs.length} active job${jobs.length !== 1 ? "s" : ""}`
-              : "Create your first screening job to get started."}
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-3 text-sm text-muted border border-border rounded px-3 py-2 bg-panel">
-            <div className="flex items-center gap-1.5">
-              <BarChart3 size={14} />
-              <span className="font-medium">
-                {stats.queriesThisMonth}/{typeof stats.queryLimit === 'number' ? stats.queryLimit : '∞'}
-              </span>
-              <span className="text-xs">queries</span>
+      <DashboardStagger>
+        {/* PAGE HEADER */}
+        <StaggerItem>
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h1 className="font-bold text-[26px] text-[var(--text-ink)] leading-tight tracking-[-0.01em]">
+                Dashboard
+              </h1>
+              <p className="font-normal text-[13px] text-[var(--text-dim)] mt-1">
+                Your active hiring pipeline
+              </p>
             </div>
-            <div className="w-px h-4 bg-border" />
-            <div className="flex items-center gap-1.5">
-              <Briefcase size={14} />
-              <span className="font-medium">{stats.totalJobs}</span>
-              <span className="text-xs">jobs</span>
-            </div>
+            <Link href="/dashboard/new">
+              <NewJobButton />
+            </Link>
+          </div>
+        </StaggerItem>
+
+        {/* STAT STRIP */}
+        <StaggerItem>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+            <StatCard
+              icon={<Briefcase size={16} />}
+              label="Active Jobs"
+              value={stats.totalJobs}
+            />
+            <StatCard
+              icon={<Users size={16} />}
+              label="Candidates Screened"
+              value={stats.totalCandidates}
+            />
+            <StatCard
+              icon={<BookmarkCheck size={16} />}
+              label="Queries Used"
+              value={stats.queriesThisMonth}
+              suffix={typeof stats.queryLimit === 'number' ? ` / ${stats.queryLimit}` : ''}
+              progress={typeof stats.queryLimit === 'number' ? queryPercentage : undefined}
+            />
+          </div>
+        </StaggerItem>
+
+        {/* JOBS LIST */}
+        <StaggerItem>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-medium text-[11px] text-[var(--text-dim)] uppercase tracking-[0.12em]">
+              Your Jobs
+            </h2>
           </div>
 
-          <Link href="/dashboard/new">
-            <button className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-semibold rounded hover:bg-accent-hover transition-colors">
-              <Plus size={16} />
-              New Job
-            </button>
-          </Link>
-        </div>
-      </div>
-
-      <div className="sm:hidden mb-6 flex items-center gap-3 text-sm text-muted border border-border rounded px-3 py-2 bg-panel">
-        <div className="flex items-center gap-1.5 flex-1">
-          <BarChart3 size={14} />
-          <span className="font-medium">
-            {stats.queriesThisMonth}/{typeof stats.queryLimit === 'number' ? stats.queryLimit : '∞'} queries
-          </span>
-        </div>
-        <div className="w-20 h-1.5 bg-border rounded-full overflow-hidden">
-          <div
-            className="h-full bg-accent rounded-full transition-all"
-            style={{ width: `${Math.min(100, queryPercentage)}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
           {hasJobs ? (
             <JobList jobs={jobs} />
           ) : (
-            <div className="panel flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-14 h-14 rounded-lg border border-border flex items-center justify-center text-muted mb-5">
-                <Briefcase size={24} />
+            <div className="flex flex-col items-center justify-center py-20 bg-[var(--bg-panel)] border border-[var(--border-sub)] rounded-xl">
+              <div className="w-12 h-12 rounded-xl bg-[var(--bg-raised)] border border-[var(--border-sub)] flex items-center justify-center text-[var(--text-dim)] mb-5">
+                <Briefcase size={22} />
               </div>
-              <h3 className="font-display text-lg text-ink mb-2">
+              <h3 className="font-semibold text-[15px] text-[var(--text-ink)] mb-1">
                 No jobs yet
               </h3>
-              <p className="text-sm text-muted max-w-sm mb-6">
-                Create your first screening job, upload resumes, and let AI rank
-                candidates against your requirements.
+              <p className="font-normal text-[13px] text-[var(--text-dim)] mb-6 max-w-xs text-center">
+                Create your first job to start screening candidates.
               </p>
-              <div className="flex items-center gap-3">
-                <Link href="/dashboard/new">
-                  <button className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white text-sm font-semibold rounded hover:bg-accent-hover transition-colors">
-                    <Plus size={16} />
-                    Create Job
-                  </button>
-                </Link>
-              </div>
+              <Link href="/dashboard/new">
+                <NewJobButton />
+              </Link>
             </div>
           )}
-        </div>
+        </StaggerItem>
+      </DashboardStagger>
+    </div>
+  );
+}
 
-        <div className="space-y-5">
-          <div className="panel p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-base text-ink">Usage</h3>
-              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${stats.isPro ? 'bg-accent-light text-accent border border-accent/20' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
-                {stats.isPro ? 'Pro' : 'Free'}
-              </span>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-muted">Queries</span>
-                  <span className="font-semibold text-ink">
-                    {stats.queriesThisMonth} / {typeof stats.queryLimit === 'number' ? stats.queryLimit : '∞'}
-                  </span>
-                </div>
-                {typeof stats.queryLimit === 'number' && (
-                  <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${queryPercentage >= 80 ? 'bg-amber-500' : 'bg-accent'}`}
-                      style={{
-                        width: `${Math.min(100, queryPercentage)}%`,
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted">Active jobs</span>
-                <span className="font-semibold text-ink">
-                  {stats.totalJobs}{!stats.isPro && ` / ${FREE_TIER_LIMITS.maxJobs}`}
-                </span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted">Total candidates</span>
-                <span className="font-semibold text-ink">
-                  {stats.totalCandidates}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="panel p-5">
-            <h3 className="font-display text-base text-ink mb-3">
-              Recent Activity
-            </h3>
-            {mostRecentJob ? (
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded bg-accent-light flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Briefcase size={13} className="text-accent" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-ink">
-                      {mostRecentJob.title}
-                    </p>
-                    <p className="text-xs text-muted">
-                      Last opened ·{" "}
-                      {new Date(mostRecentJob.created_at).toLocaleDateString(
-                        "en-US",
-                        { month: "short", day: "numeric" }
-                      )}
-                    </p>
-                  </div>
-                </div>
-                {stats.totalCandidates > 0 && (
-                  <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded bg-[var(--success-bg)] flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Users size={13} className="text-[var(--success)]" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-ink">
-                        {stats.totalCandidates} resumes uploaded
-                      </p>
-                      <p className="text-xs text-muted">Across all jobs</p>
-                    </div>
-                  </div>
-                )}
-                {stats.queriesThisMonth > 0 && (
-                  <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded bg-[#F5F3FF] flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Activity size={13} className="text-[#7C3AED]" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-ink">
-                        {stats.queriesThisMonth} queries this month
-                      </p>
-                      <p className="text-xs text-muted">AI screening active</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center text-center py-6">
-                <div className="w-10 h-10 rounded-lg border border-border flex items-center justify-center text-muted mb-3">
-                  <Zap size={16} />
-                </div>
-                <p className="text-xs text-muted">
-                  Activity will show here once you start screening.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+function StatCard({
+  icon,
+  label,
+  value,
+  suffix = "",
+  progress,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  suffix?: string;
+  progress?: number;
+}) {
+  return (
+    <div className="bg-[var(--bg-panel)] border border-[var(--border-sub)] rounded-xl px-6 py-5 hover:border-[var(--border-vis)] transition-colors duration-200">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-[var(--text-dim)]">{icon}</span>
+        <span className="font-medium text-[11px] text-[var(--text-dim)] uppercase tracking-[0.1em]">
+          {label}
+        </span>
       </div>
+      <div className="font-bold text-[28px] text-[var(--text-ink)] mt-1 tabular-nums">
+        <AnimatedStat value={value} suffix={suffix} />
+      </div>
+      {progress !== undefined && (
+        <Progress
+          value={progress}
+          className="h-[4px] rounded-full bg-[var(--bg-raised)] mt-3"
+          indicatorClassName={`${progress >= 80 ? 'bg-[#E05A5A]' : progress >= 60 ? 'bg-[var(--accent-amber)]' : 'bg-[var(--accent-sage)]'}`}
+        />
+      )}
     </div>
   );
 }

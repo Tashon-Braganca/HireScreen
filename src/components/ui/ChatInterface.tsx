@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Send, Search, Clock, AlertCircle, Loader2 } from "lucide-react";
@@ -29,7 +29,7 @@ function SimpleMarkdown({ content }: { content: string }) {
         parts.push(
           <code
             key={key++}
-            className="px-1 py-0.5 bg-paper border border-border rounded text-[10px] font-mono"
+            className="px-1 py-0.5 bg-paper border border-border rounded text-[10px] font-sans"
           >
             {match[3]}
           </code>
@@ -69,7 +69,7 @@ function SimpleMarkdown({ content }: { content: string }) {
           <span>{renderInline(text)}</span>
         </div>
       );
-    } else if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
+    } else if (trimmed.startsWith("- ") || trimmed.startsWith("â€¢ ")) {
       elements.push(
         <div key={i} className="flex gap-1.5 ml-2">
           <span className="text-accent mt-0.5 flex-shrink-0">&bull;</span>

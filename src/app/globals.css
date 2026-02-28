@@ -1,43 +1,56 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Core Tokens — Warm Enterprise */
-  --bg: #FAF9F6;
-  --panel: #FFFFFF;
-  --card: #FFFFFF;
-  --border: #E4E4E7;
-  --text: #1A1A1A;
-  --muted: #71717A;
-  --muted-foreground: #A1A1AA;
+  /* Design B core — contrast-tuned v3 (boosted visibility) */
+  --bg-canvas: #0F100E;
+  --bg-panel: #181A17;
+  --bg-raised: #242721;
+  --text-ink: #F4F1EA;
+  --text-body: #D8D4CC;
+  --text-dim: #A9A49D;
+  --accent-sage: #7ECB9E;
+  --accent-amber: #E5C76E;
+  --accent-dim: rgba(126, 203, 158, 0.18);
+  --border-sub: rgba(232, 228, 220, 0.18);
+  --border-vis: rgba(232, 228, 220, 0.28);
+  --hover-glow: rgba(126, 203, 158, 0.06);
 
-  /* Accent — Deep Teal */
-  --accent: #0F766E;
-  --accent-foreground: #FFFFFF;
-  --accent-light: #F0FDFA;
-  --accent-hover: #115E59;
+  /* Legacy aliases — map old vars to Design B values */
+  --bg: #111210;
+  --panel: #1A1C19;
+  --text: #F0ECE4;
 
-  /* Semantic */
-  --error: #EF4444;
-  --error-bg: #FEF2F2;
-  --success: #22C55E;
-  --success-bg: #F0FDF4;
+  /* shadcn compat: must be H S% L% */
+  --card: 100 8.5% 12.7%;
+  /* #22251F */
+  --muted: 36 4.3% 77%;
+  /* #CBC7C0 */
+  --border: 40 21.4% 88.6%;
+  /* fallback */
+  --accent: 149 32.2% 60.4%;
+  /* #7EB89A */
+  --accent-foreground: 100 5.6% 6.5%;
+  /* #111210 */
 
-  /* Shadow */
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --accent-hover: #9DD4B4;
+  --accent-light: rgba(140, 196, 166, 0.15);
+  --success: #8CC4A6;
+  --success-bg: rgba(140, 196, 166, 0.15);
+  --ink: #F0ECE4;
+  --font-display: var(--font-display);
 
-  /* Legacy / Shadcn mappings */
+  /* Shadcn defaults (just in case they are needed for installed components) */
   --paper: var(--bg);
-  --ink: var(--text);
+  --muted-foreground: 30 3.3% 55%;
+  /* #938F89 */
   --radius: 0.5rem;
 }
 
 @layer base {
   * {
-    border-color: var(--border);
+    border-color: hsl(var(--border));
   }
 
   html {
@@ -45,13 +58,18 @@
   }
 
   body {
-    background-color: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', system-ui, sans-serif;
+    background-color: var(--bg-canvas);
+    color: var(--text-body);
+    font-family: var(--font-body), system-ui, sans-serif;
     font-size: 14px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  body ::selection {
+    background-color: var(--accent-sage);
+    color: var(--bg-canvas);
   }
 
   /* Headings use Instrument Serif for character */
@@ -61,33 +79,69 @@
   h4,
   h5,
   h6 {
+    font-family: var(--font-display), Georgia, serif;
     font-weight: 600;
     letter-spacing: 0.015em;
-    color: var(--text);
+    color: var(--text-ink);
+  }
+
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
-/* ─── Noise Background ─── */
-.bg-noise {
-  position: relative;
-}
 
-.bg-noise::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.03;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 128px 128px;
-  z-index: 0;
-}
-
-.bg-noise>* {
-  position: relative;
-  z-index: 1;
-}
 
 /* ─── Panel Utility ─── */
 .panel {
@@ -116,12 +170,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D4D4D8;
+  background: rgba(232, 228, 220, 0.15);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #A1A1AA;
+  background: rgba(232, 228, 220, 0.25);
 }
 
 /* ─── Focus ─── */
@@ -171,6 +225,135 @@
   }
 }
 
+/* ─── Pop-in: used for bookmark toggle, success checkmarks ─── */
+@keyframes pop-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ─── Glow pulse: subtle ambient glow for primary action buttons ─── */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(140, 196, 166, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(140, 196, 166, 0.3), 0 0 40px rgba(140, 196, 166, 0.1);
+  }
+}
+
+/* ─── Success ring: expanding ring after successful action ─── */
+@keyframes success-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(140, 196, 166, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+    box-shadow: 0 0 0 20px rgba(140, 196, 166, 0);
+  }
+}
+
+/* ─── Ripple effect for button presses ─── */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* ─── Slide down for content entrance ─── */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Score reveal: number bounces in ─── */
+@keyframes score-reveal {
+  0% {
+    transform: scale(0.5) rotate(-10deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.1) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* ─── Bounce subtle: for icons and small elements ─── */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* ─── Check draw: SVG checkmark animation ─── */
+@keyframes check-draw {
+  0% {
+    stroke-dashoffset: 24;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ─── Fade scale in: for cards and panels ─── */
+@keyframes fade-scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ─── Sparkle rotate: for sparkle icons ─── */
+@keyframes sparkle-rotate {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(10deg) scale(1.15);
+  }
+  50% {
+    transform: rotate(-5deg) scale(1);
+  }
+  75% {
+    transform: rotate(3deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
 .animate-stagger-in {
   animation: stagger-fade-in 0.5s ease-out both;
 }
@@ -180,13 +363,74 @@
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, var(--border) 25%, var(--panel) 50%, var(--border) 75%);
+  background: linear-gradient(90deg, var(--bg-raised) 25%, var(--border-sub) 50%, var(--bg-raised) 75%);
   background-size: 200% 100%;
   animation: shimmer 2s linear infinite;
 }
 
 .animate-pulse-soft {
   animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.animate-pop-in {
+  animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+.animate-success-ring {
+  animation: success-ring 0.6s ease-out both;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out both;
+}
+
+.animate-score-reveal {
+  animation: score-reveal 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 0.4s ease-in-out;
+}
+
+.animate-fade-scale-in {
+  animation: fade-scale-in 0.35s ease-out both;
+}
+
+.animate-sparkle {
+  animation: sparkle-rotate 0.6s ease-in-out;
+}
+
+/* ─── Hover glow utility for interactive cards ─── */
+.hover-glow {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 24px rgba(140, 196, 166, 0.08), 0 4px 16px rgba(0, 0, 0, 0.2);
+  border-color: var(--border-vis);
+}
+
+/* ─── Interactive button press effect ─── */
+.press-effect {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.press-effect:active {
+  transform: scale(0.97);
+}
+
+/* ─── Smooth hover lift for cards ─── */
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 /* No-scrollbar utility for horizontal tabs */
