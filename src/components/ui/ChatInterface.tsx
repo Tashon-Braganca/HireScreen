@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Search, Clock, AlertCircle, Loader2 } from "lucide-react";
+import { Send, Clock, AlertCircle, Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -16,25 +16,9 @@ function SimpleMarkdown({ content }: { content: string }) {
     let match;
     let key = 0;
     while ((match = regex.exec(text)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push(text.slice(lastIndex, match.index));
-      }
-      if (match[2]) {
-        parts.push(
-          <strong key={key++} className="font-semibold text-ink">
-            {match[2]}
-          </strong>
-        );
-      } else if (match[3]) {
-        parts.push(
-          <code
-            key={key++}
-            className="px-1 py-0.5 bg-paper border border-border rounded text-[10px] font-sans"
-          >
-            {match[3]}
-          </code>
-        );
-      }
+      if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
+      if (match[2]) parts.push(<strong key={key++} className="font-semibold text-[var(--text-ink)]">{match[2]}</strong>);
+      else if (match[3]) parts.push(<code key={key++} className="px-1 py-0.5 bg-[var(--bg-raised)] rounded text-[10px] font-mono">{match[3]}</code>);
       lastIndex = regex.lastIndex;
     }
     if (lastIndex < text.length) parts.push(text.slice(lastIndex));
@@ -44,44 +28,19 @@ function SimpleMarkdown({ content }: { content: string }) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
-
-    if (!trimmed) {
-      elements.push(<div key={i} className="h-1.5" />);
-    } else if (trimmed.startsWith("### ")) {
-      elements.push(
-        <h4 key={i} className="text-xs font-bold text-ink mt-2 mb-1">
-          {renderInline(trimmed.slice(4))}
-        </h4>
-      );
-    } else if (trimmed.startsWith("## ")) {
-      elements.push(
-        <h3 key={i} className="text-sm font-bold text-ink mt-2 mb-1">
-          {renderInline(trimmed.slice(3))}
-        </h3>
-      );
-    } else if (/^\d+\.\s/.test(trimmed)) {
+    if (!trimmed) { elements.push(<div key={i} className="h-1" />); }
+    else if (trimmed.startsWith("### ")) elements.push(<h4 key={i} className="text-xs font-semibold text-[var(--text-ink)] mt-2 mb-0.5">{renderInline(trimmed.slice(4))}</h4>);
+    else if (trimmed.startsWith("## ")) elements.push(<h3 key={i} className="text-sm font-semibold text-[var(--text-ink)] mt-2 mb-1">{renderInline(trimmed.slice(3))}</h3>);
+    else if (/^\d+\.\s/.test(trimmed)) {
       const text = trimmed.replace(/^\d+\.\s/, "");
-      elements.push(
-        <div key={i} className="flex gap-1.5 ml-1">
-          <span className="text-accent font-medium flex-shrink-0">
-            {trimmed.match(/^\d+/)![0]}.
-          </span>
-          <span>{renderInline(text)}</span>
-        </div>
-      );
-    } else if (trimmed.startsWith("- ") || trimmed.startsWith("â€¢ ")) {
-      elements.push(
-        <div key={i} className="flex gap-1.5 ml-2">
-          <span className="text-accent mt-0.5 flex-shrink-0">&bull;</span>
-          <span>{renderInline(trimmed.slice(2))}</span>
-        </div>
-      );
+      elements.push(<div key={i} className="flex gap-1.5 ml-1 my-0.5"><span className="text-[var(--accent-sage)] font-medium flex-shrink-0">{trimmed.match(/^\d+/)![0]}.</span><span className="text-[var(--text-body)]">{renderInline(text)}</span></div>);
+    } else if (trimmed.startsWith("- ") || trimmed.startsWith("\u2022 ")) {
+      elements.push(<div key={i} className="flex gap-1.5 ml-2 my-0.5"><span className="text-[var(--accent-sage)] mt-0.5 flex-shrink-0 text-[10px]">&bull;</span><span className="text-[var(--text-body)]">{renderInline(trimmed.slice(2))}</span></div>);
     } else {
-      elements.push(<p key={i}>{renderInline(trimmed)}</p>);
+      elements.push(<p key={i} className="text-[var(--text-body)]">{renderInline(trimmed)}</p>);
     }
   }
-
-  return <div className="space-y-0.5">{elements}</div>;
+  return <div className="space-y-0.5 text-xs leading-relaxed">{elements}</div>;
 }
 
 interface Message {
@@ -109,6 +68,7 @@ export function ChatInterface({
   jobTitle,
 }: ChatInterfaceProps) {
   const [input, setInput] = useState("");
+  const [showRecent, setShowRecent] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -119,24 +79,17 @@ export function ChatInterface({
 
   const lastSubmitRef = useRef<number>(0);
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      const now = Date.now();
-      if (!input.trim() || isLoading || now - lastSubmitRef.current < 300)
-        return;
-      lastSubmitRef.current = now;
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    const now = Date.now();
+    if (!input.trim() || isLoading || now - lastSubmitRef.current < 300) return;
+    lastSubmitRef.current = now;
+    const message = input;
+    setInput("");
+    await onSendMessage(message);
+  }, [input, isLoading, onSendMessage]);
 
-      const message = input;
-      setInput("");
-      await onSendMessage(message);
-    },
-    [input, isLoading, onSendMessage]
-  );
-
-  const isTechnical = jobTitle?.toLowerCase().match(
-    /engineer|dev|ml|ai|data|backend|frontend|fullstack|python|java/
-  );
+  const isTechnical = jobTitle?.toLowerCase().match(/engineer|dev|ml|ai|data|backend|frontend|fullstack|python|java/);
 
   const quickChips = isTechnical ? [
     "Who has the strongest system design experience?",
@@ -150,165 +103,167 @@ export function ChatInterface({
     `Best match for ${jobTitle || "this role"}?`,
   ];
 
-  const findings = messages.filter((m) => m.role === "assistant" && m.id !== "1");
-  const hasFindings = findings.length > 0;
+  const conversation = messages.filter((m) => m.id !== "1");
+  const hasConversation = conversation.length > 0;
 
   return (
-    <div className="panel h-full flex flex-col min-h-0 overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center gap-2.5 flex-shrink-0">
-        <div className="w-7 h-7 rounded bg-accent flex items-center justify-center text-white">
-          <Search size={14} />
+    <div className="h-full flex flex-col min-h-0 bg-[var(--bg-panel)] overflow-hidden">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-[var(--border-sub)] flex-shrink-0 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-6 h-6 rounded-md bg-[var(--accent-sage)]/15 flex items-center justify-center">
+            <Sparkles size={12} className="text-[var(--accent-sage)]" />
+          </div>
+          <div>
+            <p className="text-[13px] font-semibold text-[var(--text-ink)] leading-none">Ask</p>
+            <p className="text-[10px] text-[var(--text-dim)] mt-0.5">Query resumes with natural language</p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-sm font-semibold text-ink">Ask</h3>
-          <p className="text-[10px] text-muted">
-            Query resumes with natural language
-          </p>
-        </div>
-      </div>
-
-      <div className="p-3 border-b border-border flex-shrink-0">
-        <form
-          onSubmit={handleSubmit}
-          className="flex items-center gap-1.5 p-1 pr-1.5 border border-border rounded focus-within:border-accent transition-colors"
-        >
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about resumes..."
-            className="flex-1 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-muted/60 focus:outline-none min-w-0"
-            disabled={isLoading}
-          />
+        {recentQueries.length > 0 && (
           <button
-            type="submit"
-            disabled={!input.trim() || isLoading}
-            className="p-2 bg-accent text-white rounded hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-          >
-            {isLoading ? (
-              <Loader2 size={12} className="animate-spin" />
-            ) : (
-              <Send size={12} />
+            onClick={() => setShowRecent(v => !v)}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors",
+              showRecent
+                ? "bg-[var(--bg-raised)] text-[var(--text-ink)]"
+                : "text-[var(--text-dim)] hover:text-[var(--text-body)] hover:bg-[var(--bg-raised)]"
             )}
+          >
+            <Clock size={10} />
+            Recent
           </button>
-        </form>
-        {isLoading && (
-          <p className="text-[10px] text-accent mt-1.5 ml-1">Processing...</p>
         )}
       </div>
 
-      <div className="p-3 border-b border-border/50 flex-shrink-0">
-        <p className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-2">
-          Suggested
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {quickChips.map((chip, i) => (
-            <button
-              key={i}
-              onClick={() => onRankQuery(chip)}
-              disabled={isLoading}
-              className="text-xs px-2.5 py-1.5 rounded border border-border bg-panel text-muted hover:bg-paper hover:text-ink hover:border-accent/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {chip}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Recent queries dropdown */}
+      <AnimatePresence>
+        {showRecent && recentQueries.length > 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="overflow-hidden flex-shrink-0 border-b border-[var(--border-sub)]"
+          >
+            <div className="p-2 space-y-0.5">
+              {recentQueries.slice(0, 6).map((q, i) => (
+                <button
+                  key={i}
+                  onClick={() => { onRankQuery(q); setShowRecent(false); }}
+                  className="w-full text-left text-xs text-[var(--text-dim)] hover:text-[var(--text-ink)] hover:bg-[var(--bg-raised)] px-2.5 py-1.5 rounded truncate transition-colors flex items-center gap-2"
+                >
+                  <span className="text-[var(--accent-sage)] flex-shrink-0 text-[9px]">&#8594;</span>
+                  {q}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0"
-      >
-        {!hasFindings && !isLoading && (
-          <div className="flex flex-col items-center justify-center h-full text-center p-4">
-            <Search size={20} className="text-border mb-2" />
-            <p className="text-xs text-muted">
-              Ask anything about the uploaded resumes
-            </p>
+      {/* Messages area */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 p-3 space-y-2">
+        {!hasConversation && !isLoading && (
+          <div className="pt-2">
+            <p className="text-[10px] font-medium text-[var(--text-dim)] uppercase tracking-wider mb-2 px-1">Suggested</p>
+            <div className="space-y-1.5">
+              {quickChips.map((chip, i) => (
+                <button
+                  key={i}
+                  onClick={() => onRankQuery(chip)}
+                  disabled={isLoading}
+                  className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg border border-[var(--border-sub)] bg-transparent text-[var(--text-dim)] hover:bg-[var(--bg-raised)] hover:text-[var(--text-body)] hover:border-[var(--border-vis)] transition-colors leading-snug"
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
         <AnimatePresence initial={false}>
-          {messages
-            .filter((m) => m.id !== "1")
-            .map((msg) => {
-              if (msg.role === "user") {
-                return (
-                  <motion.div
-                    key={msg.id}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-xs font-medium text-accent bg-accent-bg border border-accent/20 rounded px-3 py-2"
-                  >
-                    <Search size={10} className="inline mr-1.5" />
-                    {msg.content}
-                  </motion.div>
-                );
-              }
-
-              const isError =
-                msg.content.includes("error") ||
-                msg.content.includes("failed") ||
-                msg.content.includes("Error");
-
+          {conversation.map((msg) => {
+            if (msg.role === "user") {
               return (
                 <motion.div
                   key={msg.id}
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={cn(
-                    "rounded border px-3 py-3 text-xs leading-relaxed",
-                    isError
-                      ? "border-[#B91C1C]/20 bg-[#FEF2F2] text-[#B91C1C]"
-                      : "border-border bg-panel text-muted"
-                  )}
+                  className="flex justify-end"
                 >
-                  {isError && (
-                    <div className="flex items-center gap-1.5 mb-2 text-[#B91C1C] font-medium">
-                      <AlertCircle size={12} />
+                  <div className="max-w-[85%] text-xs bg-[var(--accent-sage)]/15 border border-[var(--accent-sage)]/20 text-[var(--text-body)] rounded-xl rounded-tr-sm px-3 py-2 leading-relaxed">
+                    {msg.content}
+                  </div>
+                </motion.div>
+              );
+            }
+
+            const isErr = msg.content.includes("Error") || msg.content.includes("failed");
+            return (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-start"
+              >
+                <div className={cn(
+                  "max-w-[95%] text-xs rounded-xl rounded-tl-sm px-3 py-2.5",
+                  isErr
+                    ? "bg-[#3a1a1a] border border-[#5a2a2a] text-[#f87171]"
+                    : "bg-[var(--bg-raised)] border border-[var(--border-sub)] text-[var(--text-body)]"
+                )}>
+                  {isErr && (
+                    <div className="flex items-center gap-1.5 mb-1.5 text-[#f87171] font-medium text-[11px]">
+                      <AlertCircle size={11} />
                       Something went wrong
                     </div>
                   )}
                   <SimpleMarkdown content={msg.content} />
-                </motion.div>
-              );
-            })}
-
-          {isLoading && (
-            <motion.div
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded border border-border px-3 py-3 flex items-center gap-2"
-            >
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <div className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <div className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce" />
-              </div>
-              <span className="text-xs text-muted">Analyzing...</span>
-            </motion.div>
-          )}
+                </div>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
+
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-start"
+          >
+            <div className="bg-[var(--bg-raised)] border border-[var(--border-sub)] rounded-xl rounded-tl-sm px-3 py-2.5 flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-[var(--accent-sage)] rounded-full animate-bounce [animation-delay:-0.3s]" />
+              <div className="w-1.5 h-1.5 bg-[var(--accent-sage)] rounded-full animate-bounce [animation-delay:-0.15s]" />
+              <div className="w-1.5 h-1.5 bg-[var(--accent-sage)] rounded-full animate-bounce" />
+            </div>
+          </motion.div>
+        )}
       </div>
 
-      {recentQueries.length > 0 && (
-        <div className="px-3 py-2 border-t border-border flex-shrink-0">
-          <p className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5 flex items-center gap-1">
-            <Clock size={9} /> Recent
-          </p>
-          <div className="space-y-0.5 max-h-20 overflow-y-auto">
-            {recentQueries.slice(0, 5).map((q, i) => (
-              <button
-                key={i}
-                onClick={() => onRankQuery(q)}
-                className="text-left w-full text-xs text-muted hover:text-accent truncate transition-colors py-0.5"
-              >
-                &rarr; {q}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Input — pinned at bottom */}
+      <div className="flex-shrink-0 border-t border-[var(--border-sub)] p-3">
+        <form onSubmit={handleSubmit} className="flex items-end gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask about resumes..."
+            className="flex-1 bg-[var(--bg-raised)] border border-[var(--border-sub)] rounded-lg px-3 py-2.5 text-[13px] text-[var(--text-ink)] placeholder:text-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-sage)]/50 transition-colors"
+            disabled={isLoading}
+          />
+          <button
+            type="submit"
+            disabled={!input.trim() || isLoading}
+            className="w-9 h-9 flex-shrink-0 bg-[var(--accent-sage)] text-[var(--bg-canvas)] rounded-lg flex items-center justify-center hover:bg-[var(--accent-sage)]/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          >
+            {isLoading ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Send size={14} />
+            )}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

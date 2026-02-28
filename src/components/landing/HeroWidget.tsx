@@ -131,21 +131,7 @@ export default function HeroWidget() {
                 </div>
             </motion.div>
 
-            {/* Badge: Resume count */}
-            <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1, x: [0, 5, 0] }}
-                transition={{
-                    opacity: { delay: 1.0, duration: 0.4 },
-                    scale: { delay: 1.0, duration: 0.4 },
-                    x: { duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }
-                }}
-                className="absolute -right-[16px] top-[42%] z-20"
-            >
-                <div className="bg-[var(--accent-sage)] text-[var(--bg-canvas)] font-[family-name:var(--font-mono)] text-[11px] font-semibold px-[10px] py-[5px] rounded-[6px] shadow-[0_4px_16px_rgba(126,203,158,0.3)]">
-                    12 resumes
-                </div>
-            </motion.div>
+
 
             {/* Badge: Processing */}
             <motion.div

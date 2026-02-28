@@ -83,7 +83,7 @@ function JobWorkspaceContent() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-56px)] flex-col overflow-hidden bg-[var(--bg-canvas)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[var(--bg-canvas)]">
       <ResizableColumns
         defaultWidths={[22, 48, 30]}
         storageKey="job-workspace"

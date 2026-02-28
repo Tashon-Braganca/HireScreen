@@ -29,10 +29,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <>
-      <div className="flex flex-col bg-[var(--bg-canvas)] min-h-screen text-[var(--text-body)] antialiased relative">
+      <div className="flex flex-col bg-[var(--bg-canvas)] h-screen overflow-hidden text-[var(--text-body)] antialiased relative">
         <TopNav profile={profile || { email: user.email || "", full_name: null, avatar_url: null, subscription_status: null }} />
 
-        <main className="flex-1 overflow-y-auto relative">
+        <main className="flex-1 overflow-y-auto min-h-0 relative">
           {children}
         </main>
 

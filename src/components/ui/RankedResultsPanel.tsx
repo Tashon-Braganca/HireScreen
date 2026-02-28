@@ -47,6 +47,7 @@ function CandidateCard({
     index,
     contactEmail,
     contactPhone,
+    candidateName,
 }: {
     candidate: RankedCandidate;
     isSelected: boolean;
@@ -55,6 +56,7 @@ function CandidateCard({
     index: number;
     contactEmail?: string | null;
     contactPhone?: string | null;
+    candidateName?: string | null;
 }) {
     const [expanded, setExpanded] = useState(false);
 
@@ -79,8 +81,8 @@ function CandidateCard({
                     className={cn(
                         "w-7 h-7 rounded flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 border",
                         candidate.rank <= 3
-                            ? "border-ink bg-ink text-white"
-                            : "border-border bg-paper text-muted"
+                            ? "border-[var(--accent-sage)] bg-[var(--accent-sage)] text-[var(--bg-canvas)]"
+                            : "border-[var(--border-sub)] bg-transparent text-[var(--text-dim)]"
                     )}
                 >
                     {candidate.rank}
@@ -89,9 +91,21 @@ function CandidateCard({
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                        <h4 className="text-sm font-semibold text-ink truncate">
-                            {candidate.name}
-                        </h4>
+                        <div className="flex flex-col min-w-0">
+                            {candidateName && (
+                                <span className="text-[12px] font-semibold text-[var(--text-ink)] truncate leading-tight">
+                                    {candidateName}
+                                </span>
+                            )}
+                            <h4 className={cn(
+                                "truncate leading-tight",
+                                candidateName
+                                    ? "text-[11px] text-[var(--text-dim)]"
+                                    : "text-sm font-semibold text-ink"
+                            )}>
+                                {candidate.name}
+                            </h4>
+                        </div>
                         <span
                             className={cn(
                                 "px-2 py-0.5 rounded text-[11px] font-semibold border flex-shrink-0",
@@ -289,44 +303,6 @@ export function RankedResultsPanel({
 
     return (
         <div className="panel h-full flex flex-col overflow-hidden">
-            {/* Sticky Header */}
-            <div className="px-4 py-3 border-b border-border flex items-center justify-between flex-shrink-0">
-                <div>
-                    <h3 className="text-sm font-semibold text-ink">Ranked Results</h3>
-                    <p className="text-xs text-muted">
-                        {isLoading
-                            ? "Analyzing resumes..."
-                            : `${candidates.length} candidate${candidates.length !== 1 ? "s" : ""} found`}
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    {selectedCount > 0 && (
-                        <button
-                            onClick={onExport}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border rounded text-ink hover:bg-paper transition-colors"
-                        >
-                            <Download size={12} />
-                            CSV ({selectedCount})
-                        </button>
-                    )}
-                    {(candidates.length > 0 || selectedCount > 0) && (
-                        <button
-                            onClick={handleExportPDF}
-                            disabled={isExporting}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-ink text-white rounded hover:bg-muted transition-colors disabled:opacity-50"
-                        >
-                            {isExporting ? (
-                                <Loader2 size={12} className="animate-spin" />
-                            ) : (
-                                <FileDown size={12} />
-                            )}
-                            Export PDF
-                        </button>
-                    )}
-                </div>
-            </div>
-
             {/* Active query banner */}
             {activeQuery && (
                 <div className="px-4 py-2.5 bg-accent-bg border-b border-accent/20 flex-shrink-0">
@@ -402,6 +378,7 @@ export function RankedResultsPanel({
                                     index={i}
                                     contactEmail={doc?.candidate_email}
                                     contactPhone={doc?.candidate_phone}
+                                    candidateName={doc?.candidate_name}
                                 />
                             );
                         })}
@@ -409,21 +386,43 @@ export function RankedResultsPanel({
                 </div>
             )}
 
-            {/* Sticky Compare Bar */}
-            {selectedIds.size > 0 && (
-                <div className="px-4 py-2.5 border-t border-border bg-panel flex items-center justify-between flex-shrink-0">
-                    <span className="text-xs text-muted">
-                        {selectedIds.size} starred
-                    </span>
-                    <button
-                        onClick={() => {
-                            const event = new CustomEvent('openCompareTab');
-                            window.dispatchEvent(event);
-                        }}
-                        className="px-3 py-1.5 bg-accent text-white text-xs font-semibold rounded hover:bg-accent-hover transition-colors"
-                    >
-                        Compare →
-                    </button>
+            {/* Sticky Compare / Export Bar */}
+            {(selectedIds.size > 0 || candidates.length > 0) && (
+                <div className="px-3 py-2 border-t border-border bg-panel flex items-center justify-between gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1.5">
+                        <button
+                            onClick={handleExportPDF}
+                            disabled={isExporting}
+                            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium border border-border rounded text-muted hover:text-ink hover:bg-paper transition-colors disabled:opacity-50"
+                        >
+                            {isExporting ? (
+                                <Loader2 size={11} className="animate-spin" />
+                            ) : (
+                                <FileDown size={11} />
+                            )}
+                            PDF
+                        </button>
+                        {selectedIds.size > 0 && (
+                            <button
+                                onClick={onExport}
+                                className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium border border-border rounded text-muted hover:text-ink hover:bg-paper transition-colors"
+                            >
+                                <Download size={11} />
+                                CSV ({selectedIds.size})
+                            </button>
+                        )}
+                    </div>
+                    {selectedIds.size > 0 && (
+                        <button
+                            onClick={() => {
+                                const event = new CustomEvent('openCompareTab');
+                                window.dispatchEvent(event);
+                            }}
+                            className="px-3 py-1.5 bg-accent text-white text-[11px] font-semibold rounded hover:bg-accent-hover transition-colors"
+                        >
+                            Compare {selectedIds.size} →
+                        </button>
+                    )}
                 </div>
             )}
         </div>

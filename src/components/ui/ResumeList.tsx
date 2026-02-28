@@ -214,16 +214,6 @@ export function ResumeList({
               )}
             >
               <div className="flex items-center gap-2">
-                <button
-                  onClick={(e) => { e.stopPropagation(); onToggleShortlist?.(file.id); }}
-                  className={cn(
-                    "w-4 h-4 flex items-center justify-center rounded hover:bg-black/5 transition-colors",
-                    shortlistedIds?.has(file.id) ? "text-yellow-500" : "text-muted/30 hover:text-yellow-500"
-                  )}
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill={shortlistedIds?.has(file.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-                </button>
-
                 <div className="w-7 h-7 rounded bg-[#FEF2F2] flex items-center justify-center text-[#B91C1C]/60 flex-shrink-0">
                   <FileText size={14} />
                 </div>
@@ -257,6 +247,17 @@ export function ResumeList({
                 </div>
 
                 <div className="flex items-center gap-1 flex-shrink-0">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onToggleShortlist?.(file.id); }}
+                    className={cn(
+                      "w-6 h-6 flex items-center justify-center rounded transition-colors",
+                      shortlistedIds?.has(file.id)
+                        ? "text-yellow-500"
+                        : "text-muted/30 opacity-0 group-hover:opacity-100 hover:text-yellow-500"
+                    )}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill={shortlistedIds?.has(file.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                  </button>
                   {statusIcon(file.status)}
                   {onDelete && (
                     <button

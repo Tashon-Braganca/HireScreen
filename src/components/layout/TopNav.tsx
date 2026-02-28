@@ -65,7 +65,7 @@ export function TopNav({ profile }: { profile: TopNavProfile }) {
                         whileHover={{ scale: 1.08, rotate: -3 }}
                         whileTap={{ scale: 0.92 }}
                         transition={{ type: "spring", stiffness: 500, damping: 20 }}
-                        className="w-8 h-8 rounded-lg bg-[var(--accent-sage)] text-[var(--bg-canvas)] font-bold text-sm flex items-center justify-center shadow-[0_0_16px_rgba(126,203,158,0.2)]"
+                        className="w-8 h-8 rounded-lg bg-[var(--accent-sage)] text-[var(--bg-canvas)] font-bold text-sm flex items-center justify-center"
                     >
                         {BRAND_LOGO_LETTER}
                     </motion.div>
@@ -106,9 +106,9 @@ export function TopNav({ profile }: { profile: TopNavProfile }) {
 
                     {/* Breadcrumb for job workspace */}
                     {isJobWorkspacePath(pathname) && (
-                        <div className="flex items-center gap-1 ml-1">
-                            <span className="text-[var(--text-dim)] text-[12px]">/</span>
-                            <span className="px-3 py-1.5 rounded-lg text-[13px] font-medium text-[var(--accent-sage)] bg-[var(--accent-dim)]">
+                        <div className="flex items-center gap-1.5 ml-1">
+                            <span className="text-[var(--text-dim)] text-[12px] leading-none">/</span>
+                            <span className="px-2.5 py-1 rounded-md text-[13px] font-medium text-[var(--text-body)] bg-[var(--bg-raised)]">
                                 Job Workspace
                             </span>
                         </div>
