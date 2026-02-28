@@ -14,10 +14,15 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-paper py-12 px-4">
       <div className="max-w-3xl mx-auto">
-        <h1 className="font-display text-3xl text-ink mb-2">Terms of Service</h1>
+        <h1 className="font-display text-3xl text-ink mb-2">CandidRank Terms of Service</h1>
         <p className="text-muted text-sm mb-8">Last updated: February 2026</p>
 
         <div className="prose prose-sm max-w-none space-y-6 text-ink">
+          <p className="text-muted">
+            These Terms of Service govern your use of CandidRank (&quot;CandidRank&quot;, &quot;we&quot;, &quot;us&quot;), available at candidrank.cc.
+            By using CandidRank, you agree to these terms.
+          </p>
+
           <section>
             <h2 className="font-display text-xl text-ink mb-3">1. Acceptance of Terms</h2>
             <p className="text-muted">
@@ -33,7 +38,7 @@ export default function TermsPage() {
             <ul className="list-disc pl-5 text-muted space-y-1">
               <li>Processes and stores PDF resumes (candidate PII data) on your behalf</li>
               <li>Uses the OpenAI API to analyze and extract information from resume content</li>
-              <li>Charges subscription fees via Paddle for access to premium features</li>
+              <li>Charges subscription fees via LemonSqueezy for access to premium features</li>
             </ul>
           </section>
 
@@ -80,7 +85,7 @@ export default function TermsPage() {
           <section>
             <h2 className="font-display text-xl text-ink mb-3">6. Subscription and Billing</h2>
             <p className="text-muted">
-              Subscription fees are charged via Paddle. By subscribing, you agree to:
+              Subscription fees are charged via LemonSqueezy. By subscribing, you agree to:
             </p>
             <ul className="list-disc pl-5 text-muted space-y-1">
               <li>Pay all fees associated with your selected plan</li>
@@ -138,10 +143,10 @@ export default function TermsPage() {
             </p>
           </section>
 
-          <section>
+          <section id="refund">
             <h2 className="font-display text-xl text-ink mb-3">12. Refund Policy</h2>
             <p className="text-muted">
-              CandidRank offers a 7-day refund policy for Pro subscriptions. If you are not satisfied within 7 days of your first payment, contact us at support@candidrank.cc for a full refund. Refunds are not available after 7 days or for partial months. Cancellations take effect at the end of the current billing period.
+              CandidRank offers a 14-day refund policy. If you are not satisfied with your Pro subscription for any reason, contact us at support@candidrank.cc within 14 days of your payment date and we will issue a full refund, no questions asked. To request a refund, email support@candidrank.cc with your account email address and we will process it within 2 business days.
             </p>
           </section>
 

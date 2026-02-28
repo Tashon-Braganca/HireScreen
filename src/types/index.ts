@@ -73,6 +73,10 @@ export interface QuerySource {
   page: number | null;
   snippet: string;
   similarity: number;
+  score?: number;
+  candidate_name?: string | null;
+  candidate_email?: string | null;
+  excerpt?: string;
 }
 
 export interface UsageLimits {
@@ -132,18 +136,56 @@ export interface ImportedCandidate {
   created_at: string;
 }
 
-declare global {
-  interface Window {
-    Paddle: {
-      Initialize: (config: { token: string }) => void;
-      Checkout: {
-        open: (config: {
-          items: Array<{ priceId: string; quantity: number }>;
-          customer?: { email?: string };
-          customData?: Record<string, string>;
-          settings?: { successUrl?: string };
-        }) => void;
-      };
-    };
-  }
+// --- Evidence Bookmarks ---
+
+export interface EvidenceBookmark {
+  id: string;
+  user_id: string;
+  job_id: string;
+  document_id: string | null;
+  chunk_id: string | null;
+  citation_text: string;
+  filename: string | null;
+  page_number: number | null;
+  content: string | null;
+  comment: string | null;
+  created_at: string;
+}
+
+// --- Compare ---
+
+export interface CompareCriteria {
+  label: string;
+  scores: Record<string, number>; // documentId → score (0-100)
+  notes: Record<string, string>;  // documentId → note
+}
+
+export interface CompareResult {
+  candidates: CompareSummary[];
+  criteria: CompareCriteria[];
+  winner: string | null; // documentId
+  reasoning: string;
+}
+
+export interface CompareSummary {
+  documentId: string;
+  name: string;
+  filename: string;
+  overallScore: number;
+  strengths: string[];
+  weaknesses: string[];
+  highlights: string[];
+}
+
+// --- Center Panel ---
+
+export type CenterTab = 'ranked' | 'compare' | 'history' | 'import' | `pdf-${string}`;
+
+// --- Filters ---
+
+export interface FilterState {
+  authorized: 'all' | 'authorized' | 'sponsorship';
+  location: string;
+  yoe: string;
+  skills: string[];
 }

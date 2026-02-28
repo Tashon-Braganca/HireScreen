@@ -74,7 +74,7 @@ export default function PrivacyPage() {
             <p className="mb-3">We share data only with:</p>
             <ul className="list-disc pl-5 space-y-1">
               <li><strong>OpenAI:</strong> For AI processing of resume content</li>
-              <li><strong>Paddle:</strong> For payment processing (billing info only)</li>
+              <li><strong>LemonSqueezy:</strong> For payment processing (billing info only)</li>
               <li><strong>Service providers:</strong> Who assist in operating the platform (hosting, analytics)</li>
               <li><strong>Legal requirements:</strong> When required by law or to protect our rights</li>
             </ul>

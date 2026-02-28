@@ -1,39 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createCheckout } from "@/lib/paddle/client";
+import { createCheckout } from "@/lib/lemonsqueezy/client";
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('[CHECKOUT] Starting checkout process...');
-    
+    console.log("[CHECKOUT] Starting checkout process...");
+
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      console.log('[CHECKOUT] Unauthorized - no user');
+      console.log("[CHECKOUT] Unauthorized - no user");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    let { priceId } = body;
-    
-    console.log('[CHECKOUT] Received priceId:', priceId);
+    const storeId = process.env.LEMONSQUEEZY_STORE_ID;
+    const variantId = process.env.LEMONSQUEEZY_VARIANT_ID;
 
-    if (!priceId) {
-      console.log('[CHECKOUT] No priceId provided');
-      return NextResponse.json({ error: "Price ID is required" }, { status: 400 });
-    }
-
-    // If priceId is "pro", resolve to actual price ID from env
-    if (priceId === "pro") {
-      priceId = process.env.PADDLE_PRO_PRICE_ID;
-      console.log('[CHECKOUT] Resolved "pro" to:', priceId);
-      if (!priceId) {
-        console.error('[CHECKOUT] PADDLE_PRO_PRICE_ID not set in environment');
-        return NextResponse.json({ error: "Pro plan not configured" }, { status: 500 });
-      }
+    if (!storeId || !variantId) {
+      console.error("[CHECKOUT] Missing LEMONSQUEEZY_STORE_ID or LEMONSQUEEZY_VARIANT_ID");
+      return NextResponse.json({ error: "Pro plan not configured" }, { status: 500 });
     }
 
     const { data: profile } = await supabase
@@ -42,17 +30,20 @@ export async function POST(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    const email = profile?.email || user.email;
-    console.log('[CHECKOUT] User email:', email);
-    console.log('[CHECKOUT] Creating Paddle checkout...');
+    const email = profile?.email ?? user.email;
+    const successUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/dashboard/settings?upgraded=true`;
 
-    const checkoutUrl = await createCheckout({
-      priceId,
+    console.log("[CHECKOUT] Creating LemonSqueezy checkout for user:", user.id);
+
+    const { checkoutUrl } = await createCheckout({
+      storeId,
+      variantId,
       email,
-      userId: user.id,
+      customData: { user_id: user.id },
+      redirectUrl: successUrl,
     });
 
-    console.log('[CHECKOUT] Got checkout URL:', checkoutUrl);
+    console.log("[CHECKOUT] Got checkout URL:", checkoutUrl);
 
     return NextResponse.json({ checkoutUrl });
   } catch (error) {
