@@ -23,8 +23,6 @@ interface RankedResultsPanelProps {
     candidates: RankedCandidate[];
     selectedIds: Set<string>; // filtered/shortlisted
     onToggleSelect: (documentId: string) => void;
-    compareIds: Set<string>;
-    onToggleCompare: (documentId: string) => void;
     onViewResume: (documentId: string) => void;
     onExport: () => void;
     onQueryClick: (query: string) => void;
@@ -45,8 +43,6 @@ function CandidateCard({
     candidate,
     isSelected,
     onToggleSelect,
-    isCompared,
-    onToggleCompare,
     onViewResume,
     index,
     contactEmail,
@@ -55,8 +51,6 @@ function CandidateCard({
     candidate: RankedCandidate;
     isSelected: boolean;
     onToggleSelect: () => void;
-    isCompared: boolean;
-    onToggleCompare: () => void;
     onViewResume: () => void;
     index: number;
     contactEmail?: string | null;
@@ -76,16 +70,7 @@ function CandidateCard({
                     : "border-border bg-panel hover:border-border"
             )}
         >
-            {/* Compare Checkbox */}
-            <div className="absolute top-3 right-3 z-10">
-                <input
-                    type="checkbox"
-                    checked={isCompared}
-                    onChange={onToggleCompare}
-                    className="h-4 w-4 rounded border-gray-300 text-accent focus:ring-accent cursor-pointer accent-accent"
-                    title="Select to compare"
-                />
-            </div>
+
 
             {/* Main Row */}
             <div className="px-4 py-3 flex items-start gap-3">
@@ -236,8 +221,6 @@ export function RankedResultsPanel({
     candidates,
     selectedIds,
     onToggleSelect,
-    compareIds,
-    onToggleCompare,
     onViewResume,
     onExport,
     onQueryClick,
@@ -415,8 +398,6 @@ export function RankedResultsPanel({
                                     onToggleSelect={() =>
                                         onToggleSelect(candidate.documentId)
                                     }
-                                    isCompared={compareIds.has(candidate.documentId)}
-                                    onToggleCompare={() => onToggleCompare(candidate.documentId)}
                                     onViewResume={() => onViewResume(candidate.documentId)}
                                     index={i}
                                     contactEmail={doc?.candidate_email}
@@ -429,20 +410,19 @@ export function RankedResultsPanel({
             )}
 
             {/* Sticky Compare Bar */}
-            {compareIds.size > 0 && (
+            {selectedIds.size > 0 && (
                 <div className="px-4 py-2.5 border-t border-border bg-panel flex items-center justify-between flex-shrink-0">
                     <span className="text-xs text-muted">
-                        {compareIds.size} candidate{compareIds.size !== 1 ? "s" : ""} selected
+                        {selectedIds.size} starred
                     </span>
                     <button
                         onClick={() => {
-                            // Navigate to compare tab â€” handled by parent context
                             const event = new CustomEvent('openCompareTab');
                             window.dispatchEvent(event);
                         }}
                         className="px-3 py-1.5 bg-accent text-white text-xs font-semibold rounded hover:bg-accent-hover transition-colors"
                     >
-                        Compare â†’
+                        Compare →
                     </button>
                 </div>
             )}

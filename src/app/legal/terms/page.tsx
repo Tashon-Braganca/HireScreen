@@ -1,4 +1,4 @@
-import { BRAND_NAME, BRAND_DOMAIN } from "@/config/brand";
+﻿import { BRAND_NAME, BRAND_DOMAIN } from "@/config/brand";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -27,9 +27,6 @@ export default function TermsPage() {
             <h2 className="font-display text-xl text-ink mb-3">1. Acceptance of Terms</h2>
             <p className="text-muted">
               By accessing or using {BRAND_NAME} (&quot;Service&quot;), operated at {BRAND_DOMAIN}, you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the Service.
-            </p>
-            <p className="text-muted mt-3">
-              These Terms and Conditions are provided by CandidRank.
             </p>
           </section>
 
@@ -96,7 +93,7 @@ export default function TermsPage() {
               <li>Allow automatic renewal unless cancelled before the billing period ends</li>
             </ul>
             <p className="text-muted mt-3">
-              Refund handling follows our Refund Policy at /legal/refund-policy.
+              Refunds are provided at our discretion. Contact support@candidrank.cc for refund requests.
             </p>
           </section>
 
@@ -155,7 +152,7 @@ export default function TermsPage() {
 
           <div className="mt-8 pt-6 border-t border-border">
             <p className="text-xs text-muted">
-              Last updated: February 2026
+              Last updated: January 2026
             </p>
           </div>
         </div>

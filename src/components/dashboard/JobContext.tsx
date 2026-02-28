@@ -417,9 +417,9 @@ const handleRankQuery = useCallback(async (query: string) => {
     const [isComparing, setIsComparing] = useState(false);
 
     const runCompare = useCallback(async () => {
-        const ids = Array.from(compareIds);
+        const ids = Array.from(shortlistedIds);
         if (ids.length < 2) {
-            toast.info("Select at least 2 candidates to compare");
+            toast.info("Star at least 2 candidates to compare");
             return;
         }
         setIsComparing(true);
@@ -436,7 +436,7 @@ const handleRankQuery = useCallback(async (query: string) => {
         } finally {
             setIsComparing(false);
         }
-    }, [compareIds, job.id]);
+    }, [shortlistedIds, job.id]);
 
     // Updated viewResume that opens a tab and switches to it
     const viewResumeTab = useCallback(async (id: string) => {

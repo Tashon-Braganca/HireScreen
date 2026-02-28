@@ -12,7 +12,7 @@ import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { ExportModal } from "@/components/ui/ExportModal";
 
 export function CenterPanel() {
-    const { activeTab, setActiveTab, filteredRankedCandidates, shortlistedIds, toggleShortlist, compareIds, toggleCompare, viewResume, handleRankQuery, isRanking, activeQuery, job, documents } = useJobContext();
+    const { activeTab, setActiveTab, filteredRankedCandidates, shortlistedIds, toggleShortlist, viewResume, handleRankQuery, isRanking, activeQuery, job, documents } = useJobContext();
     const [exportOpen, setExportOpen] = useState(false);
 
     // Listen for openCompareTab event dispatched from RankedResultsPanel's compare bar
@@ -32,8 +32,6 @@ export function CenterPanel() {
                             candidates={filteredRankedCandidates}
                             selectedIds={shortlistedIds}
                             onToggleSelect={toggleShortlist}
-                            compareIds={compareIds || new Set()}
-                            onToggleCompare={toggleCompare}
                             onViewResume={viewResume}
                             onExport={() => setExportOpen(true)}
                             onQueryClick={handleRankQuery}

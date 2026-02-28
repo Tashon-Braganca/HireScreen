@@ -9,11 +9,11 @@ type CompareSubTab = "summary" | "criteria" | "evidence" | "notes";
 type ViewMode = "cards" | "table";
 
 export function CompareView() {
-    const { compareIds, rankedCandidates, clearCompare, evidenceBookmarks, toggleBookmark, compareResult, isComparing, runCompare } = useJobContext();
+    const { shortlistedIds, rankedCandidates, clearCompare, evidenceBookmarks, toggleBookmark, compareResult, isComparing, runCompare } = useJobContext();
     const [subTab, setSubTab] = useState<CompareSubTab>("summary");
     const [viewMode, setViewMode] = useState<ViewMode>("cards");
 
-    const selectedCandidates = rankedCandidates.filter(c => compareIds.has(c.documentId));
+    const selectedCandidates = rankedCandidates.filter(c => shortlistedIds.has(c.documentId));
 
     if (selectedCandidates.length === 0) {
         return (
@@ -21,8 +21,8 @@ export function CompareView() {
                 <div className="w-14 h-14 rounded-lg border border-border flex items-center justify-center mb-4">
                     <Layers size={24} />
                 </div>
-                <p className="text-sm font-medium text-ink mb-1">Select candidates to compare</p>
-                <p className="text-xs">Check the box on candidate cards to add them here.</p>
+                <p className="text-sm font-medium text-ink mb-1">No starred candidates yet</p>
+                <p className="text-xs">Star candidates from the ranked results to compare them here.</p>
             </div>
         );
     }
