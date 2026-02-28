@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import { TopNav } from "@/components/layout/TopNav";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   robots: {
