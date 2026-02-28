@@ -2,8 +2,18 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useSubscription, openCheckout } from '@/hooks/useSubscription';
 
 export default function Pricing({ user }: { user: { id: string } | null }) {
+    const { isPro, isLoading } = useSubscription();
+
+    const handleUpgrade = async () => {
+        try {
+            await openCheckout();
+        } catch (error) {
+            console.error('Failed to open checkout:', error);
+        }
+    };
     return (
         <section id="pricing" className="bg-panel border-y border-sub py-32 relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -117,15 +127,13 @@ export default function Pricing({ user }: { user: { id: string } | null }) {
                                 </div>
                             </div>
 
-                            <Link href={user ? "/dashboard" : "/login"} passHref legacyBehavior>
-                                <motion.a
-                                    whileHover={{ scale: 1.02, backgroundColor: '#8FCBAA' }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="w-full text-center py-3.5 bg-sage text-canvas font-[family-name:var(--font-ui)] font-semibold text-[14px] rounded-[6px] shadow-[0_0_24px_rgba(126,184,154,0.2)] transition-shadow duration-300"
-                                >
-                                    {user ? "Go to Dashboard" : "Start Free Trial"}
-                                </motion.a>
-                            </Link>
+                            <button
+                                onClick={handleUpgrade}
+                                disabled={isLoading}
+                                className="w-full text-center py-3.5 bg-sage text-canvas font-[family-name:var(--font-ui)] font-semibold text-[14px] rounded-[6px] shadow-[0_0_24px_rgba(126,184,154,0.2)] transition-shadow duration-300 disabled:opacity-50"
+                            >
+                                {isLoading ? "Loading..." : user ? (isPro ? "Go to Dashboard" : "Upgrade to Pro") : "Start Free Trial"}
+                            </button>
                         </div>
                     </motion.div>
 

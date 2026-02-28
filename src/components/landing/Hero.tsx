@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import HeroWidget from './HeroWidget';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useSubscription, openCheckout } from '@/hooks/useSubscription';
 
 export default function Hero({ user }: { user: { id: string } | null }) {
     const line1 = "Stop reading resumes.";
@@ -11,6 +12,18 @@ export default function Hero({ user }: { user: { id: string } | null }) {
 
     // Custom CTA fill animation
     const [ctaHovered, setCtaHovered] = useState(false);
+    const { isPro, isLoading } = useSubscription();
+
+    const handleCtaClick = async (e: React.MouseEvent) => {
+        if (user && !isPro) {
+            e.preventDefault();
+            try {
+                await openCheckout();
+            } catch (error) {
+                console.error('Failed to open checkout:', error);
+            }
+        }
+    };
 
     return (
         <section className="bg-canvas min-h-[100vh] relative pt-32 pb-24 px-6 overflow-hidden flex items-center">
@@ -150,10 +163,11 @@ export default function Hero({ user }: { user: { id: string } | null }) {
                         transition={{ duration: 0.6, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
                         className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-5"
                     >
-                        <Link href={user ? "/dashboard" : "/login"} passHref legacyBehavior>
+                        <Link href={user ? (isPro ? "/dashboard" : "#pricing") : "/login"} passHref legacyBehavior>
                             <a
                                 onMouseEnter={() => setCtaHovered(true)}
                                 onMouseLeave={() => setCtaHovered(false)}
+                                onClick={handleCtaClick}
                                 className="relative overflow-hidden rounded-[8px] bg-sage flex items-center shadow-[0_0_24px_rgba(126,184,154,0.2)] text-[#0C0D0C] hover:text-[#0C0D0C]"
                                 style={{ padding: '14px 28px' }}
                             >
@@ -173,7 +187,7 @@ export default function Hero({ user }: { user: { id: string } | null }) {
                                     }}
                                 />
                                 <span className="relative z-10 font-[family-name:var(--font-ui)] font-semibold text-[15px] flex items-center">
-                                    {user ? "Go to Dashboard" : "Start Free Trial"}
+                                    {isLoading ? "Loading..." : user ? (isPro ? "Go to Dashboard" : "Upgrade to Pro") : "Start Free Trial"}
                                     <motion.span
                                         animate={{ x: ctaHovered ? 4 : 0 }}
                                         transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
