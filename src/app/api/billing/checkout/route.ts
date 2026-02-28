@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createCheckout } from "@/lib/lemonsqueezy/client";
 
-export async function POST(_request: NextRequest) {
+export async function POST() {
   try {
     console.log("[CHECKOUT] Starting checkout process...");
 
